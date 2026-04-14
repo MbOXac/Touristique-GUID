@@ -228,7 +228,7 @@ class _RouteScreen extends StatelessWidget {
             child: Stack(
               children: [
                 const Positioned.fill(child: _TopoLines()),
-                Positioned(
+                const Positioned(
                   top: 135,
                   left: 132,
                   child: _LabelBubble(
@@ -322,7 +322,7 @@ class _DiscoverScreen extends StatelessWidget {
                     style: TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   const SizedBox(height: 18),
-                  _SearchBar(),
+                  const _SearchBar(),
                   const SizedBox(height: 20),
                   const Row(
                     children: [
@@ -540,6 +540,8 @@ class _TagChip extends StatelessWidget {
 }
 
 class _SearchBar extends StatelessWidget {
+  const _SearchBar();
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
