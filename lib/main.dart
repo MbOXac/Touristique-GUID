@@ -138,15 +138,15 @@ class _ParkScreen extends StatelessWidget {
                     const SizedBox(height: 22),
                     Row(
                       children: [
-                        Icon(Icons.more_vert_outlined, size: 24),
-                        SizedBox(width: 16),
-                        Icon(Icons.favorite_border_outlined, size: 24),
-                        SizedBox(width: 16),
-                        Icon(Icons.send_outlined, size: 24),
-                        Spacer(),
-                        Icon(Icons.star, size: 20, color: Color(0xFFFF9D6A)),
-                        SizedBox(width: 6),
-                        Text(
+                        const Icon(Icons.more_vert_outlined, size: 24),
+                        const SizedBox(width: 16),
+                        const Icon(Icons.favorite_border_outlined, size: 24),
+                        const SizedBox(width: 16),
+                        const Icon(Icons.send_outlined, size: 24),
+                        const Spacer(),
+                        const Icon(Icons.star, size: 20, color: Color(0xFFFF9D6A)),
+                        const SizedBox(width: 6),
+                        const Text(
                           '4.5/5.0',
                           style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
                         ),
@@ -341,14 +341,14 @@ class _DiscoverScreen extends StatelessWidget {
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       children: [
-                        _TravelCard(
+                        const _TravelCard(
                           title: 'Lorem Ipsum',
                           subtitle: 'Lorem ipsum',
                           image:
                               'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=900&q=80',
                         ),
-                        SizedBox(width: 12),
-                        _TravelCard(
+                        const SizedBox(width: 12),
+                        const _TravelCard(
                           title: 'Lorem Ipsum',
                           subtitle: 'Lorem ipsum',
                           image:
@@ -582,32 +582,32 @@ class _RouteDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.route_outlined, color: Colors.white70, size: 22),
-        SizedBox(height: 8),
-        Text('75km', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
-        SizedBox(height: 8),
-        Text(
+        const Icon(Icons.route_outlined, color: Colors.white70, size: 22),
+        const SizedBox(height: 8),
+        const Text('75km', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        const Text(
           'Vanaheim National Park',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
-        Text(
+        const Text(
           '123 Streets, Your City,\nYour Province, Your Countries',
           style: TextStyle(color: Colors.white60, height: 1.4),
         ),
-        SizedBox(height: 10),
-        Text(
+        const SizedBox(height: 10),
+        const Text(
           'Lorem ipsum dolor sit amet, consectetuer adipiscing elit,\n'
           'sed diam nonummy nibh euismod tincidunt ut laoreet magna\n'
           'aliquam erat volutpat.',
           style: TextStyle(color: Colors.white70, height: 1.45),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Center(
           child: Column(
             children: [
-              Icon(Icons.keyboard_arrow_down_rounded, size: 30),
-              SizedBox(height: 2),
-              Text('Read More', style: TextStyle(fontSize: 22)),
+              const Icon(Icons.keyboard_arrow_down_rounded, size: 30),
+              const SizedBox(height: 2),
+              const Text('Read More', style: TextStyle(fontSize: 22)),
             ],
           ),
         ),

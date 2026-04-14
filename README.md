@@ -1,4 +1,4 @@
-# Touristique-GUID
+# Touristique-GUIDE
 
 Flutter UI recreation of the provided travel app mockup (dark theme, 3 phone-style screens).
 
