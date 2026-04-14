@@ -11,7 +11,7 @@ class TouristiqueGuidApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Touristique GUID',
+      title: 'Touristique Guide',
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF9A9BC2),
@@ -137,7 +137,7 @@ class _ParkScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 22),
                     Row(
-                      children: const [
+                      children: [
                         Icon(Icons.more_vert_outlined, size: 24),
                         SizedBox(width: 16),
                         Icon(Icons.favorite_border_outlined, size: 24),
@@ -340,7 +340,7 @@ class _DiscoverScreen extends StatelessWidget {
                     height: 180,
                     child: ListView(
                       scrollDirection: Axis.horizontal,
-                      children: const [
+                      children: [
                         _TravelCard(
                           title: 'Lorem Ipsum',
                           subtitle: 'Lorem ipsum',
@@ -581,7 +581,7 @@ class _RouteDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
+      children: [
         Icon(Icons.route_outlined, color: Colors.white70, size: 22),
         SizedBox(height: 8),
         Text('75km', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)),
