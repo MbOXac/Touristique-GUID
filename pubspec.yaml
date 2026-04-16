@@ -1,0 +1,28 @@
+name: touristique_guid
+description: A tourist guide app for Southeast Morocco.
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/splash.jpg
+    - assets/images/welcome.jpg
+    - assets/images/destination_1.jpg
+    - assets/images/destination_2.jpg
+    - assets/images/destination_3.jpg
+    - assets/images/destination_4.jpg
