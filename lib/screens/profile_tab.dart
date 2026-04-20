@@ -1,8 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
+import 'login_page.dart';
 
-class ProfileTab extends StatelessWidget {
+class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
+  @override
+  State<ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<ProfileTab> {
+  String? name;
+  String? email;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        email = user.email;
+      });
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      setState(() {
+        name = doc.data()?['name'] ?? user.displayName ?? "No name";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +58,8 @@ class ProfileTab extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    width: 88, height: 88,
+                    width: 88,
+                    height: 88,
                     decoration: BoxDecoration(
                       color: AppTheme.sandBeige,
                       shape: BoxShape.circle,
@@ -38,9 +68,16 @@ class ProfileTab extends StatelessWidget {
                     child: const Icon(Icons.person_rounded, size: 52, color: AppTheme.earthBrown),
                   ),
                   const SizedBox(height: 12),
-                  const Text('Traveller', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                  // Display real name and email here
+                  Text(
+                    name ?? 'Loading...',
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
                   const SizedBox(height: 4),
-                  const Text('traveller@example.com', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  Text(
+                    email ?? '',
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -71,18 +108,22 @@ class ProfileTab extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Signed out – Coming soon!'), behavior: SnackBarBehavior.floating),
+            child:  OutlinedButton.icon(
+                      onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                       (route) => false,
+                         );
+},
+                      icon: const Icon(Icons.logout_rounded, color: Colors.red),
+                 label: const Text('Sign Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.red),
+               padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  icon: const Icon(Icons.logout_rounded, color: Colors.red),
-                  label: const Text('Sign Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.red),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
+             ),
               ),
             ),
             const SizedBox(height: 32),
@@ -95,7 +136,10 @@ class ProfileTab extends StatelessWidget {
   Widget _statBadge(String value, String label) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryOrange)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryOrange),
+        ),
         Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
       ],
     );
@@ -107,7 +151,10 @@ class ProfileTab extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-          child: Text(sectionTitle, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 1.0)),
+          child: Text(
+            sectionTitle,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 1.0),
+          ),
         ),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16),

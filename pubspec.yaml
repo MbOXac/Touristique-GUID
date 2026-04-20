@@ -8,6 +8,10 @@ environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
+  cloud_firestore: ^6.3.0
+  firebase_core: ^4.7.0
+  firebase_auth: any  # pubspec.yaml
+  google_sign_in: ^5.4.4
   flutter:
     sdk: flutter
 
