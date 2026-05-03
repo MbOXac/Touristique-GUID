@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
-import '../services/destination_service.dart';
 import '../services/mock_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/destination_card.dart';
@@ -13,25 +12,71 @@ import 'favorites_screen.dart';
 import 'bookings_screen.dart';
 import 'top_rated_screen.dart';
 import 'trip_memories_screen.dart';
+import 'package:touristique_guid/services/destination_service.dart';
 
 class HomePage extends StatefulWidget {
   final void Function(int)? onTabChange;
-
   const HomePage({super.key, this.onTabChange});
+
+  static const List<Destination> _destinations = [
+    Destination(id: 'kasbah_valleys', name: 'Kasbah & Valleys', description: 'Explore centuries-old mud-brick kasbahs nestled among dramatic cliffs and verdant valleys along the Draa River.', imagePath: 'assets/images/destination_1.jpg', rating: 4.8, distance: '120 km'),
+    Destination(id: 'merzouga_desert', name: 'Merzouga Desert', description: 'Ride camels across the iconic Erg Chebbi dunes and spend a night under a sky blazing with stars in the Sahara.', imagePath: 'assets/images/destination_2.jpg', rating: 4.9, distance: '340 km'),
+    Destination(id: 'todra_gorge', name: 'Todra Gorge', description: 'Walk through towering 300-metre limestone walls carved by the Todra River – a paradise for hikers and climbers.', imagePath: 'assets/images/destination_3.jpg', rating: 4.7, distance: '175 km'),
+    Destination(id: 'oasis_palmeraies', name: 'Oasis & Palmeraies', description: 'Wander through sprawling date-palm groves irrigated by ancient khettara channels in the lush valleys of Tinghir.', imagePath: 'assets/images/destination_4.jpg', rating: 4.6, distance: '160 km'),
+  ];
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final DestinationService _destinationService = DestinationService();
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
+  String _searchText = '';
+  Map<String, dynamic>? _destinationResult;
+  bool _isSearching = false;
+  String? _searchError;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _searchDestination() async {
+    setState(() {
+      _isSearching = true;
+      _destinationResult = null;
+      _searchError = null;
+    });
+    try {
+      final destinations = await DestinationService().getAllDestinations();
+      final query = _searchText.trim().toLowerCase();
+      final match = destinations.cast<Destination?>().firstWhere(
+        (d) => d!.name.toLowerCase().contains(query),
+        orElse: () => null,
+      );
+      setState(() {
+        _isSearching = false;
+        if (match == null) {
+          _searchError = "Destination not found";
+          _destinationResult = null;
+        } else {
+          _destinationResult = {
+            'name': match.name,
+            'description': match.description,
+            'imageUrls': [match.imagePath],
+            'rating': match.rating,
+            'distance': match.distance,
+          };
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isSearching = false;
+        _searchError = 'Error searching destinations';
+        _destinationResult = null;
+      });
+    }
   }
 
   @override
@@ -53,6 +98,34 @@ class _HomePageState extends State<HomePage> {
               children: [
                 const SizedBox(height: 16),
                 _buildSearchBar(context),
+                if (_isSearching)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (_destinationResult != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: DestinationCard(
+                      destination: Destination(
+                        id: _destinationResult!['id'] ?? '',
+                        name: _destinationResult!['name'] ?? '',
+                        description: _destinationResult!['description'] ?? '',
+                        imagePath: (_destinationResult!['imageUrls'] != null && _destinationResult!['imageUrls'].isNotEmpty)
+                            ? _destinationResult!['imageUrls'][0]
+                            : '',
+                        rating: (_destinationResult!['rating'] is num)
+                            ? (_destinationResult!['rating'] as num).toDouble()
+                            : 0.0,
+                        distance: _destinationResult!['distance'] ?? '',
+                      ),
+                    ),
+                  )
+                else if (_searchError != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Text(_searchError!, style: const TextStyle(color: Colors.red)),
+                  ),
                 const SizedBox(height: 16),
                 _buildQuickActions(context),
                 const SizedBox(height: 16),
@@ -102,8 +175,7 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 Image.asset(item.imagePath, fit: BoxFit.cover),
                                 Positioned(
-                                  bottom: 4,
-                                  left: 4,
+                                  bottom: 4, left: 4,
                                   child: RatingBadge(rating: item.rating),
                                 ),
                               ],
@@ -162,28 +234,12 @@ class _HomePageState extends State<HomePage> {
                                       children: [
                                         Text(m.mood, style: const TextStyle(fontSize: 18)),
                                         const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            m.title,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                              color: AppTheme.deepBlue,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
+                                        Expanded(child: Text(m.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis)),
                                       ],
                                     ),
                                     const SizedBox(height: 3),
                                     Text(m.location, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                                    Text(
-                                      m.description,
-                                      style: const TextStyle(fontSize: 12, color: Colors.black54),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                    Text(m.description, style: const TextStyle(fontSize: 12, color: Colors.black54), maxLines: 2, overflow: TextOverflow.ellipsis),
                                   ],
                                 ),
                               ),
@@ -215,55 +271,21 @@ class _HomePageState extends State<HomePage> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         child: ListTile(
                           leading: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: AppTheme.sandBeige,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+                            width: 44, height: 44,
+                            decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(10)),
                             child: Icon(_bookingIcon(b.type), color: AppTheme.primaryOrange, size: 22),
                           ),
-                          title: Text(
-                            b.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: AppTheme.deepBlue,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Text(
-                            b.details,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12),
-                          ),
+                          title: Text(b.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitle: Text(b.details, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
                           trailing: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              Text(
-                                '\$${b.price.toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryOrange,
-                                ),
-                              ),
+                              Text('\$${b.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryOrange)),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withAlpha(30),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  statusLabel,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: statusColor,
-                                  ),
-                                ),
+                                decoration: BoxDecoration(color: statusColor.withAlpha(30), borderRadius: BorderRadius.circular(8)),
+                                child: Text(statusLabel, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
                               ),
                             ],
                           ),
@@ -274,92 +296,18 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 16),
                 const SectionHeader(title: 'Explore Destinations'),
-              ],
-            ),
-          ),
-          // DESTINATIONS FROM FIRESTORE WITH SEARCH
-          StreamBuilder<List<Destination>>(
-            stream: _destinationService.streamAllDestinations(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        const CircularProgressIndicator(
-                          color: AppTheme.primaryOrange,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
-                  ),
-                );
-              }
-
-              if (snapshot.hasError) {
-                return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Text('Error: ${snapshot.error}'),
-                    ),
-                  ),
-                );
-              }
-
-              var destinations = snapshot.data ?? [];
-
-              // FILTER DESTINATIONS BY SEARCH QUERY
-              if (_searchQuery.isNotEmpty) {
-                destinations = destinations
-                    .where((dest) => dest.name
-                        .toLowerCase()
-                        .contains(_searchQuery.toLowerCase()))
-                    .toList();
-              }
-
-              if (destinations.isEmpty) {
-                return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          Icon(Icons.location_off, size: 48, color: Colors.grey.shade300),
-                          const SizedBox(height: 12),
-                          Text(
-                            _searchQuery.isEmpty
-                                ? 'No destinations available'
-                                : 'No destinations found for "$_searchQuery"',
-                            style: TextStyle(color: Colors.grey.shade600),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }
-
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: DestinationCard(destination: destinations[index]),
-                      );
-                    },
-                    childCount: destinations.length,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: HomePage._destinations.map((d) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: DestinationCard(destination: d),
+                    )).toList(),
                   ),
                 ),
-              );
-            },
-          ),
-          SliverToBoxAdapter(
-            child: const SizedBox(height: 24),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ],
       ),
@@ -377,22 +325,8 @@ class _HomePageState extends State<HomePage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Southeast Morocco',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-            Text(
-              'Hello, Traveller! 👋',
-              style: TextStyle(
-                color: Colors.white.withAlpha(204),
-                fontSize: 11,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+            const Text('Southeast Morocco', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+            Text('Hello, Traveller! 👋', style: TextStyle(color: Colors.white.withAlpha(204), fontSize: 11, fontWeight: FontWeight.w400)),
           ],
         ),
         background: Stack(
@@ -421,13 +355,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(20),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Row(
         children: [
@@ -435,32 +363,29 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
-              controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search destinations...',
-                hintStyle: TextStyle(color: Colors.grey.shade500),
+              focusNode: _focusNode,
+              decoration: const InputDecoration(
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
+                hintText: 'Search destinations...',
               ),
+              onChanged: (val) => setState(() => _searchText = val),
+              onSubmitted: (_) {
+                _focusNode.unfocus();
+                _searchDestination();
+              },
             ),
           ),
-          if (_searchQuery.isNotEmpty)
-            GestureDetector(
-              onTap: () {
-                _searchController.clear();
-                setState(() {
-                  _searchQuery = '';
-                });
-              },
-              child: const Icon(Icons.close_rounded, color: AppTheme.primaryOrange),
-            )
-          else
-            const Icon(Icons.tune_rounded, color: AppTheme.primaryOrange),
+          IconButton(
+            icon: const Icon(Icons.arrow_forward_rounded),
+            onPressed: () {
+              _focusNode.unfocus();
+              _searchDestination();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: AppTheme.primaryOrange),
+            onPressed: () {}, // future: add filters
+          ),
         ],
       ),
     );
@@ -471,25 +396,11 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          _quickAction(
-            context,
-            Icons.photo_library_rounded,
-            'Gallery',
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryScreen())),
-          ),
+          _quickAction(context, Icons.photo_library_rounded, 'Gallery', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryScreen()))),
           const SizedBox(width: 12),
-          _quickAction(
-            context,
-            Icons.favorite_rounded,
-            'Favorites',
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen())),
-          ),
+          _quickAction(context, Icons.favorite_rounded, 'Favorites', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen()))),
           const SizedBox(width: 12),
-          _quickAction(
-            context,
-            Icons.book_online_rounded,
-            'Bookings',
-            () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingsScreen())),
+          _quickAction(context, Icons.book_online_rounded, 'Bookings', () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingsScreen())),
           ),
         ],
       ),
@@ -511,14 +422,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               Icon(icon, color: AppTheme.primaryOrange, size: 28),
               const SizedBox(height: 6),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.deepBlue,
-                ),
-              ),
+              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.deepBlue)),
             ],
           ),
         ),
@@ -543,8 +447,7 @@ class _HomePageState extends State<HomePage> {
         child: Row(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 52, height: 52,
               decoration: BoxDecoration(
                 color: Colors.white.withAlpha(51),
                 borderRadius: BorderRadius.circular(14),
@@ -556,19 +459,9 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'AI Travel Assistant',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                  Text('AI Travel Assistant', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                   SizedBox(height: 4),
-                  Text(
-                    'Ask me anything about Southeast Morocco!',
-                    style: TextStyle(color: Colors.white70, fontSize: 12),
-                  ),
+                  Text('Ask me anything about Southeast Morocco!', style: TextStyle(color: Colors.white70, fontSize: 12)),
                 ],
               ),
             ),
@@ -578,17 +471,14 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+  
 
   IconData _bookingIcon(dynamic type) {
     switch (type.toString()) {
-      case 'BookingType.hotel':
-        return Icons.hotel;
-      case 'BookingType.restaurant':
-        return Icons.restaurant;
-      case 'BookingType.tour':
-        return Icons.explore;
-      default:
-        return Icons.directions_car;
+      case 'BookingType.hotel': return Icons.hotel;
+      case 'BookingType.restaurant': return Icons.restaurant;
+      case 'BookingType.tour': return Icons.explore;
+      default: return Icons.directions_car;
     }
   }
 }

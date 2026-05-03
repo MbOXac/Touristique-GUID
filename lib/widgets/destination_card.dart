@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
+import '../screens/destination_detail_screen.dart';
 
 class DestinationCard extends StatelessWidget {
   final Destination destination;
@@ -10,11 +11,12 @@ class DestinationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${destination.name} – Coming soon'),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DestinationDetailScreen(
+              destination: destination,
+            ),
           ),
         );
       },
@@ -26,91 +28,136 @@ class DestinationCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Card image with gradient overlay
-            SizedBox(
-              height: 200,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset(
-                    destination.imagePath,
-                    fit: BoxFit.cover,
-                  ),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Color(0x88000000)],
-                        stops: [0.5, 1.0],
-                      ),
+          // Card image with gradient overlay
+SizedBox(
+  height: 200,
+  child: Stack(
+    fit: StackFit.expand,
+    children: [
+      // LOAD IMAGE FROM URL WITH DEBUG
+      destination.imageURLs.isNotEmpty
+          ? Image.network(
+              destination.imageURLs[0],
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                print('DEBUG: Loading image: ${destination.imageURLs[0]}');
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: Colors.grey.shade300,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                          : null,
                     ),
                   ),
-                  // Distance badge
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD2691E),
-                        borderRadius: BorderRadius.circular(20),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                print('DEBUG: Error loading image: $error');
+                print('DEBUG: Stack trace: $stackTrace');
+                return Container(
+                  color: Colors.grey.shade300,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey,
+                        size: 48,
                       ),
-                      child: Text(
-                        destination.distance,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Failed to load image\n${destination.imageURLs[0]}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
+                    ],
+                  ),
+                );
+              },
+            )
+          : Container(
+              color: Colors.grey.shade300,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.image_not_supported,
+                    color: Colors.grey,
+                    size: 48,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'No image URL\nFound: ${destination.imageURLs.length} URLs',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey,
                     ),
                   ),
                 ],
               ),
             ),
-            // Card body
+      const DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.transparent, Color(0x88000000)],
+            stops: [0.5, 1.0],
+          ),
+        ),
+      ),
+      // Distance badge
+      Positioned(
+        top: 12,
+        right: 12,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: const Color(0xFFD2691E),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            destination.distance,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+)
+,
+            // Card content
             Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          destination.name,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A3A5C),
-                          ),
-                        ),
-                      ),
-                      const Icon(Icons.star_rounded,
-                          color: Color(0xFFD2691E), size: 18),
-                      const SizedBox(width: 4),
-                      Text(
-                        destination.rating.toStringAsFixed(1),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFD2691E),
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    destination.description,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.black54,
-                      height: 1.5,
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(destination.name,
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E3A8A))),
+                  const SizedBox(height: 4),
+                  Text(destination.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),

@@ -6,10 +6,10 @@ class MapTab extends StatelessWidget {
   const MapTab({super.key});
 
   static const List<Destination> _destinations = [
-    Destination(name: 'Kasbah & Valleys', description: 'Ancient mud-brick kasbahs along Draa River', imagePath: 'assets/images/destination_1.jpg', rating: 4.8, distance: '120 km'),
-    Destination(name: 'Merzouga Desert', description: 'Iconic Erg Chebbi dunes and Sahara nights', imagePath: 'assets/images/destination_2.jpg', rating: 4.9, distance: '340 km'),
-    Destination(name: 'Todra Gorge', description: '300m limestone walls carved by Todra River', imagePath: 'assets/images/destination_3.jpg', rating: 4.7, distance: '175 km'),
-    Destination(name: 'Oasis & Palmeraies', description: 'Date-palm groves in Tinghir valley', imagePath: 'assets/images/destination_4.jpg', rating: 4.6, distance: '160 km'),
+    Destination(id: '1', name: 'Kasbah & Valleys', description: 'Ancient mud-brick kasbahs along Draa River', imageURLs: ['assets/images/destination_1.jpg'], rating: 4.8, distance: '120 km'),
+    Destination(id: '2', name: 'Merzouga Desert', description: 'Iconic Erg Chebbi dunes and Sahara nights', imageURLs: ['assets/images/destination_2.jpg'], rating: 4.9, distance: '340 km'),
+    Destination(id: '3', name: 'Todra Gorge', description: '300m limestone walls carved by Todra River', imageURLs: ['assets/images/destination_3.jpg'], rating: 4.7, distance: '175 km'),
+    Destination(id: '4', name: 'Oasis & Palmeraies', description: 'Date-palm groves in Tinghir valley', imageURLs: ['assets/images/destination_4.jpg'], rating: 4.6, distance: '160 km'),
   ];
 
   @override
@@ -65,7 +65,7 @@ class MapTab extends StatelessWidget {
                   child: ListTile(
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(dest.imagePath, width: 56, height: 56, fit: BoxFit.cover),
+                      child: Image.asset(dest.imageURLs.first, width: 56, height: 56, fit: BoxFit.cover),
                     ),
                     title: Text(dest.name, style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.deepBlue, fontSize: 14)),
                     subtitle: Text(dest.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),

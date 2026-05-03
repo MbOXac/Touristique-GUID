@@ -6,7 +6,7 @@ import 'theme/app_theme.dart';
 import 'screens/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // <-- Required for async before runApp
+  WidgetsFlutterBinding.ensureInitialized(); 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
