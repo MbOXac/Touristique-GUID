@@ -19,32 +19,45 @@ class ActivityConsole extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
           child: Row(
             children: [
-              const Icon(Icons.local_activity, color: AppTheme.primaryOrange, size: 24),
-              const SizedBox(width: 8),
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppTheme.primaryOrange, Color(0xFFE8830A)],
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.local_activity_rounded, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 10),
               const Text(
                 'Activities',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
                   color: AppTheme.deepBlue,
+                  letterSpacing: -0.3,
                 ),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryOrange.withAlpha(51),
+                  color: AppTheme.deepBlue.withAlpha(15),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${activities.length}',
+                  '${activities.length} available',
                   style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryOrange,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.deepBlue,
                   ),
                 ),
               ),
@@ -52,10 +65,10 @@ class ActivityConsole extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 140,
+          height: 170,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.only(left: 16, right: 8),
             itemCount: activities.length,
             itemBuilder: (context, index) {
               final activity = activities[index];
@@ -68,6 +81,7 @@ class ActivityConsole extends StatelessWidget {
   }
 
   Widget _buildActivityCard(BuildContext context, Activity activity) {
+    final categoryColor = _getCategoryColor(activity.category);
     return GestureDetector(
       onTap: () {
         showModalBottomSheet(
@@ -77,64 +91,79 @@ class ActivityConsole extends StatelessWidget {
           builder: (context) => ActivityDetailModal(activity: activity),
         );
       },
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Container(
-          width: 140,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.grey.shade50],
+      child: Container(
+        width: 155,
+        margin: const EdgeInsets.only(right: 12, bottom: 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: categoryColor.withAlpha(30),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
             ),
+          ],
+          border: Border.all(
+            color: categoryColor.withAlpha(30),
+            width: 1,
           ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category icon/badge
+              // Category icon with gradient background
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                  color: _getCategoryColor(activity.category).withAlpha(51),
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      categoryColor.withAlpha(40),
+                      categoryColor.withAlpha(70),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   _getCategoryIcon(activity.category),
-                  color: _getCategoryColor(activity.category),
+                  color: categoryColor,
                   size: 22,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               // Activity name
               Expanded(
                 child: Text(
                   activity.name,
                   style: const TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                     color: AppTheme.deepBlue,
+                    height: 1.3,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 6),
-              // Duration
+              const SizedBox(height: 8),
+              // Duration row
               Row(
                 children: [
-                  Icon(Icons.schedule, size: 12, color: Colors.grey.shade600),
-                  const SizedBox(width: 4),
+                  Icon(Icons.schedule_rounded, size: 11, color: Colors.grey.shade500),
+                  const SizedBox(width: 3),
                   Expanded(
                     child: Text(
                       activity.duration,
                       style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade700,
+                        fontSize: 10,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -142,14 +171,21 @@ class ActivityConsole extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 5),
               // Price
-              Text(
-                activity.price,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.primaryOrange,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryOrange.withAlpha(18),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  activity.price,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryOrange,
+                  ),
                 ),
               ),
             ],
@@ -162,36 +198,36 @@ class ActivityConsole extends StatelessWidget {
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
       case 'nature':
-        return Icons.grass;
+        return Icons.eco_rounded;
       case 'adventure':
-        return Icons.terrain;
+        return Icons.terrain_rounded;
       case 'cultural':
-        return Icons.museum;
+        return Icons.account_balance_rounded;
       case 'water':
-        return Icons.water;
+        return Icons.water_rounded;
       case 'hiking':
-        return Icons.directions_walk;
+        return Icons.hiking_rounded;
       case 'sports':
-        return Icons.sports_soccer;
+        return Icons.sports_rounded;
       default:
-        return Icons.local_activity;
+        return Icons.local_activity_rounded;
     }
   }
 
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
       case 'nature':
-        return Colors.green;
+        return const Color(0xFF27AE60);
       case 'adventure':
-        return Colors.red;
+        return const Color(0xFFE74C3C);
       case 'cultural':
-        return Colors.purple;
+        return const Color(0xFF8E44AD);
       case 'water':
-        return Colors.blue;
+        return const Color(0xFF2980B9);
       case 'hiking':
-        return Colors.brown;
+        return const Color(0xFF795548);
       case 'sports':
-        return Colors.orange;
+        return const Color(0xFFFF6B35);
       default:
         return AppTheme.primaryOrange;
     }
