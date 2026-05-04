@@ -174,7 +174,7 @@ class ActivityDetailModal extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: AppTheme.deepBlue,
+                              color: AppThemeData(background: background, surface: surface, card: card, primary: primary, secondary: secondary, textPrimary: textPrimary, textSecondary: textSecondary, border: border, shadow: shadow).deepBlue,
                               letterSpacing: -0.2,
                             ),
                           ),

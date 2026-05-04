@@ -19,10 +19,15 @@ class TouristiqueApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Touristique GUID',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      home:AuthGate(),
+  theme: ThemeData(
+    brightness: Brightness.light,
+    extensions: const [AppThemeData.light],
+  ),
+  darkTheme: ThemeData(
+    brightness: Brightness.dark,
+    extensions: const [AppThemeData.dark],
+  ),
+  themeMode: ThemeMode.system,
     );
   }
 }

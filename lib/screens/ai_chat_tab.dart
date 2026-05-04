@@ -9,7 +9,7 @@ class AiChatTab extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Travel Assistant'),
-        backgroundColor: AppTheme.deepBlue,
+        backgroundColor: AppTheme.background,
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
         actions: [
@@ -78,7 +78,7 @@ class AiChatTab extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 CircleAvatar(
-                  backgroundColor: AppTheme.primaryOrange,
+                  backgroundColor: AppTheme.background,
                   child: IconButton(
                     icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
                     onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
@@ -100,7 +100,7 @@ class AiChatTab extends StatelessWidget {
       children: [
         Container(
           width: 36, height: 36,
-          decoration: const BoxDecoration(color: AppTheme.deepBlue, shape: BoxShape.circle),
+          decoration: const BoxDecoration(color: AppTheme.card, shape: BoxShape.circle),
           child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
         ),
         const SizedBox(width: 10),
@@ -128,7 +128,7 @@ class AiChatTab extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(
-              color: AppTheme.primaryOrange,
+              color: AppTheme.card,
               borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16), bottomLeft: Radius.circular(16)),
             ),
             child: Text(text, style: const TextStyle(fontSize: 14, height: 1.5, color: Colors.white)),

@@ -29,7 +29,7 @@ class ActivityConsole extends StatelessWidget {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [AppTheme.primaryOrange, Color(0xFFE8830A)],
+                    colors: [AppTheme.border
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
