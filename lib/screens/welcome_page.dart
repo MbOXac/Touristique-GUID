@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'main_navigation.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -22,10 +23,10 @@ class WelcomePage extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0x33000000),
-                  Color(0xCC000000),
+                  Color(0x22000000),
+                  Color(0xDD000000),
                 ],
-                stops: [0.3, 1.0],
+                stops: [0.25, 1.0],
               ),
             ),
           ),
@@ -34,6 +35,37 @@ class WelcomePage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Top brand badge
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 20, 28, 0),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryOrange.withAlpha(230),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.place_rounded, color: Colors.white, size: 14),
+                            SizedBox(width: 4),
+                            Text(
+                              'Southeast Morocco',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const Spacer(),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -44,7 +76,7 @@ class WelcomePage extends StatelessWidget {
                         'Welcome to',
                         style: TextStyle(
                           fontSize: 18,
-                          color: Color(0xFFD2691E),
+                          color: AppTheme.primaryOrange,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 1.2,
                         ),
@@ -53,10 +85,10 @@ class WelcomePage extends StatelessWidget {
                       const Text(
                         'Southeast\nMorocco',
                         style: TextStyle(
-                          fontSize: 44,
+                          fontSize: 46,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          height: 1.15,
+                          height: 1.1,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -66,13 +98,26 @@ class WelcomePage extends StatelessWidget {
                         'breathtaking corner of North Africa.',
                         style: TextStyle(
                           fontSize: 15,
-                          color: Colors.white.withAlpha(230),
-                          height: 1.55,
+                          color: Colors.white.withAlpha(220),
+                          height: 1.6,
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 36),
+                      // Feature highlights
+                      Row(
+                        children: [
+                          _featureChip(Icons.explore_rounded, 'Explore'),
+                          const SizedBox(width: 10),
+                          _featureChip(Icons.photo_camera_rounded, 'Discover'),
+                          const SizedBox(width: 10),
+                          _featureChip(Icons.luggage_rounded, 'Plan'),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      // Get Started button
                       SizedBox(
                         width: double.infinity,
+                        height: 54,
                         child: ElevatedButton(
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
@@ -81,15 +126,37 @@ class WelcomePage extends StatelessWidget {
                               ),
                             );
                           },
-                          child: const Text('Get Started'),
+                          child: const Text('Explore Morocco'),
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 44),
                     ],
                   ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _featureChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(25),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withAlpha(60)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 14),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ],
       ),

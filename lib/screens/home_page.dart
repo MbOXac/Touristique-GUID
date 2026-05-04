@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/destination.dart';
 import '../services/destination_service.dart';
 import '../services/mock_data_service.dart';
@@ -386,7 +387,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             Text(
-              'Hello, Traveller! 👋',
+              'Hello, ${FirebaseAuth.instance.currentUser?.displayName?.split(' ').first ?? 'Traveller'}! 👋',
               style: TextStyle(
                 color: Colors.white.withAlpha(204),
                 fontSize: 11,

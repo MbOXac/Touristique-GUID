@@ -18,13 +18,8 @@ class Destination {
   String get imagePath => imageURLs.isNotEmpty ? imageURLs[0] : '';
 
   factory Destination.fromFirestore(Map<String, dynamic> data, String docId) {
-    print('DEBUG: Destination data: $data');
-    print('DEBUG: imageURL field: ${data['imageURL']}');
-    print('DEBUG: imageURL type: ${data['imageURL'].runtimeType}');
-    
     List<String> urls = [];
-    
-    // Try to get imageURL - it might be an array
+
     if (data['imageURL'] != null) {
       if (data['imageURL'] is List) {
         urls = List<String>.from(data['imageURL']);
@@ -32,8 +27,6 @@ class Destination {
         urls = [data['imageURL']];
       }
     }
-    
-    print('DEBUG: Parsed URLs: $urls');
 
     return Destination(
       id: docId,

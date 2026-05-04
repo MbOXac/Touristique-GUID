@@ -32,79 +32,80 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
       backgroundColor: const Color(0xFFF8F4EE),
       body: CustomScrollView(
         slivers: [
-          // Hero image with back button
-// Hero image with back button
-SliverAppBar(
-  expandedHeight: 280,
-  pinned: true,
-  backgroundColor: AppTheme.deepBlue,
-  flexibleSpace: FlexibleSpaceBar(
-    background: Stack(
-      fit: StackFit.expand,
-      children: [
-        // LOAD IMAGE FROM URL
-        widget.destination.imageURLs.isNotEmpty
-            ? Image.network(
-                widget.destination.imageURLs[0],
-                fit: BoxFit.cover,
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    color: Colors.grey.shade300,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
-                            : null,
+          SliverAppBar(
+            expandedHeight: 280,
+            pinned: true,
+            backgroundColor: AppTheme.deepBlue,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  widget.destination.imageURLs.isNotEmpty
+                      ? Image.network(
+                          widget.destination.imageURLs[0],
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              color: Colors.grey.shade200,
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppTheme.primaryOrange,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: const Color(0xFFEDE8E0),
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.landscape_rounded, color: AppTheme.earthBrown, size: 64),
+                                  SizedBox(height: 8),
+                                  Text('Image unavailable', style: TextStyle(color: AppTheme.earthBrown, fontSize: 13)),
+                                ],
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: const Color(0xFFEDE8E0),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.landscape_rounded, color: AppTheme.earthBrown, size: 64),
+                              SizedBox(height: 8),
+                              Text('No image available', style: TextStyle(color: AppTheme.earthBrown, fontSize: 13)),
+                            ],
+                          ),
+                        ),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Color(0x88000000)],
+                        stops: [0.5, 1.0],
                       ),
                     ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey.shade300,
-                    child: const Icon(
-                      Icons.image_not_supported,
-                      color: Colors.grey,
-                      size: 64,
-                    ),
-                  );
-                },
-              )
-            : Container(
-                color: Colors.grey.shade300,
-                child: const Icon(
-                  Icons.image_not_supported,
-                  color: Colors.grey,
-                  size: 64,
-                ),
+                  ),
+                ],
               ),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Color(0x88000000)],
-              stops: [0.5, 1.0],
+            ),
+            leading: Container(
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
             ),
           ),
-        ),
-      ],
-    ),
-  ),
-  leading: Container(
-    margin: const EdgeInsets.all(8),
-    decoration: BoxDecoration(
-      color: Colors.black54,
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: IconButton(
-      icon: const Icon(Icons.arrow_back, color: Colors.white),
-      onPressed: () => Navigator.pop(context),
-    ),
-  ),
-),
           // Destination info
           SliverToBoxAdapter(
             child: Column(
@@ -347,9 +348,9 @@ SliverAppBar(
                         ),
                       ],
                     ),
-                    child: const Text(
-                      'This is a beautiful and culturally rich destination in Southeast Morocco. Experience authentic Moroccan culture, stunning landscapes, and unforgettable adventures.',
-                      style: TextStyle(
+                    child: Text(
+                      widget.destination.description,
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
                         height: 1.6,

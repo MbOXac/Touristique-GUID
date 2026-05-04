@@ -31,15 +31,43 @@ class MapTab extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 CustomPaint(painter: _MapGridPainter(), size: Size.infinite),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.map_outlined, size: 64, color: AppTheme.deepBlue.withAlpha(128)),
-                    const SizedBox(height: 8),
-                    const Text('Map', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.deepBlue)),
-                    const SizedBox(height: 4),
-                    const Text('Map integration coming soon', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                  ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(230),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(15),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: AppTheme.deepBlue.withAlpha(15),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.map_rounded, size: 30, color: AppTheme.deepBlue),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'Interactive Map',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.deepBlue),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Full map integration coming soon',
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
                 ..._buildPins(),
               ],
