@@ -33,6 +33,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   Widget build(BuildContext context) {
     final filtered = _filtered;
     return Scaffold(
+      backgroundColor: AppTheme.softBeige,
       appBar: AppBar(
         title: const Text('My Favorites'),
         backgroundColor: AppTheme.deepBlue,
@@ -40,24 +41,43 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       ),
       body: Column(
         children: [
-          SizedBox(
-            height: 56,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              itemCount: _filters.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final f = _filters[index];
-                return FilterChip(
-                  label: Text(f),
-                  selected: _selectedFilter == f,
-                  onSelected: (_) => setState(() => _selectedFilter = f),
-                  selectedColor: AppTheme.primaryOrange,
-                  labelStyle: TextStyle(color: _selectedFilter == f ? Colors.white : AppTheme.deepBlue, fontWeight: FontWeight.w600),
-                  checkmarkColor: Colors.white,
-                );
-              },
+          Container(
+            color: AppTheme.deepBlue,
+            child: SizedBox(
+              height: 52,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: _filters.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final f = _filters[index];
+                  final isSelected = _selectedFilter == f;
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedFilter = f),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppTheme.primaryOrange : Colors.white.withAlpha(30),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected ? AppTheme.primaryOrange : Colors.white.withAlpha(60),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        f,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
           Expanded(
@@ -68,7 +88,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     message: 'Tap the heart icon on any place to save it here.',
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     itemCount: filtered.length,
                     itemBuilder: (context, index) {
                       final place = filtered[index];
@@ -82,40 +102,79 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Widget _buildPlaceCard(FavoritePlace place) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 3,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(18),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(14), bottomLeft: Radius.circular(14)),
-            child: Image.asset(place.imagePath, width: 100, height: 90, fit: BoxFit.cover),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(18),
+              bottomLeft: Radius.circular(18),
+            ),
+            child: Image.asset(place.imagePath, width: 100, height: 96, fit: BoxFit.cover),
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(place.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(10)),
-                    child: Text(place.category, style: const TextStyle(fontSize: 11, color: AppTheme.earthBrown, fontWeight: FontWeight.w600)),
+                  Text(
+                    place.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.deepBlue),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
-                  Text(place.address, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryOrange.withAlpha(20),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      place.category,
+                      style: const TextStyle(fontSize: 11, color: AppTheme.primaryOrange, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_rounded, size: 12, color: Colors.grey),
+                      const SizedBox(width: 3),
+                      Expanded(
+                        child: Text(
+                          place.address,
+                          style: const TextStyle(fontSize: 11, color: Colors.grey),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
                   RatingBadge(rating: place.rating),
                 ],
               ),
             ),
           ),
-          FavoriteButton(
-            isFavorited: place.isFavorited,
-            onChanged: (val) => setState(() => place.isFavorited = val),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FavoriteButton(
+              isFavorited: place.isFavorited,
+              onChanged: (val) => setState(() => place.isFavorited = val),
+            ),
           ),
         ],
       ),

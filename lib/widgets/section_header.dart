@@ -10,24 +10,44 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.deepBlue,
+          Container(
+            width: 4,
+            height: 20,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryOrange,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.deepBlue,
+                letterSpacing: 0.2,
+              ),
             ),
           ),
           if (onSeeAll != null)
             TextButton(
               onPressed: onSeeAll,
-              child: const Text(
-                'See All',
-                style: TextStyle(color: AppTheme.primaryOrange, fontWeight: FontWeight.w600),
+              style: TextButton.styleFrom(
+                foregroundColor: AppTheme.primaryOrange,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('See All', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  SizedBox(width: 2),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 12),
+                ],
               ),
             ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
+import '../theme/app_theme.dart';
 
 class DestinationCard extends StatelessWidget {
   final Destination destination;
@@ -15,48 +16,70 @@ class DestinationCard extends StatelessWidget {
             content: Text('${destination.name} – Coming soon'),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
+            backgroundColor: AppTheme.deepBlue,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       },
-      child: Card(
-        elevation: 4,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Card image with gradient overlay
-            SizedBox(
-              height: 200,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Image.asset(
-                    destination.imagePath,
-                    fit: BoxFit.cover,
-                  ),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Color(0x88000000)],
-                        stops: [0.5, 1.0],
-                      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(30),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              // Hero image
+              SizedBox(
+                height: 220,
+                width: double.infinity,
+                child: Image.asset(
+                  destination.imagePath,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              // Gradient overlay
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withAlpha(100),
+                        Colors.black.withAlpha(200),
+                      ],
+                      stops: const [0.3, 0.65, 1.0],
                     ),
                   ),
-                  // Distance badge
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD2691E),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
+                ),
+              ),
+              // Distance badge - top left
+              Positioned(
+                top: 14,
+                left: 14,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withAlpha(120),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withAlpha(60), width: 0.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.near_me_rounded, color: Colors.white, size: 12),
+                      const SizedBox(width: 4),
+                      Text(
                         destination.distance,
                         style: const TextStyle(
                           color: Colors.white,
@@ -64,57 +87,113 @@ class DestinationCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-            // Card body
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              // Rating badge - top right
+              Positioned(
+                top: 14,
+                right: 14,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryOrange,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: Text(
-                          destination.name,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1A3A5C),
-                          ),
-                        ),
-                      ),
-                      const Icon(Icons.star_rounded,
-                          color: Color(0xFFD2691E), size: 18),
-                      const SizedBox(width: 4),
+                      const Icon(Icons.star_rounded, color: Colors.white, size: 13),
+                      const SizedBox(width: 3),
                       Text(
                         destination.rating.toStringAsFixed(1),
                         style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFFD2691E),
-                          fontSize: 14,
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    destination.description,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.black54,
-                      height: 1.5,
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+              // Bottom content
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        destination.name,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
+                          shadows: [Shadow(blurRadius: 4, color: Colors.black54)],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        destination.description,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white.withAlpha(210),
+                          height: 1.4,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          // Star rating row
+                          ...List.generate(5, (i) {
+                            final filled = i < destination.rating.floor();
+                            return Icon(
+                              filled ? Icons.star_rounded : Icons.star_border_rounded,
+                              color: AppTheme.goldAccent,
+                              size: 16,
+                            );
+                          }),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${destination.rating}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryOrange,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Explore',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
