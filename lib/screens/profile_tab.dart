@@ -110,22 +110,26 @@ class _ProfileTabState extends State<ProfileTab> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
                 width: double.infinity,
-            child:  OutlinedButton.icon(
-                      onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const LoginPage()),
-                       (route) => false,
-                         );
-},
-                      icon: const Icon(Icons.logout_rounded, color: Colors.red),
-                 label: const Text('Sign Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                    style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.red),
-               padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    if (!mounted) return;
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                      (route) => false,
+                    );
+                  },
+                  icon: const Icon(Icons.logout_rounded, color: Colors.red),
+                  label: const Text(
+                    'Sign Out',
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                   ),
-             ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 32),
