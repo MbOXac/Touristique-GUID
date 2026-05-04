@@ -318,17 +318,39 @@ class _LoginPageState extends State<LoginPage> {
                         // Google sign-in button
                         SizedBox(
                           height: 52,
-                          child: OutlinedButton.icon(
+                          child: OutlinedButton(
                             onPressed: signInWithGoogle,
-                            icon: const Icon(Icons.g_mobiledata_rounded, size: 26, color: Colors.red),
-                            label: const Text(
-                              'Continue with Google',
-                              style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.deepBlue),
-                            ),
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(color: Colors.grey.shade300),
                               backgroundColor: Colors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF4285F4),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: const Text(
+                                    'G',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                const Text(
+                                  'Continue with Google',
+                                  style: TextStyle(fontWeight: FontWeight.w600, color: AppTheme.deepBlue),
+                                ),
+                              ],
                             ),
                           ),
                         ),
