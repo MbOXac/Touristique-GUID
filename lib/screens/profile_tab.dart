@@ -29,6 +29,7 @@ class _ProfileTabState extends State<ProfileTab> {
         email = user.email;
       });
       final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (!mounted) return;
       setState(() {
         name = doc.data()?['name'] ?? user.displayName ?? "No name";
       });
