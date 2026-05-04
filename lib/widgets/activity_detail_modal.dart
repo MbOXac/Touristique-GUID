@@ -274,7 +274,7 @@ class ActivityDetailModal extends StatelessWidget {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.calendar_today_rounded, size: 18),
+                          const Icon(Icons.calendar_today_rounded, size: 18),
                           SizedBox(width: 8),
                           Text(
                             'Book Activity',

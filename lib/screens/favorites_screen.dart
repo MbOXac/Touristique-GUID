@@ -16,7 +16,7 @@ class FavoritesScreen extends StatefulWidget {
 class _FavoritesScreenState extends State<FavoritesScreen> {
   late List<FavoritePlace> _places;
   String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Restaurant', 'Monument', 'Activity', 'Hotel'];
+  static const List<String> _filters = ['All', 'Restaurant', 'Monument', 'Activity', 'Hotel'];
 
   @override
   void initState() {

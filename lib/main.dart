@@ -22,7 +22,7 @@ class TouristiqueApp extends StatelessWidget {
       title: 'Touristique GUID',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home:AuthGate(),
+      home: const AuthGate(),
     );
   }
 }

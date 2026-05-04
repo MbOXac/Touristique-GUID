@@ -15,7 +15,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
   late TabController _tabController;
   final List<GalleryItem> _allItems = MockDataService.getGalleryItems();
 
-  final List<String> _tabs = ['All', 'Destination', 'User', 'Memory'];
+  static const List<String> _tabs = ['All', 'Destination', 'User', 'Memory'];
 
   List<GalleryItem> _filtered(String tab) {
     if (tab == 'All') return _allItems;

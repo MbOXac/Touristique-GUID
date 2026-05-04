@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/activity.dart';
 
 class ActivityService {
@@ -17,7 +18,7 @@ class ActivityService {
           .map((doc) => Activity.fromFirestore(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error fetching activities: $e');
+      debugPrint('Error fetching activities: $e');
       return [];
     }
   }
@@ -33,7 +34,7 @@ class ActivityService {
           .map((doc) => Activity.fromFirestore(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error fetching all activities: $e');
+      debugPrint('Error fetching all activities: $e');
       return [];
     }
   }
@@ -51,7 +52,7 @@ class ActivityService {
       }
       return null;
     } catch (e) {
-      print('Error fetching activity: $e');
+      debugPrint('Error fetching activity: $e');
       return null;
     }
   }
@@ -64,7 +65,7 @@ class ActivityService {
           .add(activity.toFirestore());
       return docRef.id;
     } catch (e) {
-      print('Error adding activity: $e');
+      debugPrint('Error adding activity: $e');
       rethrow;
     }
   }
@@ -77,7 +78,7 @@ class ActivityService {
           .doc(activityId)
           .update(activity.toFirestore());
     } catch (e) {
-      print('Error updating activity: $e');
+      debugPrint('Error updating activity: $e');
       rethrow;
     }
   }
@@ -90,7 +91,7 @@ class ActivityService {
           .doc(activityId)
           .delete();
     } catch (e) {
-      print('Error deleting activity: $e');
+      debugPrint('Error deleting activity: $e');
       rethrow;
     }
   }

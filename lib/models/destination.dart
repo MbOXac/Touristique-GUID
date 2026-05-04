@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class Destination {
   final String id;
   final String name;
@@ -18,9 +20,11 @@ class Destination {
   String get imagePath => imageURLs.isNotEmpty ? imageURLs[0] : '';
 
   factory Destination.fromFirestore(Map<String, dynamic> data, String docId) {
-    print('DEBUG: Destination data: $data');
-    print('DEBUG: imageURL field: ${data['imageURL']}');
-    print('DEBUG: imageURL type: ${data['imageURL'].runtimeType}');
+    if (kDebugMode) {
+      debugPrint('DEBUG: Destination data: $data');
+      debugPrint('DEBUG: imageURL field: ${data['imageURL']}');
+      debugPrint('DEBUG: imageURL type: ${data['imageURL'].runtimeType}');
+    }
     
     List<String> urls = [];
     
@@ -33,7 +37,9 @@ class Destination {
       }
     }
     
-    print('DEBUG: Parsed URLs: $urls');
+    if (kDebugMode) {
+      debugPrint('DEBUG: Parsed URLs: $urls');
+    }
 
     return Destination(
       id: docId,

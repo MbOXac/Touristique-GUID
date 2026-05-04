@@ -68,6 +68,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    const statuses = ['All', 'Confirmed', 'Pending'];
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Bookings'),
@@ -83,7 +84,7 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
       ),
       body: TabBarView(
         controller: _tabController,
-        children: ['All', 'Confirmed', 'Pending'].map((status) {
+        children: statuses.map((status) {
           final bookings = _filteredBookings(status);
           if (bookings.isEmpty) {
             return const EmptyState(icon: Icons.calendar_today_outlined, title: 'No bookings', message: 'You have no bookings in this category.');

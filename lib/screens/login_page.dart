@@ -46,6 +46,7 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Erreur Google: $e")),
       );
@@ -80,13 +81,19 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } on FirebaseAuthException catch (e) {
-      setState(() => error = e.message ?? e.code ?? "Firebase error");
+      if (mounted) {
+        setState(() => error = e.message ?? e.code ?? "Firebase error");
+      }
     } catch (e) {
-      setState(() => error = e.toString());
+      if (mounted) {
+        setState(() => error = e.toString());
+      }
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -156,8 +163,8 @@ class _LoginPageState extends State<LoginPage> {
                     const Divider(height: 32),
                     // GOOGLE SIGN-IN BUTTON (visible for both login/register)
                     ElevatedButton.icon(
-                      icon: Icon(Icons.login),
-                      label: Text('Se connecter avec Google'),
+                      icon: const Icon(Icons.login),
+                      label: const Text('Se connecter avec Google'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                         foregroundColor: Colors.white,
