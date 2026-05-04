@@ -8,7 +8,7 @@ class TopRatedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final places = MockDataService.getTopRatedPlaces().toList()
+    final places = List.of(MockDataService.getTopRatedPlaces())
       ..sort((a, b) => b.rating.compareTo(a.rating));
 
     return Scaffold(
