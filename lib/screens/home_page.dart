@@ -216,7 +216,7 @@ class _HomePageState extends State<HomePage> {
                                     const SizedBox(height: 4),
                                     Row(
                                       children: [
-                                        Icon(Icons.location_on_rounded, size: 12, color: AppTheme.primaryOrange),
+                                        const Icon(Icons.location_on_rounded, size: 12, color: AppTheme.primaryOrange),
                                         const SizedBox(width: 2),
                                         Text(
                                           m.location,

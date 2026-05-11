@@ -112,8 +112,8 @@ class _ProfileTabState extends State<ProfileTab> {
                 width: double.infinity,
             child:  OutlinedButton.icon(
                       onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                      Navigator.of(context).pushAndRemoveUntil(
+                  final ctx = context; await FirebaseAuth.instance.signOut();
+                      Navigator.of(ctx).pushAndRemoveUntil(
                         MaterialPageRoute(builder: (_) => const LoginPage()),
                        (route) => false,
                          );

@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return; ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Erreur Google: $e")),
       );
     }
@@ -80,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } on FirebaseAuthException catch (e) {
-      setState(() => error = e.message ?? e.code ?? "Firebase error");
+      setState(() => error = e.message ?? "Firebase error");
     } catch (e) {
       setState(() => error = e.toString());
     } finally {

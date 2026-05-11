@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/destination.dart';
+import 'package:flutter/foundation.dart';
 
 class DestinationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -16,7 +17,7 @@ class DestinationService {
           .map((doc) => Destination.fromFirestore(doc.data(), doc.id))
           .toList();
     } catch (e) {
-      print('Error fetching destinations: $e');
+      debugPrint('Error fetching destinations: $e');
       return [];
     }
   }
@@ -34,7 +35,7 @@ class DestinationService {
       }
       return null;
     } catch (e) {
-      print('Error fetching destination: $e');
+      debugPrint('Error fetching destination: $e');
       return null;
     }
   }
@@ -57,7 +58,7 @@ class DestinationService {
           .add(destination.toFirestore());
       return docRef.id;
     } catch (e) {
-      print('Error adding destination: $e');
+      debugPrint('Error adding destination: $e');
       rethrow;
     }
   }
@@ -73,7 +74,7 @@ class DestinationService {
           .doc(destinationId)
           .update(destination.toFirestore());
     } catch (e) {
-      print('Error updating destination: $e');
+      debugPrint('Error updating destination: $e');
       rethrow;
     }
   }
@@ -86,7 +87,7 @@ class DestinationService {
           .doc(destinationId)
           .delete();
     } catch (e) {
-      print('Error deleting destination: $e');
+      debugPrint('Error deleting destination: $e');
       rethrow;
     }
   }

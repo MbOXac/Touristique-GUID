@@ -111,8 +111,8 @@ class DestinationCard extends StatelessWidget {
               ),
               // Gradient overlay
               Positioned.fill(
-                child: DecoratedBox(
-                  decoration: const BoxDecoration(
+                child: const DecoratedBox(
+                  decoration: BoxDecoration(
                     gradient: AppTheme.cardOverlayGradient,
                   ),
                 ),

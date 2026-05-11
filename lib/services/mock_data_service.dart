@@ -5,7 +5,7 @@ import '../models/trip_memory.dart';
 import '../models/booking.dart';
 
 class MockDataService {
-  static List<GalleryItem> getGalleryItems() => [
+  static List<GalleryItem> getGalleryItems() => const [
         GalleryItem(id: 'g1', title: 'Erg Chebbi Dunes', imagePath: 'assets/images/destination_2.jpg', category: 'destination', rating: 4.9, likes: 234, uploadedBy: 'Sarah M.'),
         GalleryItem(id: 'g2', title: 'Todra Gorge Sunrise', imagePath: 'assets/images/destination_3.jpg', category: 'destination', rating: 4.8, likes: 189, uploadedBy: 'Ahmed K.'),
         GalleryItem(id: 'g3', title: 'Draa Valley', imagePath: 'assets/images/destination_1.jpg', category: 'destination', rating: 4.7, likes: 156, uploadedBy: 'Fatima Z.'),
@@ -25,7 +25,7 @@ class MockDataService {
         FavoritePlace(id: 'f6', name: 'Restaurant Tagine', category: 'restaurant', imagePath: 'assets/images/destination_1.jpg', rating: 4.4, address: 'Ouarzazate Medina'),
       ];
 
-  static List<TopRatedPlace> getTopRatedPlaces() => [
+  static List<TopRatedPlace> getTopRatedPlaces() => const [
         TopRatedPlace(id: 't1', name: 'Erg Chebbi', rating: 4.9, reviewCount: 1240, category: 'Landmark', imagePath: 'assets/images/destination_2.jpg', description: 'Iconic golden dunes rising up to 150m, perfect for camel treks and stargazing.', distance: '340 km'),
         TopRatedPlace(id: 't2', name: 'Kasbah Aït Benhaddou', rating: 4.9, reviewCount: 980, category: 'Heritage', imagePath: 'assets/images/destination_1.jpg', description: 'UNESCO World Heritage Site and iconic backdrop for many Hollywood films.', distance: '120 km'),
         TopRatedPlace(id: 't3', name: 'Todra Gorge', rating: 4.7, reviewCount: 756, category: 'Nature', imagePath: 'assets/images/destination_3.jpg', description: '300m limestone canyon carved by the Todra River, paradise for climbers.', distance: '175 km'),
