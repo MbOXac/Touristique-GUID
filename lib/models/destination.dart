@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 
 class Destination {
@@ -7,6 +9,9 @@ class Destination {
   final List<String> imageURLs;
   final double rating;
   final String distance;
+  final double lat;
+  final double lng;
+  final String tags;
 
   const Destination({
     required this.id,
@@ -15,6 +20,9 @@ class Destination {
     required this.imageURLs,
     this.rating = 0.0,
     this.distance = '0 km',
+    required this.lat,
+    required this.lng,
+    required this.tags,
   });
 
   String get imagePath => imageURLs.isNotEmpty ? imageURLs[0] : '';
@@ -44,6 +52,9 @@ class Destination {
       imageURLs: urls,
       rating: (data['rating'] ?? 0).toDouble(),
       distance: data['distance'] ?? '0 km',
+      lat: (data['lat'] ?? 0).toDouble(),
+      lng: (data['lng'] ?? 0).toDouble(),
+      tags: data['tags'] ?? '',
     );
   }
 
@@ -54,6 +65,9 @@ class Destination {
       'imageURL': imageURLs,
       'rating': rating,
       'distance': distance,
+      'lat': lat,
+      'lng': lng,
+      'tags': tags,
     };
   }
 }
