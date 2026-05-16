@@ -17,12 +17,12 @@ class MockDataService {
       ];
 
   static List<FavoritePlace> getFavoritePlaces() => [
-        FavoritePlace(id: 'f1', name: 'Riad Merzouga', category: 'hotel', imagePath: 'assets/images/destination_2.jpg', rating: 4.8, address: 'Merzouga Village, Errachidia'),
-        FavoritePlace(id: 'f2', name: 'Kasbah du Toubkal', category: 'monument', imagePath: 'assets/images/destination_1.jpg', rating: 4.9, address: 'Draa Valley, Ouarzazate'),
-        FavoritePlace(id: 'f3', name: 'Café des Dunes', category: 'restaurant', imagePath: 'assets/images/destination_2.jpg', rating: 4.6, address: 'Hassilabied, Merzouga'),
-        FavoritePlace(id: 'f4', name: 'Todra Gorge Trek', category: 'activity', imagePath: 'assets/images/destination_3.jpg', rating: 4.7, address: 'Tinghir Province'),
-        FavoritePlace(id: 'f5', name: 'Oasis Gardens', category: 'activity', imagePath: 'assets/images/destination_4.jpg', rating: 4.5, address: 'Tinghir, Souss-Massa'),
-        FavoritePlace(id: 'f6', name: 'Restaurant Tagine', category: 'restaurant', imagePath: 'assets/images/destination_1.jpg', rating: 4.4, address: 'Ouarzazate Medina'),
+        FavoritePlace(uid: 'mock-user', id: 'f1', name: 'Riad Merzouga', category: 'hotel', imagePath: 'assets/images/destination_2.jpg', rating: 4.8, address: 'Merzouga Village, Errachidia'),
+        FavoritePlace(uid: 'mock-user', id: 'f2', name: 'Kasbah du Toubkal', category: 'monument', imagePath: 'assets/images/destination_1.jpg', rating: 4.9, address: 'Draa Valley, Ouarzazate'),
+        FavoritePlace(uid: 'mock-user', id: 'f3', name: 'Café des Dunes', category: 'restaurant', imagePath: 'assets/images/destination_2.jpg', rating: 4.6, address: 'Hassilabied, Merzouga'),
+        FavoritePlace(uid: 'mock-user', id: 'f4', name: 'Todra Gorge Trek', category: 'activity', imagePath: 'assets/images/destination_3.jpg', rating: 4.7, address: 'Tinghir Province'),
+        FavoritePlace(uid: 'mock-user', id: 'f5', name: 'Oasis Gardens', category: 'activity', imagePath: 'assets/images/destination_4.jpg', rating: 4.5, address: 'Tinghir, Souss-Massa'),
+        FavoritePlace(uid: 'mock-user', id: 'f6', name: 'Restaurant Tagine', category: 'restaurant', imagePath: 'assets/images/destination_1.jpg', rating: 4.4, address: 'Ouarzazate Medina'),
       ];
 
   static List<TopRatedPlace> getTopRatedPlaces() => const [
@@ -33,15 +33,15 @@ class MockDataService {
       ];
 
   static List<TripMemory> getTripMemories() => [
-        TripMemory(id: 'm1', title: 'Sahara Sunrise', photos: ['assets/images/destination_2.jpg', 'assets/images/destination_2.jpg'], date: DateTime(2024, 3, 15), description: 'Woke up at 4am to catch the most incredible sunrise over the Erg Chebbi dunes. Worth every minute!', mood: '🌅', location: 'Merzouga, Errachidia'),
-        TripMemory(id: 'm2', title: 'Todra Gorge Hike', photos: ['assets/images/destination_3.jpg', 'assets/images/destination_4.jpg'], date: DateTime(2024, 3, 12), description: 'Hiked through the stunning 300m limestone walls. Met amazing local climbers along the way.', mood: '🏔️', location: 'Tinghir Province'),
-        TripMemory(id: 'm3', title: 'Kasbah Discovery', photos: ['assets/images/destination_1.jpg', 'assets/images/destination_1.jpg'], date: DateTime(2024, 3, 10), description: 'Explored ancient mud-brick kasbahs. The history and architecture is breathtaking.', mood: '🏛️', location: 'Draa Valley'),
+        TripMemory(uid: 'mock-user', id: 'm1', title: 'Sahara Sunrise', photos: ['assets/images/destination_2.jpg', 'assets/images/destination_2.jpg'], date: DateTime(2024, 3, 15), description: 'Woke up at 4am to catch the most incredible sunrise over the Erg Chebbi dunes. Worth every minute!', mood: '🌅', location: 'Merzouga, Errachidia'),
+        TripMemory(uid: 'mock-user', id: 'm2', title: 'Todra Gorge Hike', photos: ['assets/images/destination_3.jpg', 'assets/images/destination_4.jpg'], date: DateTime(2024, 3, 12), description: 'Hiked through the stunning 300m limestone walls. Met amazing local climbers along the way.', mood: '🏔️', location: 'Tinghir Province'),
+        TripMemory(uid: 'mock-user', id: 'm3', title: 'Kasbah Discovery', photos: ['assets/images/destination_1.jpg', 'assets/images/destination_1.jpg'], date: DateTime(2024, 3, 10), description: 'Explored ancient mud-brick kasbahs. The history and architecture is breathtaking.', mood: '🏛️', location: 'Draa Valley'),
       ];
 
   static List<Booking> getBookings() => [
-        Booking(id: 'b1', type: BookingType.hotel, name: 'Riad Merzouga', bookingDate: DateTime(2024, 4, 20), price: 89.0, status: BookingStatus.confirmed, details: '2 nights · 1 room · Breakfast included'),
-        Booking(id: 'b2', type: BookingType.tour, name: 'Camel Trek Sahara', bookingDate: DateTime(2024, 4, 21), price: 45.0, status: BookingStatus.confirmed, details: '3hr sunset trek · Group of 4'),
-        Booking(id: 'b3', type: BookingType.restaurant, name: 'Café des Dunes', bookingDate: DateTime(2024, 4, 22), price: 28.0, status: BookingStatus.pending, details: 'Dinner for 2 · 7:00 PM'),
-        Booking(id: 'b4', type: BookingType.transport, name: 'Ouarzazate Transfer', bookingDate: DateTime(2024, 4, 19), price: 35.0, status: BookingStatus.cancelled, details: 'Private car · Airport pickup'),
+        Booking(uid: 'mock-user', id: 'b1', type: BookingType.hotel, name: 'Riad Merzouga', bookingDate: DateTime(2024, 4, 20), price: 89.0, status: BookingStatus.confirmed, details: '2 nights · 1 room · Breakfast included'),
+        Booking(uid: 'mock-user', id: 'b2', type: BookingType.tour, name: 'Camel Trek Sahara', bookingDate: DateTime(2024, 4, 21), price: 45.0, status: BookingStatus.confirmed, details: '3hr sunset trek · Group of 4'),
+        Booking(uid: 'mock-user', id: 'b3', type: BookingType.restaurant, name: 'Café des Dunes', bookingDate: DateTime(2024, 4, 22), price: 28.0, status: BookingStatus.pending, details: 'Dinner for 2 · 7:00 PM'),
+        Booking(uid: 'mock-user', id: 'b4', type: BookingType.transport, name: 'Ouarzazate Transfer', bookingDate: DateTime(2024, 4, 19), price: 35.0, status: BookingStatus.cancelled, details: 'Private car · Airport pickup'),
       ];
 }

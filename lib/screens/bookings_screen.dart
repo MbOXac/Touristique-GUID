@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/booking.dart';
+import '../services/booking_service.dart';
 import '../services/mock_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/empty_state.dart';
@@ -11,14 +12,14 @@ class BookingsScreen extends StatefulWidget {
   State<BookingsScreen> createState() => _BookingsScreenState();
 }
 
-class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProviderStateMixin {
+class _BookingsScreenState extends State<BookingsScreen>
+    with SingleTickerProviderStateMixin {
+  final BookingService _bookingService = BookingService();
   late TabController _tabController;
-  late List<Booking> _bookings;
 
   @override
   void initState() {
     super.initState();
-    _bookings = MockDataService.getBookings();
     _tabController = TabController(length: 3, vsync: this);
   }
 
@@ -28,41 +29,69 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     super.dispose();
   }
 
-  List<Booking> _filteredBookings(String status) {
+  List<Booking> _filteredBookings(List<Booking> bookings, String status) {
     switch (status) {
-      case 'Confirmed': return _bookings.where((b) => b.status == BookingStatus.confirmed).toList();
-      case 'Pending': return _bookings.where((b) => b.status == BookingStatus.pending).toList();
-      default: return _bookings;
+      case 'Confirmed':
+        return bookings
+            .where((b) => b.status == BookingStatus.confirmed)
+            .toList();
+      case 'Pending':
+        return bookings.where((b) => b.status == BookingStatus.pending).toList();
+      default:
+        return bookings;
     }
   }
 
   IconData _typeIcon(BookingType type) {
     switch (type) {
-      case BookingType.hotel: return Icons.hotel;
-      case BookingType.restaurant: return Icons.restaurant;
-      case BookingType.tour: return Icons.explore;
-      case BookingType.transport: return Icons.directions_car;
+      case BookingType.hotel:
+        return Icons.hotel;
+      case BookingType.restaurant:
+        return Icons.restaurant;
+      case BookingType.tour:
+        return Icons.explore;
+      case BookingType.transport:
+        return Icons.directions_car;
     }
   }
 
   Color _statusColor(BookingStatus status) {
     switch (status) {
-      case BookingStatus.confirmed: return AppTheme.oasisGreen;
-      case BookingStatus.pending: return Colors.orange;
-      case BookingStatus.cancelled: return Colors.red;
+      case BookingStatus.confirmed:
+        return AppTheme.oasisGreen;
+      case BookingStatus.pending:
+        return Colors.orange;
+      case BookingStatus.cancelled:
+        return Colors.red;
     }
   }
 
   String _statusLabel(BookingStatus status) {
     switch (status) {
-      case BookingStatus.confirmed: return 'Confirmed';
-      case BookingStatus.pending: return 'Pending';
-      case BookingStatus.cancelled: return 'Cancelled';
+      case BookingStatus.confirmed:
+        return 'Confirmed';
+      case BookingStatus.pending:
+        return 'Pending';
+      case BookingStatus.cancelled:
+        return 'Cancelled';
     }
   }
 
   String _formatDate(DateTime date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
@@ -78,22 +107,37 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white60,
           indicatorColor: AppTheme.primaryOrange,
-          tabs: const [Tab(text: 'All'), Tab(text: 'Confirmed'), Tab(text: 'Pending')],
+          tabs: const [
+            Tab(text: 'All'),
+            Tab(text: 'Confirmed'),
+            Tab(text: 'Pending')
+          ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: ['All', 'Confirmed', 'Pending'].map((status) {
-          final bookings = _filteredBookings(status);
-          if (bookings.isEmpty) {
-            return const EmptyState(icon: Icons.calendar_today_outlined, title: 'No bookings', message: 'You have no bookings in this category.');
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: bookings.length,
-            itemBuilder: (context, index) => _buildBookingCard(bookings[index]),
+      body: StreamBuilder<List<Booking>>(
+        stream: _bookingService.streamBookings(),
+        builder: (context, snapshot) {
+          final live = snapshot.data ?? [];
+          final source = live.isEmpty ? MockDataService.getBookings() : live;
+          return TabBarView(
+            controller: _tabController,
+            children: ['All', 'Confirmed', 'Pending'].map((status) {
+              final bookings = _filteredBookings(source, status);
+              if (bookings.isEmpty) {
+                return const EmptyState(
+                    icon: Icons.calendar_today_outlined,
+                    title: 'No bookings',
+                    message: 'You have no bookings in this category.');
+              }
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: bookings.length,
+                itemBuilder: (context, index) =>
+                    _buildBookingCard(bookings[index]),
+              );
+            }).toList(),
           );
-        }).toList(),
+        },
       ),
     );
   }
@@ -108,20 +152,35 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         child: Row(
           children: [
             Container(
-              width: 52, height: 52,
-              decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(12)),
-              child: Icon(_typeIcon(booking.type), color: AppTheme.primaryOrange, size: 26),
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                  color: AppTheme.sandBeige,
+                  borderRadius: BorderRadius.circular(12)),
+              child: Icon(_typeIcon(booking.type),
+                  color: AppTheme.primaryOrange, size: 26),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(booking.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(booking.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: AppTheme.deepBlue),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 3),
-                  Text(booking.details, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(booking.details,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
-                  Text(_formatDate(booking.bookingDate), style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  Text(_formatDate(booking.bookingDate),
+                      style:
+                          const TextStyle(fontSize: 12, color: Colors.black54)),
                 ],
               ),
             ),
@@ -129,12 +188,23 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('\$${booking.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primaryOrange)),
+                Text('\$${booking.price.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppTheme.primaryOrange)),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: _statusColor(booking.status).withAlpha(30), borderRadius: BorderRadius.circular(10)),
-                  child: Text(_statusLabel(booking.status), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _statusColor(booking.status))),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                      color: _statusColor(booking.status).withAlpha(30),
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Text(_statusLabel(booking.status),
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: _statusColor(booking.status))),
                 ),
               ],
             ),

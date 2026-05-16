@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../theme/app_theme.dart';
 import 'login_page.dart';
 // Make sure the LoginPage class exists in login_page.dart and is exported as:
@@ -15,6 +16,7 @@ class ProfileTab extends StatefulWidget {
 class _ProfileTabState extends State<ProfileTab> {
   String? name;
   String? email;
+  bool _emailVerified = false;
 
   @override
   void initState() {
@@ -25,8 +27,10 @@ class _ProfileTabState extends State<ProfileTab> {
   Future<void> loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
+      await user.reload();
       setState(() {
         email = user.email;
+        _emailVerified = FirebaseAuth.instance.currentUser?.emailVerified ?? false;
       });
       final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
       setState(() {
@@ -80,6 +84,29 @@ class _ProfileTabState extends State<ProfileTab> {
                     email ?? '',
                     style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
+                  const SizedBox(height: 8),
+                  if (!_emailVerified)
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final user = FirebaseAuth.instance.currentUser;
+                        await user?.sendEmailVerification();
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Verification email sent'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.mark_email_read_rounded, color: Colors.white),
+                      label: const Text(
+                        'Verify email',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white70),
+                      ),
+                    ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -112,11 +139,15 @@ class _ProfileTabState extends State<ProfileTab> {
                 width: double.infinity,
             child:  OutlinedButton.icon(
                       onPressed: () async {
-                  final ctx = context; await FirebaseAuth.instance.signOut();
-                      Navigator.of(ctx).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const LoginPage()),
-                       (route) => false,
-                         );
+                  final ctx = context;
+                  try {
+                    await GoogleSignIn().signOut();
+                  } catch (_) {}
+                  await FirebaseAuth.instance.signOut();
+                       Navigator.of(ctx).pushAndRemoveUntil(
+                         MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                          );
 },
                       icon: const Icon(Icons.logout_rounded, color: Colors.red),
                  label: const Text('Sign Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
@@ -128,7 +159,69 @@ class _ProfileTabState extends State<ProfileTab> {
              ),
               ),
             ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    try {
+                      await user?.delete();
+                      if (!mounted) return;
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                        (route) => false,
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Could not delete account: $e'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+                  label: const Text(
+                    'Delete Account',
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 32),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.privacy_tip_outlined, color: AppTheme.deepBlue),
+                    title: const Text('Privacy Policy'),
+                    subtitle: const Text('https://example.com/privacy'),
+                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Update this URL before release')),
+                    ),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.gavel_rounded, color: AppTheme.deepBlue),
+                    title: const Text('Terms of Service'),
+                    subtitle: const Text('https://example.com/terms'),
+                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Update this URL before release')),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

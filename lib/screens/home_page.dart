@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
+import '../models/favorite_place.dart';
+import '../models/booking.dart';
+import '../models/trip_memory.dart';
 import '../services/destination_service.dart';
 import '../services/mock_data_service.dart';
+import '../services/favorite_service.dart';
+import '../services/booking_service.dart';
+import '../services/trip_memory_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/destination_card.dart';
 import '../widgets/section_header.dart';
@@ -25,6 +31,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final DestinationService _destinationService = DestinationService();
+  final FavoriteService _favoriteService = FavoriteService();
+  final BookingService _bookingService = BookingService();
+  final TripMemoryService _tripMemoryService = TripMemoryService();
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
@@ -38,9 +47,6 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final topRated = MockDataService.getTopRatedPlaces().take(4).toList();
     final gallery = MockDataService.getGalleryItems().take(6).toList();
-    final favorites = MockDataService.getFavoritePlaces().take(4).toList();
-    final memories = MockDataService.getTripMemories().take(3).toList();
-    final bookings = MockDataService.getBookings().take(2).toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F4EE),
@@ -146,215 +152,239 @@ class _HomePageState extends State<HomePage> {
                   title: 'My Favorites',
                   onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen())),
                 ),
-                HorizontalCarousel(
-                  height: 180,
-                  itemWidth: 160,
-                  items: favorites.map((p) => PreviewCard(
-                    imagePath: p.imagePath,
-                    title: p.name,
-                    subtitle: p.address,
-                    rating: p.rating,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen())),
-                  )).toList(),
+                StreamBuilder<List<FavoritePlace>>(
+                  stream: _favoriteService.streamFavorites(),
+                  builder: (context, snapshot) {
+                    final favorites = (snapshot.data?.isNotEmpty ?? false)
+                        ? snapshot.data!.take(4).toList()
+                        : MockDataService.getFavoritePlaces().take(4).toList();
+                    return HorizontalCarousel(
+                      height: 180,
+                      itemWidth: 160,
+                      items: favorites.map((p) => PreviewCard(
+                        imagePath: p.imagePath,
+                        title: p.name,
+                        subtitle: p.address,
+                        rating: p.rating,
+                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen())),
+                      )).toList(),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
                 SectionHeader(
                   title: 'Trip Memories',
                   onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripMemoriesScreen())),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: memories.map((m) => Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripMemoriesScreen())),
-                        child: Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(m.photos.first, width: 70, height: 70, fit: BoxFit.cover),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(m.mood, style: const TextStyle(fontSize: 18)),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            m.title,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 14,
-                                              color: AppTheme.deepBlue,
-                                              letterSpacing: -0.2,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.location_on_rounded, size: 12, color: AppTheme.primaryOrange),
-                                        const SizedBox(width: 2),
-                                        Text(
-                                          m.location,
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.grey.shade600,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      m.description,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade600,
-                                        height: 1.4,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Icon(
-                                Icons.chevron_right_rounded,
-                                color: AppTheme.primaryOrange,
-                                size: 20,
+                StreamBuilder<List<TripMemory>>(
+                  stream: _tripMemoryService.streamMemories(),
+                  builder: (context, snapshot) {
+                    final memories = (snapshot.data?.isNotEmpty ?? false)
+                        ? snapshot.data!.take(3).toList()
+                        : MockDataService.getTripMemories().take(3).toList();
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: memories.map((m) => Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(15),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
                               ),
                             ],
                           ),
-                        ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripMemoriesScreen())),
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.asset(m.photos.first, width: 70, height: 70, fit: BoxFit.cover),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(m.mood, style: const TextStyle(fontSize: 18)),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                m.title,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 14,
+                                                  color: AppTheme.deepBlue,
+                                                  letterSpacing: -0.2,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            const Icon(Icons.location_on_rounded, size: 12, color: AppTheme.primaryOrange),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              m.location,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.grey.shade600,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          m.description,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade600,
+                                            height: 1.4,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: AppTheme.primaryOrange,
+                                    size: 20,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )).toList(),
                       ),
-                    )).toList(),
-                  ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
                 SectionHeader(
                   title: 'Bookings',
                   onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingsScreen())),
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: bookings.map((b) {
-                      final statusColor = b.status.toString().contains('confirmed')
-                          ? AppTheme.oasisGreen
-                          : b.status.toString().contains('pending')
-                              ? const Color(0xFFFF9F43)
-                              : Colors.red;
-                      final statusLabel = b.status.toString().split('.').last;
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(15),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                          leading: Container(
-                            width: 48,
-                            height: 48,
+                StreamBuilder<List<Booking>>(
+                  stream: _bookingService.streamBookings(),
+                  builder: (context, snapshot) {
+                    final bookings = (snapshot.data?.isNotEmpty ?? false)
+                        ? snapshot.data!.take(2).toList()
+                        : MockDataService.getBookings().take(2).toList();
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: bookings.map((b) {
+                          final statusColor = b.status.toString().contains('confirmed')
+                              ? AppTheme.oasisGreen
+                              : b.status.toString().contains('pending')
+                                  ? const Color(0xFFFF9F43)
+                                  : Colors.red;
+                          final statusLabel = b.status.toString().split('.').last;
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 10),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [AppTheme.deepBlue, Color(0xFF2E5A8C)],
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(15),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              leading: Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [AppTheme.deepBlue, Color(0xFF2E5A8C)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(_bookingIcon(b.type), color: Colors.white, size: 22),
                               ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(_bookingIcon(b.type), color: Colors.white, size: 22),
-                          ),
-                          title: Text(
-                            b.name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w800,
-                              fontSize: 14,
-                              color: AppTheme.deepBlue,
-                              letterSpacing: -0.2,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              b.details,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                            ),
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '\$${b.price.toStringAsFixed(0)}',
+                              title: Text(
+                                b.name,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  fontSize: 15,
-                                  color: AppTheme.primaryOrange,
+                                  fontSize: 14,
+                                  color: AppTheme.deepBlue,
+                                  letterSpacing: -0.2,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withAlpha(25),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: statusColor.withAlpha(80),
-                                    width: 1,
-                                  ),
-                                ),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 2),
                                 child: Text(
-                                  statusLabel,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: statusColor,
-                                  ),
+                                  b.details,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '\$${b.price.toStringAsFixed(0)}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 15,
+                                      color: AppTheme.primaryOrange,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withAlpha(25),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: statusColor.withAlpha(80),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      statusLabel,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: statusColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
                 const SectionHeader(title: 'Explore Destinations'),

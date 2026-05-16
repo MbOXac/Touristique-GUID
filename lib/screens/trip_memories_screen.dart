@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/trip_memory.dart';
+import '../services/trip_memory_service.dart';
 import '../services/mock_data_service.dart';
 import '../theme/app_theme.dart';
 
@@ -11,13 +12,66 @@ class TripMemoriesScreen extends StatefulWidget {
 }
 
 class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
-  late List<TripMemory> _memories;
+  final TripMemoryService _tripMemoryService = TripMemoryService();
 
-  @override
-  void initState() {
-    super.initState();
-    _memories = MockDataService.getTripMemories();
-    _memories.sort((a, b) => b.date.compareTo(a.date));
+  Future<void> _addMemoryDialog() async {
+    final titleCtrl = TextEditingController();
+    final locationCtrl = TextEditingController();
+    final descriptionCtrl = TextEditingController();
+    final moodCtrl = TextEditingController(text: '😊');
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Memory'),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: titleCtrl,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              TextField(
+                controller: locationCtrl,
+                decoration: const InputDecoration(labelText: 'Location'),
+              ),
+              TextField(
+                controller: moodCtrl,
+                decoration: const InputDecoration(labelText: 'Mood emoji'),
+              ),
+              TextField(
+                controller: descriptionCtrl,
+                maxLines: 3,
+                decoration: const InputDecoration(labelText: 'Description'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (titleCtrl.text.trim().isEmpty) return;
+              final memory = TripMemory(
+                uid: '',
+                id: '',
+                title: titleCtrl.text.trim(),
+                photos: const ['assets/images/destination_1.jpg'],
+                date: DateTime.now(),
+                description: descriptionCtrl.text.trim(),
+                mood: moodCtrl.text.trim().isEmpty ? '😊' : moodCtrl.text.trim(),
+                location: locationCtrl.text.trim(),
+              );
+              await _tripMemoryService.createMemory(memory);
+              if (mounted) Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -29,19 +83,26 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
         foregroundColor: Colors.white,
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Add Memory – Coming soon!'), behavior: SnackBarBehavior.floating),
-        ),
+        onPressed: _addMemoryDialog,
         backgroundColor: AppTheme.primaryOrange,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text('Add Memory', style: TextStyle(color: Colors.white)),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-        itemCount: _memories.length,
-        itemBuilder: (context, index) {
-          final memory = _memories[index];
-          return _buildMemoryCard(memory, index == _memories.length - 1);
+      body: StreamBuilder<List<TripMemory>>(
+        stream: _tripMemoryService.streamMemories(),
+        builder: (context, snapshot) {
+          final live = snapshot.data ?? [];
+          final memories =
+              (live.isEmpty ? MockDataService.getTripMemories() : live)
+                ..sort((a, b) => b.date.compareTo(a.date));
+          return ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+            itemCount: memories.length,
+            itemBuilder: (context, index) {
+              final memory = memories[index];
+              return _buildMemoryCard(memory, index == memories.length - 1);
+            },
+          );
         },
       ),
     );
@@ -55,12 +116,19 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
           Column(
             children: [
               Container(
-                width: 40, height: 40,
-                decoration: const BoxDecoration(color: AppTheme.primaryOrange, shape: BoxShape.circle),
-                child: Center(child: Text(memory.mood, style: const TextStyle(fontSize: 20))),
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                    color: AppTheme.primaryOrange, shape: BoxShape.circle),
+                child:
+                    Center(child: Text(memory.mood, style: const TextStyle(fontSize: 20))),
               ),
               if (!isLast)
-                Expanded(child: Container(width: 2, color: AppTheme.sandBeige, margin: const EdgeInsets.symmetric(vertical: 4))),
+                Expanded(
+                    child: Container(
+                        width: 2,
+                        color: AppTheme.sandBeige,
+                        margin: const EdgeInsets.symmetric(vertical: 4))),
             ],
           ),
           const SizedBox(width: 12),
@@ -76,16 +144,24 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: Text(memory.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.deepBlue))),
-                        Text(_formatDate(memory.date), style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        Expanded(
+                            child: Text(memory.title,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: AppTheme.deepBlue))),
+                        Text(_formatDate(memory.date),
+                            style: const TextStyle(fontSize: 11, color: Colors.grey)),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 13, color: AppTheme.primaryOrange),
+                        const Icon(Icons.location_on,
+                            size: 13, color: AppTheme.primaryOrange),
                         const SizedBox(width: 3),
-                        Text(memory.location, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text(memory.location,
+                            style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -97,12 +173,21 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
                         separatorBuilder: (_, __) => const SizedBox(width: 6),
                         itemBuilder: (context, index) => ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(memory.photos[index], width: 80, height: 80, fit: BoxFit.cover),
+                          child: Image.asset(
+                            memory.photos[index],
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text(memory.description, style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
+                    Text(memory.description,
+                        style: const TextStyle(
+                            fontSize: 13, color: Colors.black54, height: 1.5),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
@@ -114,7 +199,20 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
   }
 
   String _formatDate(DateTime date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

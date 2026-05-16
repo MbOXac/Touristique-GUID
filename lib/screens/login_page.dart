@@ -71,6 +71,7 @@ class _LoginPageState extends State<LoginPage> {
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
+        await cred.user?.sendEmailVerification();
         // Save extra user info in Firestore
         await FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set({
           'uid': cred.user!.uid,
@@ -88,6 +89,22 @@ class _LoginPageState extends State<LoginPage> {
         isLoading = false;
       });
     }
+  }
+
+  Future<void> sendPasswordReset() async {
+    final email = emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => error = 'Enter your email first to reset password');
+      return;
+    }
+    await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Password reset email sent'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   // --- THE REAL BUILD ---
@@ -153,6 +170,11 @@ class _LoginPageState extends State<LoginPage> {
                           ? "Don't have an account? Register"
                           : "I already have an account. Sign In"),
                     ),
+                    if (isLogin)
+                      TextButton(
+                        onPressed: sendPasswordReset,
+                        child: const Text('Forgot password?'),
+                      ),
                     const Divider(height: 32),
                     // GOOGLE SIGN-IN BUTTON (visible for both login/register)
                     ElevatedButton.icon(

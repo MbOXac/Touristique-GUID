@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/favorite_place.dart';
+import '../services/favorite_service.dart';
 import '../services/mock_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/rating_badge.dart';
@@ -14,24 +15,28 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  late List<FavoritePlace> _places;
+  final FavoriteService _favoriteService = FavoriteService();
   String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Restaurant', 'Monument', 'Activity', 'Hotel'];
+  final List<String> _filters = [
+    'All',
+    'Restaurant',
+    'Monument',
+    'Activity',
+    'Hotel'
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    _places = MockDataService.getFavoritePlaces();
-  }
-
-  List<FavoritePlace> get _filtered {
-    if (_selectedFilter == 'All') return _places.where((p) => p.isFavorited).toList();
-    return _places.where((p) => p.isFavorited && p.category == _selectedFilter.toLowerCase()).toList();
+  List<FavoritePlace> _filtered(List<FavoritePlace> places) {
+    if (_selectedFilter == 'All') {
+      return places.where((p) => p.isFavorited).toList();
+    }
+    return places
+        .where((p) =>
+            p.isFavorited && p.category == _selectedFilter.toLowerCase())
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _filtered;
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Favorites'),
@@ -54,27 +59,43 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   selected: _selectedFilter == f,
                   onSelected: (_) => setState(() => _selectedFilter = f),
                   selectedColor: AppTheme.primaryOrange,
-                  labelStyle: TextStyle(color: _selectedFilter == f ? Colors.white : AppTheme.deepBlue, fontWeight: FontWeight.w600),
+                  labelStyle: TextStyle(
+                    color: _selectedFilter == f
+                        ? Colors.white
+                        : AppTheme.deepBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
                   checkmarkColor: Colors.white,
                 );
               },
             ),
           ),
           Expanded(
-            child: filtered.isEmpty
-                ? const EmptyState(
+            child: StreamBuilder<List<FavoritePlace>>(
+              stream: _favoriteService.streamFavorites(),
+              builder: (context, snapshot) {
+                final livePlaces = snapshot.data ?? [];
+                final fallback = livePlaces.isEmpty
+                    ? MockDataService.getFavoritePlaces()
+                    : livePlaces;
+                final filtered = _filtered(fallback);
+                if (filtered.isEmpty) {
+                  return const EmptyState(
                     icon: Icons.favorite_border,
                     title: 'No favorites yet',
                     message: 'Tap the heart icon on any place to save it here.',
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final place = filtered[index];
-                      return _buildPlaceCard(place);
-                    },
-                  ),
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final place = filtered[index];
+                    return _buildPlaceCard(place);
+                  },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -90,8 +111,14 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: Row(
         children: [
           ClipRRect(
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(14), bottomLeft: Radius.circular(14)),
-            child: Image.asset(place.imagePath, width: 100, height: 90, fit: BoxFit.cover),
+            borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(14),
+                bottomLeft: Radius.circular(14)),
+            child: place.imagePath.startsWith('http')
+                ? Image.network(place.imagePath,
+                    width: 100, height: 90, fit: BoxFit.cover)
+                : Image.asset(place.imagePath,
+                    width: 100, height: 90, fit: BoxFit.cover),
           ),
           Expanded(
             child: Padding(
@@ -99,15 +126,30 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(place.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(place.name,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: AppTheme.deepBlue),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(10)),
-                    child: Text(place.category, style: const TextStyle(fontSize: 11, color: AppTheme.earthBrown, fontWeight: FontWeight.w600)),
+                    decoration: BoxDecoration(
+                        color: AppTheme.sandBeige,
+                        borderRadius: BorderRadius.circular(10)),
+                    child: Text(place.category,
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.earthBrown,
+                            fontWeight: FontWeight.w600)),
                   ),
                   const SizedBox(height: 4),
-                  Text(place.address, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(place.address,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   RatingBadge(rating: place.rating),
                 ],
               ),
@@ -115,7 +157,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           ),
           FavoriteButton(
             isFavorited: place.isFavorited,
-            onChanged: (val) => setState(() => place.isFavorited = val),
+            onChanged: (val) async {
+              await _favoriteService.setFavorited(place, val);
+            },
           ),
         ],
       ),

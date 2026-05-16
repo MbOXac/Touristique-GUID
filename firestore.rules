@@ -1,0 +1,119 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function hasUserFields() {
+      return request.resource.data.keys().hasOnly([
+        'uid',
+        'name',
+        'email',
+        'photoURL',
+        'createdAt',
+        'displayName',
+        'roles'
+      ]);
+    }
+
+    function hasFavoriteFields() {
+      return request.resource.data.keys().hasOnly([
+        'uid',
+        'name',
+        'category',
+        'imagePath',
+        'rating',
+        'address',
+        'isFavorited',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function hasBookingFields() {
+      return request.resource.data.keys().hasOnly([
+        'uid',
+        'type',
+        'name',
+        'bookingDate',
+        'price',
+        'status',
+        'details',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    function hasMemoryFields() {
+      return request.resource.data.keys().hasOnly([
+        'uid',
+        'title',
+        'photos',
+        'date',
+        'description',
+        'mood',
+        'location',
+        'createdAt',
+        'updatedAt'
+      ]);
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && hasUserFields();
+      allow update: if isOwner(uid) && hasUserFields();
+      allow delete: if false;
+    }
+
+    match /favorites/{docId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && hasFavoriteFields();
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && hasFavoriteFields();
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && hasBookingFields();
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && hasBookingFields();
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /memories/{memoryId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && hasMemoryFields();
+      allow update: if signedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && hasMemoryFields();
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    match /destinations/{destinationId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /activities/{activityId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

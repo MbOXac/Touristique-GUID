@@ -54,6 +54,16 @@ flutter pub get
 flutter run
 ```
 
+### Environment Configuration
+
+- Android Maps key is now injected via Gradle property:
+  - local development: add `MAPS_API_KEY=your_key` in `~/.gradle/gradle.properties` or project `android/gradle.properties`
+  - CI: set `ORG_GRADLE_PROJECT_MAPS_API_KEY` environment variable
+- Web Maps key is loaded from `window.GOOGLE_MAPS_API_KEY` in `web/index.html`.
+- Firestore security and indexes are managed by:
+  - `firestore.rules`
+  - `firestore.indexes.json`
+
 ## Build for Release
 
 ```bash
