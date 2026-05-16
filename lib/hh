@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../models/destination.dart';
+import '../services/destination_service.dart';
 import '../theme/app_theme.dart';
 import 'destination_detail_screen.dart';
 
@@ -13,59 +14,22 @@ class MapTab extends StatefulWidget {
 }
 
 class _MapTabState extends State<MapTab> {
-  // Your current local list (later you can replace with Firestore StreamBuilder)
-  static const List<Destination> _destinations = [
-    Destination(
-      id: '1',
-      name: 'Kasbah & Valleys',
-      description: 'Ancient mud-brick kasbahs along Draa River',
-      imageURLs: ['assets/images/destination_1.jpg'],
-      rating: 4.8,
-      distance: '120 km',
-      lat: 30.3722,
-      lng: -8.9641,
-      tags: 'Historical, Scenic',
-    ),
-    Destination(
-      id: '2',
-      name: 'Merzouga Desert',
-      description: 'Iconic Erg Chebbi dunes and Sahara nights',
-      imageURLs: ['assets/images/destination_2.jpg'],
-      rating: 4.9,
-      distance: '340 km',
-      lat: 31.0990,
-      lng: -4.0127,
-      tags: 'Desert, Scenic',
-    ),
-    Destination(
-      id: '3',
-      name: 'Todra Gorge',
-      description: '300m limestone walls carved by Todra River',
-      imageURLs: ['assets/images/destination_3.jpg'],
-      rating: 4.7,
-      distance: '175 km',
-      lat: 31.5716,
-      lng: -5.5669,
-      tags: 'Gorge, Hiking',
-    ),
-    Destination(
-      id: '4',
-      name: 'Oasis & Palmeraies',
-      description: 'Date-palm groves in Tinghir valley',
-      imageURLs: ['assets/images/destination_4.jpg'],
-      rating: 4.6,
-      distance: '160 km',
-      lat: 31.5124,
-      lng: -5.5322,
-      tags: 'Oasis, Agriculture',
-    ),
-  ];
+  final DestinationService _destinationService = DestinationService();
+  final TextEditingController _searchController = TextEditingController();
 
   GoogleMapController? _controller;
   String? _selectedDestinationId;
+  List<Destination> _searchResults = [];
+  bool _hasSearched = false;
 
-  Set<Marker> _buildMarkers() {
-    return _destinations.map((d) {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Set<Marker> _buildMarkers(List<Destination> destinations) {
+    return destinations.map((d) {
       return Marker(
         markerId: MarkerId(d.id),
         position: LatLng(d.lat, d.lng),
@@ -95,120 +59,374 @@ class _MapTabState extends State<MapTab> {
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(d.lat, d.lng),
-          zoom: 11.5,
+          zoom: 16.0,
         ),
       ),
     );
   }
 
+  void _performSearch(String query) {
+    if (query.trim().isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _hasSearched = false;
+      });
+      return;
+    }
+
+    // Get all destinations and filter by partial name match (case-insensitive)
+    _destinationService.getAllDestinations().then((allDestinations) {
+      final results = allDestinations
+          .where((d) => d.name.toLowerCase().contains(query.toLowerCase().trim()))
+          .toList();
+      
+      setState(() {
+        _searchResults = results;
+        _hasSearched = true;
+      });
+
+      // Removed auto-focus to prevent keyboard dismissal during typing
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final initial = _destinations.first;
-
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Map'),
-        backgroundColor: AppTheme.deepBlue,
+        backgroundColor: AppTheme.deepBlue.withOpacity(0.9),
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
+        elevation: 0,
       ),
-      body: Column(
-        children: [
-          // REAL MAP (replaces the fake grid/pins UI)
-          SizedBox(
-            height: 260,
-            width: double.infinity,
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: LatLng(initial.lat, initial.lng),
-                zoom: 6.5, // Morocco-level view
-              ),
-              markers: _buildMarkers(),
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              mapToolbarEnabled: false,
-              onMapCreated: (c) => _controller = c,
-            ),
-          ),
+      body: StreamBuilder<List<Destination>>(
+        stream: _destinationService.streamAllDestinations(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Destinations',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.deepBlue,
+          final allDestinations = snapshot.data ?? [];
+          final markersForMap =
+              _hasSearched ? _searchResults : allDestinations;
+
+          final initialLat = allDestinations.isNotEmpty
+              ? allDestinations.first.lat
+              : 31.7917;
+          final initialLng = allDestinations.isNotEmpty
+              ? allDestinations.first.lng
+              : -7.0926;
+
+          return Stack(
+            children: [
+              // Full-screen Google Map (bottom layer)
+              GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(initialLat, initialLng),
+                  zoom: 6.5, // Morocco-level view
                 ),
+                markers: _buildMarkers(markersForMap),
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                mapToolbarEnabled: false,
+                onMapCreated: (c) => _controller = c,
               ),
-            ),
-          ),
 
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _destinations.length,
-              itemBuilder: (context, index) {
-                final dest = _destinations[index];
-                final selected = dest.id == _selectedDestinationId;
-
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  elevation: selected ? 4 : 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: selected
-                        ? const BorderSide(color: AppTheme.primaryOrange, width: 1.2)
-                        : BorderSide.none,
-                  ),
-                  child: ListTile(
-                    onTap: () => _focusOn(dest), // tap list item -> move camera
-                    onLongPress: () => _openDestination(dest), // long press -> open details
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        dest.imageURLs.first,
-                        width: 56,
-                        height: 56,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    title: Text(
-                      dest.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.deepBlue,
-                        fontSize: 14,
-                      ),
-                    ),
-                    subtitle: Text(
-                      dest.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.location_on, color: AppTheme.primaryOrange, size: 16),
-                        Text(
-                          dest.distance,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.primaryOrange,
-                            fontWeight: FontWeight.w600,
+              // Overlay UI (top layer)
+              Column(
+                children: [
+                  // SafeArea Search Bar at top
+                  SafeArea(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(26),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          textInputAction: TextInputAction.search,
+                          onSubmitted: _performSearch,
+                          decoration: InputDecoration(
+                            hintText: 'Search by destination name...',
+                            hintStyle: TextStyle(
+                              color: Colors.grey.shade400,
+                              fontSize: 14,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search_rounded,
+                              color: AppTheme.primaryOrange,
+                              size: 22,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 14,
+                            ),
+                            suffixIcon: _searchController.text.isNotEmpty
+                                ? GestureDetector(
+                                    onTap: () {
+                                      _performSearch(_searchController.text);
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.primaryOrange,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.search_rounded,
+                                        color: Colors.white,
+                                        size: 14,
+                                      ),
+                                    ),
+                                  )
+                                : null,
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-        ],
+
+                  const Spacer(),
+
+                  // Bottom overlay panel: Search results or empty state
+                  if (_hasSearched)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(38),
+                            blurRadius: 12,
+                            offset: const Offset(0, -2),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: _searchResults.isEmpty
+                            ? Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.search_off_rounded,
+                                    size: 32,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'No exact match',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.deepBlue,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Try searching for: "${_searchController.text}"',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              )
+                            : SizedBox(
+                                height: 140,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: _searchResults.length,
+                                  itemBuilder: (context, index) {
+                                    final dest = _searchResults[index];
+                                    final selected =
+                                        dest.id == _selectedDestinationId;
+
+                                    return GestureDetector(
+                                      onTap: () => _focusOn(dest),
+                                      onLongPress: () =>
+                                          _openDestination(dest),
+                                      child: Container(
+                                        width: 160,
+                                        margin:
+                                            const EdgeInsets.only(right: 12),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: selected
+                                                ? AppTheme.primaryOrange
+                                                : Colors.grey.shade300,
+                                            width: selected ? 2 : 1,
+                                          ),
+                                          boxShadow: selected
+                                              ? [
+                                                  BoxShadow(
+                                                    color: AppTheme.primaryOrange.withAlpha(77),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 1,
+                                                  ),
+                                                ]
+                                              : null,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          child: Stack(
+                                            children: [
+                                              Image.asset(
+                                                dest.imageURLs.isNotEmpty
+                                                    ? dest.imageURLs.first
+                                                    : 'assets/images/placeholder.jpg',
+                                                width: double.infinity,
+                                                height: double.infinity,
+                                                fit: BoxFit.cover,
+                                              ),
+                                              Container(
+                                                decoration:
+                                                    const BoxDecoration(
+                                                  gradient:
+                                                      LinearGradient(
+                                                    begin:
+                                                        Alignment.topCenter,
+                                                    end: Alignment
+                                                        .bottomCenter,
+                                                    colors: [
+                                                      Colors.transparent,
+                                                      Colors.black45,
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.all(
+                                                        10.0),
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment
+                                                          .start,
+                                                  children: [
+                                                    Expanded(
+                                                      child: Align(
+                                                        alignment: Alignment
+                                                            .topRight,
+                                                        child: Container(
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                                horizontal: 6,
+                                                                vertical: 3,
+                                                              ),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: AppTheme
+                                                                .primaryOrange,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        6),
+                                                          ),
+                                                          child: Text(
+                                                            '${dest.rating}⭐',
+                                                            style: const TextStyle(
+                                                              color: Colors
+                                                                  .white,
+                                                              fontSize: 11,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w600,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          dest.name,
+                                                          maxLines: 1,
+                                                          overflow:
+                                                              TextOverflow
+                                                                  .ellipsis,
+                                                          style: const TextStyle(
+                                                            color: Colors
+                                                                .white,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold,
+                                                            fontSize: 12,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 2),
+                                                        Row(
+                                                          children: [
+                                                            const Icon(
+                                                              Icons
+                                                                  .location_on,
+                                                              color: Colors
+                                                                  .white70,
+                                                              size: 12,
+                                                            ),
+                                                            const SizedBox(
+                                                                width: 2),
+                                                            Expanded(
+                                                              child: Text(
+                                                                dest.distance,
+                                                                maxLines: 1,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
+                                                                style: const TextStyle(
+                                                                  color: Colors
+                                                                      .white70,
+                                                                  fontSize: 10,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }

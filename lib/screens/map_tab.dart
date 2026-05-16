@@ -38,9 +38,13 @@ class _MapTabState extends State<MapTab> {
           snippet: d.tags,
           onTap: () => _openDestination(d),
         ),
-        onTap: () {
-          setState(() => _selectedDestinationId = d.id);
+        onTap: () async {
+          await _focusOn(d); 
+          if (!mounted) return;
+          _openDestination(d);// NEW: auto zoom when clicking marker
         },
+         
+        
       );
     }).toSet();
   }
@@ -52,18 +56,24 @@ class _MapTabState extends State<MapTab> {
       ),
     );
   }
+Future<void> _focusOn(Destination d) async {
+  debugPrint("FOCUS REQUEST: ${d.name}");
+  setState(() => _selectedDestinationId = d.id);
 
-  Future<void> _focusOn(Destination d) async {
-    setState(() => _selectedDestinationId = d.id);
-    await _controller?.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(d.lat, d.lng),
-          zoom: 16.0,
-        ),
-      ),
-    );
+  final c = _controller;
+  if (c == null) {
+    debugPrint('Map controller is null. Tap ignored.');
+    return;
   }
+
+  debugPrint('Animating camera to ${d.name}: ${d.lat}, ${d.lng}');
+  await c.animateCamera(
+    CameraUpdate.newLatLngZoom(
+      LatLng(d.lat, d.lng),
+      16.0,
+    ),
+  );
+}
 
   void _performSearch(String query) {
     if (query.trim().isEmpty) {
@@ -130,7 +140,9 @@ class _MapTabState extends State<MapTab> {
                 myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
                 mapToolbarEnabled: false,
-                onMapCreated: (c) => _controller = c,
+                onMapCreated: (c) { 
+                  _controller = c;
+                },
               ),
 
               // Overlay UI (top layer)
@@ -256,167 +268,136 @@ class _MapTabState extends State<MapTab> {
                                     final selected =
                                         dest.id == _selectedDestinationId;
 
-                                    return GestureDetector(
-                                      onTap: () => _focusOn(dest),
-                                      onLongPress: () =>
-                                          _openDestination(dest),
-                                      child: Container(
-                                        width: 160,
-                                        margin:
-                                            const EdgeInsets.only(right: 12),
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: selected
-                                                ? AppTheme.primaryOrange
-                                                : Colors.grey.shade300,
-                                            width: selected ? 2 : 1,
+                                    return Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(12),
+                                        onTap: () {
+                                          debugPrint("CARD TAP: ${dest.name}");
+                                          _focusOn(dest);
+                                        },
+                                        onLongPress: () => _openDestination(dest),
+                                        child: Container(
+                                          width: 160,
+                                          margin: const EdgeInsets.only(right: 12),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(
+                                              color: selected
+                                                  ? AppTheme.primaryOrange
+                                                  : Colors.grey.shade300,
+                                              width: selected ? 2 : 1,
+                                            ),
+                                            boxShadow: selected
+                                                ? [
+                                                    BoxShadow(
+                                                      color: AppTheme.primaryOrange.withAlpha(77),
+                                                      blurRadius: 8,
+                                                      spreadRadius: 1,
+                                                    ),
+                                                  ]
+                                                : null,
                                           ),
-                                          boxShadow: selected
-                                              ? [
-                                                  BoxShadow(
-                                                    color: AppTheme.primaryOrange.withAlpha(77),
-                                                    blurRadius: 8,
-                                                    spreadRadius: 1,
-                                                  ),
-                                                ]
-                                              : null,
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          child: Stack(
-                                            children: [
-                                              Image.asset(
-                                                dest.imageURLs.isNotEmpty
-                                                    ? dest.imageURLs.first
-                                                    : 'assets/images/placeholder.jpg',
-                                                width: double.infinity,
-                                                height: double.infinity,
-                                                fit: BoxFit.cover,
-                                              ),
-                                              Container(
-                                                decoration:
-                                                    const BoxDecoration(
-                                                  gradient:
-                                                      LinearGradient(
-                                                    begin:
-                                                        Alignment.topCenter,
-                                                    end: Alignment
-                                                        .bottomCenter,
-                                                    colors: [
-                                                      Colors.transparent,
-                                                      Colors.black45,
-                                                    ],
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: Stack(
+                                              children: [
+                                                Image.asset(
+                                                  dest.imageURLs.isNotEmpty
+                                                      ? dest.imageURLs.first
+                                                      : 'assets/images/placeholder.jpg',
+                                                  width: double.infinity,
+                                                  height: double.infinity,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                                Container(
+                                                  decoration: const BoxDecoration(
+                                                    gradient: LinearGradient(
+                                                      begin: Alignment.topCenter,
+                                                      end: Alignment.bottomCenter,
+                                                      colors: [
+                                                        Colors.transparent,
+                                                        Colors.black45,
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(
-                                                        10.0),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment
-                                                          .start,
-                                                  children: [
-                                                    Expanded(
-                                                      child: Align(
-                                                        alignment: Alignment
-                                                            .topRight,
-                                                        child: Container(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .symmetric(
-                                                                horizontal: 6,
-                                                                vertical: 3,
+                                                Padding(
+                                                  padding: const EdgeInsets.all(10.0),
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Expanded(
+                                                        child: Align(
+                                                          alignment: Alignment.topRight,
+                                                          child: Container(
+                                                            padding: const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 3,
+                                                            ),
+                                                            decoration: BoxDecoration(
+                                                              color: AppTheme.primaryOrange,
+                                                              borderRadius: BorderRadius.circular(6),
+                                                            ),
+                                                            child: Text(
+                                                              '${dest.rating}⭐',
+                                                              style: const TextStyle(
+                                                                color: Colors.white,
+                                                                fontSize: 11,
+                                                                fontWeight: FontWeight.w600,
                                                               ),
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            color: AppTheme
-                                                                .primaryOrange,
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        6),
-                                                          ),
-                                                          child: Text(
-                                                            '${dest.rating}⭐',
-                                                            style: const TextStyle(
-                                                              color: Colors
-                                                                  .white,
-                                                              fontSize: 11,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
                                                             ),
                                                           ),
                                                         ),
                                                       ),
-                                                    ),
-                                                    Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          dest.name,
-                                                          maxLines: 1,
-                                                          overflow:
-                                                              TextOverflow
-                                                                  .ellipsis,
-                                                          style: const TextStyle(
-                                                            color: Colors
-                                                                .white,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold,
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 2),
-                                                        Row(
-                                                          children: [
-                                                            const Icon(
-                                                              Icons
-                                                                  .location_on,
-                                                              color: Colors
-                                                                  .white70,
-                                                              size: 12,
+                                                      Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Text(
+                                                            dest.name,
+                                                            maxLines: 1,
+                                                            overflow: TextOverflow.ellipsis,
+                                                            style: const TextStyle(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 12,
                                                             ),
-                                                            const SizedBox(
-                                                                width: 2),
-                                                            Expanded(
-                                                              child: Text(
-                                                                dest.distance,
-                                                                maxLines: 1,
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                                style: const TextStyle(
-                                                                  color: Colors
-                                                                      .white70,
-                                                                  fontSize: 10,
+                                                          ),
+                                                          const SizedBox(height: 2),
+                                                          Row(
+                                                            children: [
+                                                              const Icon(
+                                                                Icons.location_on,
+                                                                color: Colors.white70,
+                                                                size: 12,
+                                                              ),
+                                                              const SizedBox(width: 2),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  dest.distance,
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                  style: const TextStyle(
+                                                                    color: Colors.white70,
+                                                                    fontSize: 10,
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
                                     );
+
                                   },
                                 ),
                               ),
