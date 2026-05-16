@@ -14,6 +14,8 @@ class ProfileTab extends StatefulWidget {
 }
 
 class _ProfileTabState extends State<ProfileTab> {
+  static const String _privacyPolicyUrl = 'https://example.com/privacy';
+  static const String _termsUrl = 'https://example.com/terms';
   String? name;
   String? email;
   bool _emailVerified = false;
@@ -205,7 +207,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined, color: AppTheme.deepBlue),
                     title: const Text('Privacy Policy'),
-                    subtitle: const Text('https://example.com/privacy'),
+                    subtitle: const Text(_privacyPolicyUrl),
                     onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Update this URL before release')),
                     ),
@@ -213,7 +215,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   ListTile(
                     leading: const Icon(Icons.gavel_rounded, color: AppTheme.deepBlue),
                     title: const Text('Terms of Service'),
-                    subtitle: const Text('https://example.com/terms'),
+                    subtitle: const Text(_termsUrl),
                     onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Update this URL before release')),
                     ),
