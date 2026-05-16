@@ -25,11 +25,15 @@ class FavoriteService {
     final uid = _uid;
     if (uid == null) return;
     final docRef = _firestore.collection(_collection).doc(place.id);
-    await docRef.set({
+    final existing = await docRef.get();
+    final payload = {
       ...place.copyWith(uid: uid).toFirestore(),
-      'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    };
+    if (!existing.exists) {
+      payload['createdAt'] = FieldValue.serverTimestamp();
+    }
+    await docRef.set(payload, SetOptions(merge: true));
   }
 
   Future<void> setFavorited(FavoritePlace place, bool isFavorited) async {

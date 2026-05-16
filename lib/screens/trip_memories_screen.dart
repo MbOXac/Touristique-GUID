@@ -92,9 +92,8 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
         stream: _tripMemoryService.streamMemories(),
         builder: (context, snapshot) {
           final live = snapshot.data ?? [];
-          final memories =
-              (live.isEmpty ? MockDataService.getTripMemories() : live)
-                ..sort((a, b) => b.date.compareTo(a.date));
+          final memories = (live.isEmpty ? MockDataService.getTripMemories() : live).toList()
+            ..sort((a, b) => b.date.compareTo(a.date));
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
             itemCount: memories.length,
