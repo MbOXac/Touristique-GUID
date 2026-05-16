@@ -38,7 +38,6 @@ class _ProfileTabState extends State<ProfileTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.softBeige,
       appBar: AppBar(
         title: const Text('Profile'),
         backgroundColor: AppTheme.deepBlue,
@@ -161,9 +160,8 @@ class _ProfileTabState extends State<ProfileTab> {
         ),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16),
-          elevation: 3,
-          color: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 1,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Column(
             children: List.generate(items.length, (index) {
               final item = items[index];

@@ -69,7 +69,6 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.softBeige,
       appBar: AppBar(
         title: const Text('My Bookings'),
         backgroundColor: AppTheme.deepBlue,
@@ -79,9 +78,6 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white60,
           indicatorColor: AppTheme.primaryOrange,
-          indicatorWeight: 3,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
           tabs: const [Tab(text: 'All'), Tab(text: 'Confirmed'), Tab(text: 'Pending')],
         ),
       ),
@@ -103,86 +99,42 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
   }
 
   Widget _buildBookingCard(Booking booking) {
-    final color = _statusColor(booking.status);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(18),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppTheme.primaryOrange, Color(0xFFE8843A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(_typeIcon(booking.type), color: Colors.white, size: 26),
+              width: 52, height: 52,
+              decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(12)),
+              child: Icon(_typeIcon(booking.type), color: AppTheme.primaryOrange, size: 26),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    booking.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.deepBlue),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(booking.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 3),
-                  Text(
-                    booking.details,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today_rounded, size: 11, color: AppTheme.primaryOrange),
-                      const SizedBox(width: 4),
-                      Text(_formatDate(booking.bookingDate), style: const TextStyle(fontSize: 11, color: Colors.black54)),
-                    ],
-                  ),
+                  Text(booking.details, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  Text(_formatDate(booking.bookingDate), style: const TextStyle(fontSize: 12, color: Colors.black54)),
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  '\$${booking.price.toStringAsFixed(0)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: AppTheme.primaryOrange),
-                ),
+                Text('\$${booking.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primaryOrange)),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: color.withAlpha(25),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: color.withAlpha(80), width: 0.5),
-                  ),
-                  child: Text(
-                    _statusLabel(booking.status),
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(color: _statusColor(booking.status).withAlpha(30), borderRadius: BorderRadius.circular(10)),
+                  child: Text(_statusLabel(booking.status), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _statusColor(booking.status))),
                 ),
               ],
             ),

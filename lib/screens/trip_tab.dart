@@ -17,7 +17,6 @@ class TripTab extends StatelessWidget {
     final bookings = MockDataService.getBookings().take(3).toList();
 
     return Scaffold(
-      backgroundColor: AppTheme.softBeige,
       appBar: AppBar(
         title: const Text('My Trip'),
         backgroundColor: AppTheme.deepBlue,
@@ -28,114 +27,58 @@ class TripTab extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             SectionHeader(
               title: 'My Trip Memories',
               onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripMemoriesScreen())),
             ),
-            const SizedBox(height: 4),
             HorizontalCarousel(
-              height: 190,
-              itemWidth: 170,
+              height: 180,
+              itemWidth: 160,
               items: memories.map((m) => PreviewCard(
                 imagePath: m.photos.first,
                 title: m.title,
                 subtitle: m.location,
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TripMemoriesScreen())),
                 badge: Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(100),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(12)),
                   child: Text(m.mood, style: const TextStyle(fontSize: 16)),
                 ),
               )).toList(),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             SectionHeader(
               title: 'My Bookings',
               onSeeAll: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingsScreen())),
             ),
-            const SizedBox(height: 4),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: bookings.map((booking) {
                   final icon = _typeIcon(booking.type);
                   final statusColor = _statusColor(booking.status);
-                  return Container(
+                  return Card(
                     margin: const EdgeInsets.only(bottom: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(15),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: Row(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: ListTile(
+                      leading: Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(10)),
+                        child: Icon(icon, color: AppTheme.primaryOrange, size: 22),
+                      ),
+                      title: Text(booking.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      subtitle: Text(booking.details, style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
+                          Text('\$${booking.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryOrange)),
                           Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppTheme.primaryOrange, Color(0xFFE8843A)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(icon, color: Colors.white, size: 22),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  booking.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepBlue),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  booking.details,
-                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '\$${booking.price.toStringAsFixed(0)}',
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryOrange, fontSize: 15),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withAlpha(25),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: statusColor.withAlpha(80), width: 0.5),
-                                ),
-                                child: Text(
-                                  _statusLabel(booking.status),
-                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor),
-                                ),
-                              ),
-                            ],
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: statusColor.withAlpha(30), borderRadius: BorderRadius.circular(8)),
+                            child: Text(_statusLabel(booking.status), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
                           ),
                         ],
                       ),
@@ -144,7 +87,7 @@ class TripTab extends StatelessWidget {
                 }).toList(),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
           ],
         ),
       ),
