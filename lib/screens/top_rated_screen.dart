@@ -12,7 +12,6 @@ class TopRatedScreen extends StatelessWidget {
       ..sort((a, b) => b.rating.compareTo(a.rating));
 
     return Scaffold(
-      backgroundColor: AppTheme.softBeige,
       appBar: AppBar(
         title: const Text('Top Rated'),
         backgroundColor: AppTheme.deepBlue,
@@ -23,131 +22,65 @@ class TopRatedScreen extends StatelessWidget {
         itemCount: places.length,
         itemBuilder: (context, index) {
           final place = places[index];
-          return Container(
-            margin: const EdgeInsets.only(bottom: 18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(22),
-                  blurRadius: 14,
-                  offset: const Offset(0, 5),
+          return Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            elevation: 4,
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Stack(
+                  children: [
+                    Image.asset(place.imagePath, height: 180, fit: BoxFit.cover),
+                    Positioned(
+                      top: 12, left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(color: AppTheme.deepBlue.withAlpha(204), borderRadius: BorderRadius.circular(20)),
+                        child: Text(place.category, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                    Positioned(
+                      top: 12, right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(color: AppTheme.primaryOrange, borderRadius: BorderRadius.circular(20)),
+                        child: Row(
+                          children: [
+                            const Text('🏆 #', style: TextStyle(fontSize: 12, color: Colors.white)),
+                            Text('${index + 1}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Stack(
+                Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.asset(place.imagePath, height: 190, fit: BoxFit.cover),
-                      // Dark gradient overlay
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Colors.transparent, Colors.black.withAlpha(120)],
-                              stops: const [0.5, 1.0],
-                            ),
-                          ),
-                        ),
+                      Row(
+                        children: [
+                          Expanded(child: Text(place.name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppTheme.deepBlue))),
+                          RatingBadge(rating: place.rating, reviewCount: place.reviewCount),
+                        ],
                       ),
-                      // Category badge
-                      Positioned(
-                        top: 14,
-                        left: 14,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppTheme.deepBlue.withAlpha(210),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            place.category,
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ),
-                      // Rank badge
-                      Positioned(
-                        top: 14,
-                        right: 14,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryOrange,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('🏆 #', style: TextStyle(fontSize: 12, color: Colors.white)),
-                              Text(
-                                '${index + 1}',
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ),
+                      const SizedBox(height: 6),
+                      Text(place.description, style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 14, color: AppTheme.primaryOrange),
+                          const SizedBox(width: 4),
+                          Text(place.distance, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        ],
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                place.name,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.deepBlue),
-                              ),
-                            ),
-                            RatingBadge(rating: place.rating, reviewCount: place.reviewCount),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          place.description,
-                          style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.5),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryOrange.withAlpha(20),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.location_on_rounded, size: 13, color: AppTheme.primaryOrange),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    place.distance,
-                                    style: const TextStyle(fontSize: 12, color: AppTheme.primaryOrange, fontWeight: FontWeight.w600),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },

@@ -23,7 +23,6 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.softBeige,
       appBar: AppBar(
         title: const Text('My Memories'),
         backgroundColor: AppTheme.deepBlue,
@@ -31,19 +30,14 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Add Memory – Coming soon!'),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppTheme.deepBlue,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+          const SnackBar(content: Text('Add Memory – Coming soon!'), behavior: SnackBarBehavior.floating),
         ),
         backgroundColor: AppTheme.primaryOrange,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Add Memory', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text('Add Memory', style: TextStyle(color: Colors.white)),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
         itemCount: _memories.length,
         itemBuilder: (context, index) {
           final memory = _memories[index];
@@ -61,105 +55,54 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
           Column(
             children: [
               Container(
-                width: 44,
-                height: 44,
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryOrange,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(child: Text(memory.mood, style: const TextStyle(fontSize: 22))),
+                width: 40, height: 40,
+                decoration: const BoxDecoration(color: AppTheme.primaryOrange, shape: BoxShape.circle),
+                child: Center(child: Text(memory.mood, style: const TextStyle(fontSize: 20))),
               ),
               if (!isLast)
-                Expanded(
-                  child: Container(
-                    width: 2,
-                    color: AppTheme.primaryOrange.withAlpha(60),
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                  ),
-                ),
+                Expanded(child: Container(width: 2, color: AppTheme.sandBeige, margin: const EdgeInsets.symmetric(vertical: 4))),
             ],
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 18),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(18),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+            child: Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Expanded(
-                          child: Text(
-                            memory.title,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.deepBlue),
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppTheme.softBeige,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            _formatDate(memory.date),
-                            style: const TextStyle(fontSize: 11, color: AppTheme.earthBrown, fontWeight: FontWeight.w500),
-                          ),
-                        ),
+                        Expanded(child: Text(memory.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.deepBlue))),
+                        Text(_formatDate(memory.date), style: const TextStyle(fontSize: 11, color: Colors.grey)),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_rounded, size: 13, color: AppTheme.primaryOrange),
-                        const SizedBox(width: 4),
+                        const Icon(Icons.location_on, size: 13, color: AppTheme.primaryOrange),
+                        const SizedBox(width: 3),
                         Text(memory.location, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     SizedBox(
-                      height: 88,
+                      height: 80,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: memory.photos.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
-                        itemBuilder: (context, index) => Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withAlpha(25),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(memory.photos[index], width: 88, height: 88, fit: BoxFit.cover),
-                          ),
+                        separatorBuilder: (_, __) => const SizedBox(width: 6),
+                        itemBuilder: (context, index) => ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(memory.photos[index], width: 80, height: 80, fit: BoxFit.cover),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      memory.description,
-                      style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.5),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    const SizedBox(height: 10),
+                    Text(memory.description, style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),

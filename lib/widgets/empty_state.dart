@@ -21,36 +21,18 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryOrange.withAlpha(20),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 56, color: AppTheme.primaryOrange.withAlpha(150)),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.deepBlue),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 10),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.grey, fontSize: 14, height: 1.5),
-            ),
+            Icon(icon, size: 72, color: AppTheme.sandBeige),
+            const SizedBox(height: 16),
+            Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.deepBlue)),
+            const SizedBox(height: 8),
+            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, fontSize: 14, height: 1.5)),
             if (ctaLabel != null && onCta != null) ...[
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: onCta,
-                child: Text(ctaLabel!),
-              ),
+              ElevatedButton(onPressed: onCta, child: Text(ctaLabel!)),
             ],
           ],
         ),
