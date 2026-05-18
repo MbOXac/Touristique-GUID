@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/destination.dart';
 import '../models/activity.dart';
 import '../services/activity_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/activity_console.dart';
+import '../widgets/street_view_widget.dart';
 
 class DestinationDetailScreen extends StatefulWidget {
   final Destination destination;
@@ -17,6 +19,8 @@ class DestinationDetailScreen extends StatefulWidget {
 class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
   final ActivityService _activityService = ActivityService();
   late Stream<List<Activity>> _activitiesStream;
+  bool _showStreetView = false;
+  static const String _googleMapsApiKey = 'AIzaSyBfhwo0gEIJtcdi7yZ-8AGjyep-WitwgqU';
 
   @override
   void initState() {
@@ -266,6 +270,44 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
               ],
             ),
           ),
+          // Street View Section
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryOrange,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Street View',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.deepBlue,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildStreetViewPreview(),
+                ],
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: Divider(height: 1, thickness: 1, color: Color(0xFFEEEAE4)),
+          ),
           // Activities Section - Stream from Firestore
           StreamBuilder<List<Activity>>(
             stream: _activitiesStream,
@@ -502,6 +544,110 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStreetViewPreview() {
+    return GestureDetector(
+      onTap: () {
+        setState(() => _showStreetView = !_showStreetView);
+      },
+      child: _showStreetView
+          ? SizedBox(
+              height: 400,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Stack(
+                  children: [
+                    StreetViewWidget(
+                      position: LatLng(
+                        widget.destination.lat,
+                        widget.destination.lng,
+                      ),
+                      destinationName: widget.destination.name,
+                      googleMapsApiKey: _googleMapsApiKey,
+                      heading: 0,
+                      pitch: 0,
+                      fov: 90,
+                    ),
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withAlpha(200),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            setState(() => _showStreetView = false);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : Container(
+              height: 180,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.blue.shade400,
+                    Colors.blue.shade600,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(25),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.location_city_rounded,
+                          size: 48,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Explore Street View',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tap to see the destination from street level',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withAlpha(220),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

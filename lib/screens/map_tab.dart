@@ -67,10 +67,25 @@ Future<void> _focusOn(Destination d) async {
   }
 
   debugPrint('Animating camera to ${d.name}: ${d.lat}, ${d.lng}');
+  
+  // First, animate to the destination with a smooth zoom
   await c.animateCamera(
     CameraUpdate.newLatLngZoom(
       LatLng(d.lat, d.lng),
-      16.0,
+      17.5, // Increased zoom for better street view detail
+    ),
+  );
+  
+  // Add a slight tilt for better 3D perspective
+  await Future.delayed(const Duration(milliseconds: 300));
+  await c.animateCamera(
+    CameraUpdate.newCameraPosition(
+      CameraPosition(
+        target: LatLng(d.lat, d.lng),
+        zoom: 17.5,
+        bearing: 0,
+        tilt: 45, // 45-degree tilt for immersive view
+      ),
     ),
   );
 }
