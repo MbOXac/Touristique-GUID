@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_gemini/flutter_gemini.dart';
 import 'firebase_options.dart'; // <--- Make sure this import is present
 import 'screens/splash_page.dart';
 import 'theme/app_theme.dart';
 import 'screens/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  Gemini.init(apiKey: 'AIzaSyCWpBbkIcfBJAriplOGpWwNHDhdbSu4MJ8');
   runApp(const TouristiqueApp());
 }
 
