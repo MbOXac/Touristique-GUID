@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gemini/flutter_gemini.dart';
+import '../services/ai_chat_service.dart';
 import '../theme/app_theme.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -47,19 +47,28 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
 
     try {
-      final response = await Gemini.instance.text(text);
-      final output = response?.output?.trim();
-      final reply = (output != null && output.isNotEmpty)
-          ? output
-          : 'I could not generate a response right now. Please try again.';
+      final aiChatService = AiChatService.instance;
+      final reply = await aiChatService.sendMessage(text);
       setState(() {
         _replaceLoadingMessage(ChatMessage.bot(reply));
       });
     } catch (error) {
+      String errorMessage = 'Something went wrong...';
+      if (error is AiChatException) {
+        if (error.code == 'auth_error') {
+          errorMessage = 'Authentication failed. Please log in again.';
+        } else if (error.code == 'network_error') {
+          errorMessage = 'Network error. Check your connection.';
+        } else if (error.code == 'api_error') {
+          errorMessage = 'Service temporarily unavailable. Try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      } else {
+        errorMessage = error.toString();
+      }
       setState(() {
-        _replaceLoadingMessage(
-          ChatMessage.error('Something went wrong while contacting Gemini: $error'),
-        );
+        _replaceLoadingMessage(ChatMessage.error(errorMessage));
       });
     } finally {
       if (mounted) {
