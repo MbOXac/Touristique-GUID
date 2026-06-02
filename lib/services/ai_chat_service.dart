@@ -5,7 +5,7 @@ import 'dart:convert';
 class AiChatService {
   static final AiChatService _instance = AiChatService._internal();
 
-  factory AiChatService.instance => _instance;
+  factory AiChatService.instance() => _instance;
 
   AiChatService._internal();
 

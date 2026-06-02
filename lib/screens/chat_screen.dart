@@ -47,7 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
     _scrollToBottom();
 
     try {
-      final aiChatService = AiChatService.instance;
+      final aiChatService = AiChatService.instance();
       final reply = await aiChatService.sendMessage(text);
       setState(() {
         _replaceLoadingMessage(ChatMessage.bot(reply));

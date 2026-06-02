@@ -1,30 +1,25 @@
 const admin = require('firebase-admin');
-const functions = require('firebase-functions');
 const { onRequest } = require('firebase-functions/v2/https');
-const { defineSecret } = require('firebase-functions/params');
+
 const { extractTokenFromHeader, verifyIdToken } = require('./utils/auth');
 const { callGeminiAPI } = require('./utils/gemini');
 const { detectLanguage, getLanguageName } = require('./utils/language');
-const {
-  TRIPMATE_SYSTEM_INSTRUCTION,
-  ERROR_MESSAGES,
-} = require('./constants');
+const { TRIPMATE_SYSTEM_INSTRUCTION, ERROR_MESSAGES } = require('./constants');
+
+// Load environment variables from functions/.env for local development
+require('dotenv').config();
 
 admin.initializeApp();
 
-const geminiApiKey = defineSecret('GEMINI_API_KEY');
-
 exports.geminiChat = onRequest(
-  { secrets: [geminiApiKey], region: 'us-central1' },
+  { region: 'us-central1' },
   async (req, res) => {
+    // CORS (you can restrict this later)
     res.set('Access-Control-Allow-Origin', '*');
     res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    if (req.method === 'OPTIONS') {
-      return res.status(204).send('');
-    }
-
+    if (req.method === 'OPTIONS') return res.status(204).send('');
     if (req.method !== 'POST') {
       return res.status(405).json({
         success: false,
@@ -34,6 +29,7 @@ exports.geminiChat = onRequest(
     }
 
     try {
+      // Auth
       const authHeader = req.headers.authorization;
       if (!authHeader) {
         return res.status(401).json({
@@ -52,10 +48,9 @@ exports.geminiChat = onRequest(
         });
       }
 
-      let decodedToken;
       try {
-        decodedToken = await verifyIdToken(token);
-      } catch (authError) {
+        await verifyIdToken(token);
+      } catch {
         return res.status(401).json({
           success: false,
           error: ERROR_MESSAGES.INVALID_TOKEN,
@@ -63,8 +58,8 @@ exports.geminiChat = onRequest(
         });
       }
 
-      const { message } = req.body;
-
+      // Validate input
+      const { message } = req.body || {};
       if (typeof message !== 'string' || message.trim().length === 0) {
         return res.status(400).json({
           success: false,
@@ -72,7 +67,6 @@ exports.geminiChat = onRequest(
           code: 'invalid_request',
         });
       }
-
       if (message.length > 1000) {
         return res.status(400).json({
           success: false,
@@ -81,17 +75,18 @@ exports.geminiChat = onRequest(
         });
       }
 
+      // System instruction with language
       const userLanguage = detectLanguage(message);
       const languageName = getLanguageName(userLanguage);
-
       const systemInstruction = TRIPMATE_SYSTEM_INSTRUCTION.replace(
         '{LANGUAGE}',
         languageName
       );
 
-      const apiKey = geminiApiKey.value();
+      // API key from env (NO billing, NO Secrets Manager)
+      const apiKey = process.env.GEMINI_API_KEY;
       if (!apiKey) {
-        console.error('GEMINI_API_KEY secret not set');
+        console.error('GEMINI_API_KEY env var not set');
         return res.status(502).json({
           success: false,
           error: ERROR_MESSAGES.MISSING_API_KEY,
@@ -99,13 +94,10 @@ exports.geminiChat = onRequest(
         });
       }
 
+      // Call Gemini
       let aiResponse;
       try {
-        aiResponse = await callGeminiAPI(
-          message,
-          systemInstruction,
-          apiKey
-        );
+        aiResponse = await callGeminiAPI(message, systemInstruction, apiKey);
       } catch (geminiError) {
         console.error('Gemini API error:', geminiError.message);
         return res.status(502).json({
