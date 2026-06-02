@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/services.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,6 +19,28 @@ class _LoginPageState extends State<LoginPage> {
   bool isLogin = true;
   String? error;
   bool isLoading = false;
+Future<void> _debugPrintAndCopyIdToken() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  final String? token = await user.getIdToken(true); // nullable in your version
+  if (token == null || token.isEmpty) {
+    debugPrint('ID_TOKEN: (null/empty)');
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Could not get ID token')),
+    );
+    return;
+  }
+
+  await Clipboard.setData(ClipboardData(text: token));
+  debugPrint('ID_TOKEN: $token');
+
+  if (!mounted) return;
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('ID token copied to clipboard')),
+  );
+}
 
   // --- GOOGLE SIGN-IN FUNCTION ---
   Future<void> signInWithGoogle() async {
@@ -33,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
-
+      await _debugPrintAndCopyIdToken();
       // Optionally save info to Firestore if first sign-in
       final doc = FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid);
       if (!(await doc.get()).exists) {
@@ -65,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
           email: emailController.text.trim(),
           password: passwordController.text.trim(),
         );
+        await _debugPrintAndCopyIdToken();
       } else {
         // REGISTER
         final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
