@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // <--- Make sure this import is present
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'firebase_options.dart';
 import 'screens/splash_page.dart';
 import 'theme/app_theme.dart';
 import 'screens/login_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -26,6 +32,7 @@ class TouristiqueApp extends StatelessWidget {
     );
   }
 }
+
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -34,11 +41,9 @@ class AuthGate extends StatelessWidget {
     return StreamBuilder(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // User logged in
         if (snapshot.hasData) {
-          return const SplashPage(); // Or HomePage, your real app!
+          return const SplashPage();
         }
-        // Not logged in
         return const LoginPage();
       },
     );

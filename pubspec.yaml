@@ -14,8 +14,11 @@ dependencies:
   google_maps_flutter: ^2.6.1
   google_maps_flutter_web: ^0.5.7
   google_sign_in: ^5.4.4
+  google_generative_ai: ^0.4.6
+  flutter_dotenv: ^5.1.0
   flutter:
     sdk: flutter
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +35,4 @@ flutter:
     - assets/images/destination_2.jpg
     - assets/images/destination_3.jpg
     - assets/images/destination_4.jpg
+    - .env
