@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -9,12 +10,25 @@ class AiChatService {
 
   AiChatService._internal();
 
-  // Cloud Function URL - update after deployment with actual URL
-  // Example: https://us-central1-touristique-guide-2026.cloudfunctions.net/geminiChat
+  static const String _functionUrlOverride = String.fromEnvironment(
+    'AI_CHAT_FUNCTION_URL',
+  );
   static const String _functionUrl =
       'https://us-central1-touristique-guide-2026.cloudfunctions.net/geminiChat';
+  static const String _localFunctionUrl =
+      'http://127.0.0.1:5001/touristique-guide-2026/us-central1/geminiChat';
 
   final _auth = FirebaseAuth.instance;
+
+  String get _resolvedFunctionUrl {
+    if (_functionUrlOverride.isNotEmpty) {
+      return _functionUrlOverride;
+    }
+    if (kDebugMode && kIsWeb) {
+      return _localFunctionUrl;
+    }
+    return _functionUrl;
+  }
 
   /// Sends a message to the AI chat backend and returns the AI response.
   ///
@@ -62,7 +76,7 @@ class AiChatService {
     try {
       final response = await http
           .post(
-            Uri.parse(_functionUrl),
+            Uri.parse(_resolvedFunctionUrl),
             headers: {
               'Content-Type': 'application/json',
               'Authorization': 'Bearer $idToken',
@@ -78,8 +92,13 @@ class AiChatService {
           );
 
       if (response.statusCode == 401) {
+        if (kDebugMode && kIsWeb) {
+          debugPrint('geminiChat 401 response body: ${response.body}');
+        }
         throw AiChatException(
-          'Authentication failed. Please log in again.',
+          kDebugMode && response.body.isNotEmpty
+              ? 'Authentication failed. Please log in again. Server response: ${response.body}'
+              : 'Authentication failed. Please log in again.',
           code: 'auth_error',
         );
       }
