@@ -3,8 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
 import 'login_page.dart';
-// Make sure the LoginPage class exists in login_page.dart and is exported as:
-// class LoginPage extends StatelessWidget { ... }
+import 'profile_settings/account_settings_screen.dart';
+import 'profile_settings/notifications_screen.dart';
+import 'profile_settings/privacy_screen.dart';
+import 'profile_settings/language_screen.dart';
+import 'profile_settings/help_support_screen.dart';
+import 'profile_settings/about_screen.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -15,6 +19,7 @@ class ProfileTab extends StatefulWidget {
 class _ProfileTabState extends State<ProfileTab> {
   String? name;
   String? email;
+  String? language = 'English';
 
   @override
   void initState() {
@@ -25,14 +30,23 @@ class _ProfileTabState extends State<ProfileTab> {
   Future<void> loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      setState(() {
-        email = user.email;
-      });
+      setState(() => email = user.email);
       final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
-      setState(() {
-        name = doc.data()?['name'] ?? user.displayName ?? "No name";
-      });
+      if (mounted) {
+        setState(() {
+          name = doc.data()?['name'] ?? user.displayName ?? "No name";
+          language = doc.data()?['language'] ?? 'English';
+        });
+      }
     }
+  }
+
+  void _navigateTo(Widget screen) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => screen),
+    );
+    loadUserData(); // Refresh when coming back
   }
 
   @override
@@ -70,7 +84,6 @@ class _ProfileTabState extends State<ProfileTab> {
                     child: const Icon(Icons.person_rounded, size: 52, color: AppTheme.earthBrown),
                   ),
                   const SizedBox(height: 12),
-                  // Display real name and email here
                   Text(
                     name ?? 'Loading...',
                     style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
@@ -96,36 +109,68 @@ class _ProfileTabState extends State<ProfileTab> {
             ),
             const SizedBox(height: 8),
             _buildSettingsSection(context, 'Account', [
-              _SettingItem(Icons.manage_accounts_outlined, 'Account Settings', 'Manage your account'),
-              _SettingItem(Icons.notifications_outlined, 'Notifications', 'Push & email preferences'),
-              _SettingItem(Icons.privacy_tip_outlined, 'Privacy', 'Control your data'),
+              _SettingItem(
+                Icons.manage_accounts_outlined,
+                'Account Settings',
+                'Manage your account',
+                () => _navigateTo(const AccountSettingsScreen()),
+              ),
+              _SettingItem(
+                Icons.notifications_outlined,
+                'Notifications',
+                'Push & email preferences',
+                () => _navigateTo(const NotificationsScreen()),
+              ),
+              _SettingItem(
+                Icons.privacy_tip_outlined,
+                'Privacy',
+                'Control your data',
+                () => _navigateTo(const PrivacyScreen()),
+              ),
             ]),
             _buildSettingsSection(context, 'App', [
-              _SettingItem(Icons.language_outlined, 'Language', 'English'),
-              _SettingItem(Icons.help_outline_rounded, 'Help & Support', 'FAQ, contact us'),
-              _SettingItem(Icons.info_outline_rounded, 'About', 'Version 1.0.0'),
+              _SettingItem(
+                Icons.language_outlined,
+                'Language',
+                language ?? 'English',
+                () => _navigateTo(const LanguageScreen()),
+              ),
+              _SettingItem(
+                Icons.help_outline_rounded,
+                'Help & Support',
+                'FAQ, contact us',
+                () => _navigateTo(const HelpSupportScreen()),
+              ),
+              _SettingItem(
+                Icons.info_outline_rounded,
+                'About',
+                'Version 1.0.0',
+                () => _navigateTo(const AboutScreen()),
+              ),
             ]),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
                 width: double.infinity,
-            child:  OutlinedButton.icon(
-                      onPressed: () async {
-                  final ctx = context; await FirebaseAuth.instance.signOut();
-                      Navigator.of(ctx).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const LoginPage()),
-                       (route) => false,
-                         );
-},
-                      icon: const Icon(Icons.logout_rounded, color: Colors.red),
-                 label: const Text('Sign Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                    style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.red),
-               padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    final ctx = context;
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.of(ctx).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                      (route) => false,
+                    );
+                  },
+                  icon: const Icon(Icons.logout_rounded, color: Colors.red),
+                  label: const Text('Sign Out',
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-             ),
+                ),
               ),
             ),
             const SizedBox(height: 32),
@@ -172,9 +217,7 @@ class _ProfileTabState extends State<ProfileTab> {
                     title: Text(item.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
                     subtitle: Text(item.subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                     trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                    onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${item.title} – Coming soon!'), behavior: SnackBarBehavior.floating),
-                    ),
+                    onTap: item.onTap,
                   ),
                   if (index < items.length - 1) const Divider(height: 1, indent: 56),
                 ],
@@ -191,5 +234,6 @@ class _SettingItem {
   final IconData icon;
   final String title;
   final String subtitle;
-  const _SettingItem(this.icon, this.title, this.subtitle);
+  final VoidCallback onTap;
+  const _SettingItem(this.icon, this.title, this.subtitle, this.onTap);
 }
