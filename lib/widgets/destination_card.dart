@@ -10,14 +10,17 @@ class DestinationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final placeholderBg = isDark ? AppTheme.darkCard : Colors.grey.shade200;
+    final placeholderIconColor = isDark ? Colors.grey.shade600 : Colors.grey.shade400;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DestinationDetailScreen(
-              destination: destination,
-            ),
+            builder: (context) => DestinationDetailScreen(destination: destination),
           ),
         );
       },
@@ -26,10 +29,9 @@ class DestinationCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(35),
+              color: Colors.black.withAlpha(isDark ? 80 : 35),
               blurRadius: 16,
               offset: const Offset(0, 6),
-              spreadRadius: 0,
             ),
           ],
         ),
@@ -37,7 +39,6 @@ class DestinationCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [
-              // Full card image
               SizedBox(
                 height: 240,
                 width: double.infinity,
@@ -48,76 +49,52 @@ class DestinationCard extends StatelessWidget {
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Container(
-                            color: Colors.grey.shade200,
-                            child: Center(
+                            color: placeholderBg,
+                            child: const Center(
                               child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                    : null,
                                 color: AppTheme.primaryOrange,
                                 strokeWidth: 2.5,
                               ),
                             ),
                           );
                         },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: Colors.grey.shade200,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.landscape_outlined,
-                                  color: Colors.grey.shade400,
-                                  size: 52,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  destination.name,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey.shade500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: placeholderBg,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.landscape_outlined, color: placeholderIconColor, size: 52),
+                              const SizedBox(height: 8),
+                              Text(
+                                destination.name,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 12, color: placeholderIconColor),
+                              ),
+                            ],
+                          ),
+                        ),
                       )
                     : Container(
-                        color: Colors.grey.shade200,
+                        color: placeholderBg,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.landscape_outlined,
-                              color: Colors.grey.shade400,
-                              size: 52,
-                            ),
+                            Icon(Icons.landscape_outlined, color: placeholderIconColor, size: 52),
                             const SizedBox(height: 8),
                             Text(
                               destination.name,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade500,
-                              ),
+                              style: TextStyle(fontSize: 12, color: placeholderIconColor),
                             ),
                           ],
                         ),
                       ),
               ),
-              // Gradient overlay
-              Positioned.fill(
-                child: const DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.cardOverlayGradient,
-                  ),
+              const Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(gradient: AppTheme.cardOverlayGradient),
                 ),
               ),
-              // Distance badge - top right
               Positioned(
                 top: 14,
                 right: 14,
@@ -126,7 +103,7 @@ class DestinationCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.black.withAlpha(120),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withAlpha(60), width: 1),
+                    border: Border.all(color: Colors.white.withAlpha(60)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -135,17 +112,12 @@ class DestinationCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         destination.distance,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
                 ),
               ),
-              // Rating badge - top left
               Positioned(
                 top: 14,
                 left: 14,
@@ -162,17 +134,12 @@ class DestinationCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         destination.rating.toStringAsFixed(1),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
                 ),
               ),
-              // Bottom info overlay
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -190,13 +157,7 @@ class DestinationCard extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
                           letterSpacing: -0.3,
-                          shadows: [
-                            Shadow(
-                              offset: Offset(0, 1),
-                              blurRadius: 4,
-                              color: Color(0x88000000),
-                            ),
-                          ],
+                          shadows: [Shadow(offset: Offset(0, 1), blurRadius: 4, color: Color(0x88000000))],
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -255,7 +216,7 @@ class DestinationCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withAlpha(25),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withAlpha(50), width: 1),
+        border: Border.all(color: Colors.white.withAlpha(50)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

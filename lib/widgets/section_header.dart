@@ -9,6 +9,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 12, 8),
       child: Row(
@@ -27,10 +28,10 @@ class SectionHeader extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.deepBlue,
+                  color: theme.textTheme.titleLarge?.color,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -42,10 +43,10 @@ class SectionHeader extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryOrange.withAlpha(18),
+                  color: AppTheme.primaryOrange.withAlpha(30),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: AppTheme.primaryOrange.withAlpha(60),
+                    color: AppTheme.primaryOrange.withAlpha(80),
                     width: 1,
                   ),
                 ),

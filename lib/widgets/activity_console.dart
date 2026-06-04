@@ -15,6 +15,7 @@ class ActivityConsole extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -36,12 +37,12 @@ class ActivityConsole extends StatelessWidget {
                 child: const Icon(Icons.local_activity_rounded, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 'Activities',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.deepBlue,
+                  color: theme.textTheme.titleLarge?.color,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -49,7 +50,7 @@ class ActivityConsole extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppTheme.deepBlue.withAlpha(15),
+                  color: AppTheme.primaryOrange.withAlpha(30),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -57,7 +58,7 @@ class ActivityConsole extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.deepBlue,
+                    color: AppTheme.primaryOrange,
                   ),
                 ),
               ),
@@ -70,17 +71,14 @@ class ActivityConsole extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.only(left: 16, right: 8),
             itemCount: activities.length,
-            itemBuilder: (context, index) {
-              final activity = activities[index];
-              return _buildActivityCard(context, activity);
-            },
+            itemBuilder: (context, index) => _buildActivityCard(context, activities[index], theme),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildActivityCard(BuildContext context, Activity activity) {
+  Widget _buildActivityCard(BuildContext context, Activity activity, ThemeData theme) {
     final categoryColor = _getCategoryColor(activity.category);
     return GestureDetector(
       onTap: () {
@@ -95,27 +93,22 @@ class ActivityConsole extends StatelessWidget {
         width: 155,
         margin: const EdgeInsets.only(right: 12, bottom: 4),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: categoryColor.withAlpha(30),
+              color: categoryColor.withAlpha(40),
               blurRadius: 12,
               offset: const Offset(0, 4),
-              spreadRadius: 0,
             ),
           ],
-          border: Border.all(
-            color: categoryColor.withAlpha(30),
-            width: 1,
-          ),
+          border: Border.all(color: categoryColor.withAlpha(50)),
         ),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category icon with gradient background
               Container(
                 width: 44,
                 height: 44,
@@ -123,28 +116,20 @@ class ActivityConsole extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      categoryColor.withAlpha(40),
-                      categoryColor.withAlpha(70),
-                    ],
+                    colors: [categoryColor.withAlpha(40), categoryColor.withAlpha(80)],
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  _getCategoryIcon(activity.category),
-                  color: categoryColor,
-                  size: 22,
-                ),
+                child: Icon(_getCategoryIcon(activity.category), color: categoryColor, size: 22),
               ),
               const SizedBox(height: 10),
-              // Activity name
               Expanded(
                 child: Text(
                   activity.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.deepBlue,
+                    color: theme.textTheme.titleLarge?.color,
                     height: 1.3,
                   ),
                   maxLines: 2,
@@ -152,17 +137,16 @@ class ActivityConsole extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              // Duration row
               Row(
                 children: [
-                  Icon(Icons.schedule_rounded, size: 11, color: Colors.grey.shade500),
+                  Icon(Icons.schedule_rounded, size: 11, color: theme.textTheme.bodyMedium?.color),
                   const SizedBox(width: 3),
                   Expanded(
                     child: Text(
                       activity.duration,
                       style: TextStyle(
                         fontSize: 10,
-                        color: Colors.grey.shade600,
+                        color: theme.textTheme.bodyMedium?.color,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
@@ -172,11 +156,10 @@ class ActivityConsole extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 5),
-              // Price
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryOrange.withAlpha(18),
+                  color: AppTheme.primaryOrange.withAlpha(30),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -197,39 +180,25 @@ class ActivityConsole extends StatelessWidget {
 
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
-      case 'nature':
-        return Icons.eco_rounded;
-      case 'adventure':
-        return Icons.terrain_rounded;
-      case 'cultural':
-        return Icons.account_balance_rounded;
-      case 'water':
-        return Icons.water_rounded;
-      case 'hiking':
-        return Icons.hiking_rounded;
-      case 'sports':
-        return Icons.sports_rounded;
-      default:
-        return Icons.local_activity_rounded;
+      case 'nature': return Icons.eco_rounded;
+      case 'adventure': return Icons.terrain_rounded;
+      case 'cultural': return Icons.account_balance_rounded;
+      case 'water': return Icons.water_rounded;
+      case 'hiking': return Icons.hiking_rounded;
+      case 'sports': return Icons.sports_rounded;
+      default: return Icons.local_activity_rounded;
     }
   }
 
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
-      case 'nature':
-        return const Color(0xFF27AE60);
-      case 'adventure':
-        return const Color(0xFFE74C3C);
-      case 'cultural':
-        return const Color(0xFF8E44AD);
-      case 'water':
-        return const Color(0xFF2980B9);
-      case 'hiking':
-        return const Color(0xFF795548);
-      case 'sports':
-        return const Color(0xFFFF6B35);
-      default:
-        return AppTheme.primaryOrange;
+      case 'nature': return const Color(0xFF27AE60);
+      case 'adventure': return const Color(0xFFE74C3C);
+      case 'cultural': return const Color(0xFF8E44AD);
+      case 'water': return const Color(0xFF2980B9);
+      case 'hiking': return const Color(0xFF795548);
+      case 'sports': return const Color(0xFFFF6B35);
+      default: return AppTheme.primaryOrange;
     }
   }
 }

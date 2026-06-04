@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 import 'home_page.dart';
 import 'map_tab.dart';
 import 'ai_chat_tab.dart';
@@ -30,6 +29,10 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -37,13 +40,12 @@ class _MainNavigationState extends State<MainNavigation> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(18),
+              color: Colors.black.withAlpha(isDark ? 60 : 18),
               blurRadius: 16,
               offset: const Offset(0, -4),
-              spreadRadius: 0,
             ),
           ],
         ),
@@ -54,11 +56,11 @@ class _MainNavigationState extends State<MainNavigation> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, Icons.explore_outlined, Icons.explore_rounded, 'Home'),
-                _buildNavItem(1, Icons.map_outlined, Icons.map_rounded, 'Map'),
-                _buildNavItem(2, Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded, 'AI Chat'),
-                _buildNavItem(3, Icons.luggage_outlined, Icons.luggage_rounded, 'Trip'),
-                _buildNavItem(4, Icons.person_outline_rounded, Icons.person_rounded, 'Profile'),
+                _buildNavItem(0, Icons.explore_outlined, Icons.explore_rounded, 'Home', primary, isDark),
+                _buildNavItem(1, Icons.map_outlined, Icons.map_rounded, 'Map', primary, isDark),
+                _buildNavItem(2, Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded, 'AI Chat', primary, isDark),
+                _buildNavItem(3, Icons.luggage_outlined, Icons.luggage_rounded, 'Trip', primary, isDark),
+                _buildNavItem(4, Icons.person_outline_rounded, Icons.person_rounded, 'Profile', primary, isDark),
               ],
             ),
           ),
@@ -67,8 +69,10 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, IconData selectedIcon, String label) {
+  Widget _buildNavItem(int index, IconData icon, IconData selectedIcon, String label, Color primary, bool isDark) {
     final isSelected = _currentIndex == index;
+    final inactiveColor = isDark ? Colors.grey.shade400 : Colors.grey.shade500;
+
     return GestureDetector(
       onTap: () => setState(() => _currentIndex = index),
       behavior: HitTestBehavior.opaque,
@@ -77,7 +81,7 @@ class _MainNavigationState extends State<MainNavigation> {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryOrange.withAlpha(18) : Colors.transparent,
+          color: isSelected ? primary.withAlpha(30) : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -88,7 +92,7 @@ class _MainNavigationState extends State<MainNavigation> {
               child: Icon(
                 isSelected ? selectedIcon : icon,
                 key: ValueKey(isSelected),
-                color: isSelected ? AppTheme.primaryOrange : Colors.grey.shade500,
+                color: isSelected ? primary : inactiveColor,
                 size: isSelected ? 24 : 22,
               ),
             ),
@@ -98,7 +102,7 @@ class _MainNavigationState extends State<MainNavigation> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected ? AppTheme.primaryOrange : Colors.grey.shade500,
+                color: isSelected ? primary : inactiveColor,
                 letterSpacing: 0.1,
               ),
             ),
@@ -108,4 +112,3 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 }
-

@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 
+enum AppThemeType { light, dark }
+
 class AppTheme {
-  // Morocco-inspired palette
-  static const Color primaryOrange = Color(0xFFD2691E);   // desert orange / chocolate
-  static const Color deepBlue = Color(0xFF1A3A5C);        // deep blue
-  static const Color earthBrown = Color(0xFF8B5A2B);      // warm earth brown
-  static const Color sandBeige = Color(0xFFF5DEB3);       // sand / wheat
-  static const Color oasisGreen = Color(0xFF2E7D32);      // oasis green
-  static const Color softBackground = Color(0xFFF8F4EE);  // soft beige background
-  static const Color goldAccent = Color(0xFFE8A020);      // gold accent
-  static const Color terracotta = Color(0xFFB85C38);      // terracotta accent
+  // ============ COLORS ============
+  static const Color primaryOrange = Color(0xFFD2691E);
+  static const Color deepBlue = Color(0xFF1A3A5C);
+  static const Color earthBrown = Color(0xFF8B5A2B);
+  static const Color sandBeige = Color(0xFFF5DEB3);
+  static const Color oasisGreen = Color(0xFF2E7D32);
+  static const Color softBackground = Color(0xFFF8F4EE);
+  static const Color goldAccent = Color(0xFFE8A020);
+  static const Color terracotta = Color(0xFFB85C38);
+
+  // Dark colors
+  static const Color darkBackground = Color(0xFF121212);
+  static const Color darkSurface = Color(0xFF1E1E1E);
+  static const Color darkCard = Color(0xFF252525);
+  static const Color darkAppBar = Color(0xFF0F2438);
+  static const Color darkBorder = Color(0xFF3A3A3A);
+  static const Color darkTextPrimary = Color(0xFFE8E8E8);
+  static const Color darkTextSecondary = Color(0xFFB0B0B0);
 
   // Gradients
   static const LinearGradient heroGradient = LinearGradient(
@@ -31,9 +42,30 @@ class AppTheme {
     stops: [0.35, 1.0],
   );
 
+  static Map<AppThemeType, Map<String, dynamic>> get themeInfo => {
+        AppThemeType.light: {
+          'name': 'Light',
+          'emoji': '☀️',
+          'description': 'Bright and warm',
+          'primary': primaryOrange,
+          'secondary': deepBlue,
+          'background': softBackground,
+        },
+        AppThemeType.dark: {
+          'name': 'Dark',
+          'emoji': '🌑',
+          'description': 'Easy on the eyes',
+          'primary': primaryOrange,
+          'secondary': goldAccent,
+          'background': darkBackground,
+        },
+      };
+
+  // ============ LIGHT THEME ============
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryOrange,
         primary: primaryOrange,
@@ -52,9 +84,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         elevation: 4,
         shadowColor: Colors.black.withAlpha(30),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: Colors.white,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -63,76 +93,119 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 2,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(color: Color(0xFFEEEAE4), thickness: 1),
+    );
+  }
+
+  // ============ DARK THEME ============
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primaryOrange,
+        brightness: Brightness.dark,
+        primary: primaryOrange,
+        secondary: goldAccent,
+        tertiary: oasisGreen,
+        surface: darkSurface,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: darkTextPrimary,
+      ),
+      scaffoldBackgroundColor: darkBackground,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: darkAppBar,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 2,
+        shadowColor: Colors.black.withAlpha(120),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        color: darkCard,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primaryOrange,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         ),
       ),
       textTheme: const TextTheme(
-        displayLarge: TextStyle(
-          fontFamily: 'Roboto',
-          fontWeight: FontWeight.bold,
-          color: deepBlue,
-          letterSpacing: -0.5,
+        displayLarge: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold),
+        displayMedium: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold),
+        displaySmall: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold),
+        headlineLarge: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.bold),
+        headlineMedium: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w700),
+        headlineSmall: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w700),
+        titleLarge: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600, fontSize: 18),
+        titleMedium: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(color: darkTextPrimary, fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(color: darkTextPrimary, height: 1.5),
+        bodyMedium: TextStyle(color: darkTextSecondary, height: 1.5),
+        bodySmall: TextStyle(color: darkTextSecondary),
+        labelLarge: TextStyle(color: darkTextPrimary),
+        labelMedium: TextStyle(color: darkTextSecondary),
+        labelSmall: TextStyle(color: darkTextSecondary),
+      ),
+      dividerTheme: const DividerThemeData(color: darkBorder, thickness: 1),
+      iconTheme: const IconThemeData(color: darkTextPrimary),
+      listTileTheme: const ListTileThemeData(
+        textColor: darkTextPrimary,
+        iconColor: darkTextPrimary,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkCard,
+        labelStyle: const TextStyle(color: darkTextSecondary),
+        hintStyle: const TextStyle(color: darkTextSecondary),
+        prefixIconColor: primaryOrange,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: darkBorder),
         ),
-        headlineMedium: TextStyle(
-          fontFamily: 'Roboto',
-          fontWeight: FontWeight.w700,
-          color: deepBlue,
-          letterSpacing: -0.3,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: darkBorder),
         ),
-        titleLarge: TextStyle(
-          fontFamily: 'Roboto',
-          fontWeight: FontWeight.w600,
-          color: deepBlue,
-          fontSize: 18,
-        ),
-        bodyLarge: TextStyle(
-          fontFamily: 'Roboto',
-          color: Colors.black87,
-          height: 1.5,
-        ),
-        bodyMedium: TextStyle(
-          fontFamily: 'Roboto',
-          color: Colors.black54,
-          height: 1.5,
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryOrange, width: 2),
         ),
       ),
-      dividerTheme: const DividerThemeData(
-        color: Color(0xFFEEEAE4),
-        thickness: 1,
+      tabBarTheme: const TabBarThemeData(
+        labelColor: Colors.white,
+        unselectedLabelColor: darkTextSecondary,
+        indicatorColor: primaryOrange,
       ),
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.white,
-        elevation: 8,
-        shadowColor: Colors.black.withAlpha(20),
-        indicatorColor: primaryOrange.withAlpha(40),
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: primaryOrange,
-            );
-          }
-          return const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey,
-          );
-        }),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: primaryOrange, size: 24);
-          }
-          return IconThemeData(color: Colors.grey.shade500, size: 22);
-        }),
+      chipTheme: ChipThemeData(
+        backgroundColor: darkCard,
+        labelStyle: const TextStyle(color: darkTextPrimary),
+        side: const BorderSide(color: darkBorder),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: primaryOrange,
+        foregroundColor: Colors.white,
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: darkCard,
+        titleTextStyle: TextStyle(color: darkTextPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+        contentTextStyle: TextStyle(color: darkTextPrimary),
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        backgroundColor: darkCard,
+        contentTextStyle: TextStyle(color: darkTextPrimary),
       ),
     );
+  }
+
+  static ThemeData getTheme(AppThemeType type) {
+    return type == AppThemeType.dark ? darkTheme : lightTheme;
   }
 }

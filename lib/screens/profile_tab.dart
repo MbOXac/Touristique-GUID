@@ -9,6 +9,7 @@ import 'profile_settings/privacy_screen.dart';
 import 'profile_settings/language_screen.dart';
 import 'profile_settings/help_support_screen.dart';
 import 'profile_settings/about_screen.dart';
+import 'profile_settings/appearance_screen.dart';
 
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key});
@@ -42,20 +43,18 @@ class _ProfileTabState extends State<ProfileTab> {
   }
 
   void _navigateTo(Widget screen) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => screen),
-    );
-    loadUserData(); // Refresh when coming back
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
+    loadUserData();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
@@ -64,11 +63,13 @@ class _ProfileTabState extends State<ProfileTab> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 32),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppTheme.deepBlue, Color(0xFF2A5A8C)],
+                  colors: isDark
+                      ? [AppTheme.darkAppBar, const Color(0xFF1A2A40)]
+                      : [AppTheme.deepBlue, const Color(0xFF2A5A8C)],
                 ),
               ),
               child: Column(
@@ -109,44 +110,22 @@ class _ProfileTabState extends State<ProfileTab> {
             ),
             const SizedBox(height: 8),
             _buildSettingsSection(context, 'Account', [
-              _SettingItem(
-                Icons.manage_accounts_outlined,
-                'Account Settings',
-                'Manage your account',
-                () => _navigateTo(const AccountSettingsScreen()),
-              ),
-              _SettingItem(
-                Icons.notifications_outlined,
-                'Notifications',
-                'Push & email preferences',
-                () => _navigateTo(const NotificationsScreen()),
-              ),
-              _SettingItem(
-                Icons.privacy_tip_outlined,
-                'Privacy',
-                'Control your data',
-                () => _navigateTo(const PrivacyScreen()),
-              ),
+              _SettingItem(Icons.manage_accounts_outlined, 'Account Settings', 'Manage your account',
+                  () => _navigateTo(const AccountSettingsScreen())),
+              _SettingItem(Icons.notifications_outlined, 'Notifications', 'Push & email preferences',
+                  () => _navigateTo(const NotificationsScreen())),
+              _SettingItem(Icons.privacy_tip_outlined, 'Privacy', 'Control your data',
+                  () => _navigateTo(const PrivacyScreen())),
             ]),
             _buildSettingsSection(context, 'App', [
-              _SettingItem(
-                Icons.language_outlined,
-                'Language',
-                language ?? 'English',
-                () => _navigateTo(const LanguageScreen()),
-              ),
-              _SettingItem(
-                Icons.help_outline_rounded,
-                'Help & Support',
-                'FAQ, contact us',
-                () => _navigateTo(const HelpSupportScreen()),
-              ),
-              _SettingItem(
-                Icons.info_outline_rounded,
-                'About',
-                'Version 1.0.0',
-                () => _navigateTo(const AboutScreen()),
-              ),
+              _SettingItem(Icons.palette_outlined, 'Appearance', 'Themes & colors',
+                  () => _navigateTo(const AppearanceScreen())),
+              _SettingItem(Icons.language_outlined, 'Language', language ?? 'English',
+                  () => _navigateTo(const LanguageScreen())),
+              _SettingItem(Icons.help_outline_rounded, 'Help & Support', 'FAQ, contact us',
+                  () => _navigateTo(const HelpSupportScreen())),
+              _SettingItem(Icons.info_outline_rounded, 'About', 'Version 1.0.0',
+                  () => _navigateTo(const AboutScreen())),
             ]),
             const SizedBox(height: 16),
             Padding(
@@ -183,16 +162,14 @@ class _ProfileTabState extends State<ProfileTab> {
   Widget _statBadge(String value, String label) {
     return Column(
       children: [
-        Text(
-          value,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryOrange),
-        ),
+        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryOrange)),
         Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
       ],
     );
   }
 
   Widget _buildSettingsSection(BuildContext context, String sectionTitle, List<_SettingItem> items) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,7 +177,12 @@ class _ProfileTabState extends State<ProfileTab> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
           child: Text(
             sectionTitle,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey, letterSpacing: 1.0),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: theme.textTheme.bodyMedium?.color,
+              letterSpacing: 1.0,
+            ),
           ),
         ),
         Card(
@@ -214,12 +196,23 @@ class _ProfileTabState extends State<ProfileTab> {
                 children: [
                   ListTile(
                     leading: Icon(item.icon, color: AppTheme.primaryOrange, size: 22),
-                    title: Text(item.title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
-                    subtitle: Text(item.subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    title: Text(
+                      item.title,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: theme.textTheme.titleLarge?.color,
+                      ),
+                    ),
+                    subtitle: Text(
+                      item.subtitle,
+                      style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                    ),
+                    trailing: Icon(Icons.chevron_right, color: theme.textTheme.bodyMedium?.color),
                     onTap: item.onTap,
                   ),
-                  if (index < items.length - 1) const Divider(height: 1, indent: 56),
+                  if (index < items.length - 1)
+                    Divider(height: 1, indent: 56, color: theme.dividerColor),
                 ],
               );
             }),

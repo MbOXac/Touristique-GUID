@@ -31,13 +31,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final filtered = _filtered;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Favorites'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text('My Favorites')),
       body: Column(
         children: [
           SizedBox(
@@ -49,12 +46,16 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final f = _filters[index];
+                final selected = _selectedFilter == f;
                 return FilterChip(
                   label: Text(f),
-                  selected: _selectedFilter == f,
+                  selected: selected,
                   onSelected: (_) => setState(() => _selectedFilter = f),
                   selectedColor: AppTheme.primaryOrange,
-                  labelStyle: TextStyle(color: _selectedFilter == f ? Colors.white : AppTheme.deepBlue, fontWeight: FontWeight.w600),
+                  labelStyle: TextStyle(
+                    color: selected ? Colors.white : theme.textTheme.titleLarge?.color,
+                    fontWeight: FontWeight.w600,
+                  ),
                   checkmarkColor: Colors.white,
                 );
               },
@@ -70,10 +71,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 : ListView.builder(
                     padding: const EdgeInsets.all(12),
                     itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final place = filtered[index];
-                      return _buildPlaceCard(place);
-                    },
+                    itemBuilder: (context, index) => _buildPlaceCard(filtered[index], theme),
                   ),
           ),
         ],
@@ -81,7 +79,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     );
   }
 
-  Widget _buildPlaceCard(FavoritePlace place) {
+  Widget _buildPlaceCard(FavoritePlace place, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 3,
@@ -99,15 +98,39 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(place.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    place.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: theme.textTheme.titleLarge?.color,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(10)),
-                    child: Text(place.category, style: const TextStyle(fontSize: 11, color: AppTheme.earthBrown, fontWeight: FontWeight.w600)),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkBackground : AppTheme.sandBeige,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      place.category,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? AppTheme.goldAccent : AppTheme.earthBrown,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 4),
-                  Text(place.address, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    place.address,
+                    style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   RatingBadge(rating: place.rating),
                 ],
               ),

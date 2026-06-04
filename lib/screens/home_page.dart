@@ -13,6 +13,7 @@ import 'favorites_screen.dart';
 import 'bookings_screen.dart';
 import 'top_rated_screen.dart';
 import 'trip_memories_screen.dart';
+import 'all_destinations_screen.dart';
 
 class HomePage extends StatefulWidget {
   final void Function(int)? onTabChange;
@@ -41,22 +42,23 @@ class _HomePageState extends State<HomePage> {
     final favorites = MockDataService.getFavoritePlaces().take(4).toList();
     final memories = MockDataService.getTripMemories().take(3).toList();
     final bookings = MockDataService.getBookings().take(2).toList();
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F4EE),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
-          _buildAppBar(context),
+          _buildAppBar(context, theme),
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 16),
-                _buildSearchBar(context),
+                _buildSearchBar(context, theme),
                 const SizedBox(height: 16),
-                _buildQuickActions(context),
+                _buildQuickActions(context, theme),
                 const SizedBox(height: 16),
-                _buildAiCard(context),
+                _buildAiCard(context, theme),
                 const SizedBox(height: 16),
                 SectionHeader(
                   title: 'Top Rated',
@@ -168,11 +170,11 @@ class _HomePageState extends State<HomePage> {
                     children: memories.map((m) => Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.cardColor,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withAlpha(15),
+                            color: Colors.black.withAlpha(theme.brightness == Brightness.dark ? 40 : 15),
                             blurRadius: 10,
                             offset: const Offset(0, 3),
                           ),
@@ -201,10 +203,10 @@ class _HomePageState extends State<HomePage> {
                                         Expanded(
                                           child: Text(
                                             m.title,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontWeight: FontWeight.w800,
                                               fontSize: 14,
-                                              color: AppTheme.deepBlue,
+                                              color: theme.textTheme.titleLarge?.color,
                                               letterSpacing: -0.2,
                                             ),
                                             maxLines: 1,
@@ -216,13 +218,13 @@ class _HomePageState extends State<HomePage> {
                                     const SizedBox(height: 4),
                                     Row(
                                       children: [
-                                        const Icon(Icons.location_on_rounded, size: 12, color: AppTheme.primaryOrange),
+                                        Icon(Icons.location_on_rounded, size: 12, color: theme.colorScheme.primary),
                                         const SizedBox(width: 2),
                                         Text(
                                           m.location,
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: Colors.grey.shade600,
+                                            color: theme.textTheme.bodyMedium?.color,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -233,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                                       m.description,
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.grey.shade600,
+                                        color: theme.textTheme.bodyMedium?.color,
                                         height: 1.4,
                                       ),
                                       maxLines: 2,
@@ -242,9 +244,9 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               ),
-                              const Icon(
+                              Icon(
                                 Icons.chevron_right_rounded,
-                                color: AppTheme.primaryOrange,
+                                color: theme.colorScheme.primary,
                                 size: 20,
                               ),
                             ],
@@ -272,11 +274,11 @@ class _HomePageState extends State<HomePage> {
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha(15),
+                              color: Colors.black.withAlpha(theme.brightness == Brightness.dark ? 40 : 15),
                               blurRadius: 10,
                               offset: const Offset(0, 3),
                             ),
@@ -288,10 +290,13 @@ class _HomePageState extends State<HomePage> {
                             width: 48,
                             height: 48,
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
+                              gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [AppTheme.deepBlue, Color(0xFF2E5A8C)],
+                                colors: [
+                                  theme.colorScheme.primary,
+                                  theme.colorScheme.secondary,
+                                ],
                               ),
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -299,10 +304,10 @@ class _HomePageState extends State<HomePage> {
                           ),
                           title: Text(
                             b.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 14,
-                              color: AppTheme.deepBlue,
+                              color: theme.textTheme.titleLarge?.color,
                               letterSpacing: -0.2,
                             ),
                             maxLines: 1,
@@ -314,7 +319,7 @@ class _HomePageState extends State<HomePage> {
                               b.details,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                              style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
                             ),
                           ),
                           trailing: Column(
@@ -323,10 +328,10 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Text(
                                 '\$${b.price.toStringAsFixed(0)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 15,
-                                  color: AppTheme.primaryOrange,
+                                  color: theme.colorScheme.primary,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -357,147 +362,163 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const SectionHeader(title: 'Explore Destinations'),
+SectionHeader(
+  title: 'Explore Destinations',
+  onSeeAll: () => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const AllDestinationsScreen()),
+  ),
+),
               ],
             ),
           ),
-          // DESTINATIONS FROM FIRESTORE WITH SEARCH
-          StreamBuilder<List<Destination>>(
-            stream: _destinationService.streamAllDestinations(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 8),
-                        const SizedBox(
-                          width: 36,
-                          height: 36,
-                          child: CircularProgressIndicator(
-                            color: AppTheme.primaryOrange,
-                            strokeWidth: 3,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Loading destinations...',
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
+          // DESTINATIONS FROM FIRESTORE - LIMIT TO 5
+StreamBuilder<List<Destination>>(
+  stream: _destinationService.streamAllDestinations(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 36,
+                height: 36,
+                child: CircularProgressIndicator(
+                  color: theme.colorScheme.primary,
+                  strokeWidth: 3,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Loading destinations...',
+                style: TextStyle(
+                  color: theme.textTheme.bodyMedium?.color,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (snapshot.hasError) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Center(
+            child: Text('Error: ${snapshot.error}'),
+          ),
+        ),
+      );
+    }
+
+    var destinations = snapshot.data ?? [];
+
+    // FILTER DESTINATIONS BY SEARCH QUERY
+    if (_searchQuery.isNotEmpty) {
+      destinations = destinations
+          .where((dest) => dest.name
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    if (destinations.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Center(
+            child: Column(
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withAlpha(20),
+                    shape: BoxShape.circle,
                   ),
-                );
-              }
-
-              if (snapshot.hasError) {
-                return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Center(
-                      child: Text('Error: ${snapshot.error}'),
-                    ),
-                  ),
-                );
-              }
-
-              var destinations = snapshot.data ?? [];
-
-              // FILTER DESTINATIONS BY SEARCH QUERY
-              if (_searchQuery.isNotEmpty) {
-                destinations = destinations
-                    .where((dest) => dest.name
-                        .toLowerCase()
-                        .contains(_searchQuery.toLowerCase()))
-                    .toList();
-              }
-
-              if (destinations.isEmpty) {
-                return SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                    child: Center(
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(Icons.explore_off_rounded, size: 38, color: Colors.grey.shade400),
-                          ),
-                          const SizedBox(height: 14),
-                          Text(
-                            _searchQuery.isEmpty
-                                ? 'No destinations available'
-                                : 'No results for "$_searchQuery"',
-                            style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            _searchQuery.isEmpty
-                                ? 'Check back soon for new destinations'
-                                : 'Try a different search term',
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }
-
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: DestinationCard(destination: destinations[index]),
-                      );
-                    },
-                    childCount: destinations.length,
+                  child: Icon(Icons.explore_off_rounded, size: 38, color: theme.colorScheme.primary),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  _searchQuery.isEmpty
+                      ? 'No destinations available'
+                      : 'No results for "$_searchQuery"',
+                  style: TextStyle(
+                    color: theme.textTheme.titleLarge?.color,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              );
-            },
+                const SizedBox(height: 6),
+                Text(
+                  _searchQuery.isEmpty
+                      ? 'Check back soon for new destinations'
+                      : 'Try a different search term',
+                  style: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
           ),
-          SliverToBoxAdapter(
-            child: const SizedBox(height: 24),
+        ),
+      );
+    }
+
+    // ⭐ LIMIT TO 5 DESTINATIONS ON HOME PAGE
+    final hasMore = destinations.length > 5;
+    final displayedDestinations = destinations.take(5).toList();
+
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            // After the last destination, show the "View All" button
+            if (index == displayedDestinations.length) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16, top: 4),
+                child: _buildViewAllButton(context, theme, destinations.length),
+              );
+            }
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: DestinationCard(destination: displayedDestinations[index]),
+            );
+          },
+          childCount: displayedDestinations.length + (hasMore ? 1 : 0),
+        ),
+      ),
+    );
+  },
+),
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 24),
           ),
         ],
       ),
     );
   }
 
-  SliverAppBar _buildAppBar(BuildContext context) {
+  SliverAppBar _buildAppBar(BuildContext context, ThemeData theme) {
     return SliverAppBar(
       expandedHeight: 240,
       pinned: true,
       stretch: true,
-      backgroundColor: AppTheme.deepBlue,
+      backgroundColor: theme.appBarTheme.backgroundColor,
       flexibleSpace: FlexibleSpaceBar(
         stretchModes: const [StretchMode.zoomBackground],
         background: Stack(
           fit: StackFit.expand,
           children: [
             Image.asset('assets/images/welcome.jpg', fit: BoxFit.cover),
-            // Gradient overlay - stronger at bottom for readability
             const DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -508,7 +529,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            // Content positioned at bottom-left
             Positioned(
               bottom: 0,
               left: 0,
@@ -526,7 +546,7 @@ class _HomePageState extends State<HomePage> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryOrange.withAlpha(200),
+                              color: theme.colorScheme.primary.withAlpha(220),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
@@ -573,18 +593,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildSearchBar(BuildContext context) {
+  Widget _buildSearchBar(BuildContext context, ThemeData theme) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(18),
+            color: Colors.black.withAlpha(theme.brightness == Brightness.dark ? 50 : 18),
             blurRadius: 12,
             offset: const Offset(0, 4),
-            spreadRadius: 0,
           ),
         ],
       ),
@@ -593,6 +612,7 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: TextField(
               controller: _searchController,
+              style: TextStyle(color: theme.textTheme.bodyLarge?.color),
               onChanged: (value) {
                 setState(() {
                   _searchQuery = value;
@@ -600,9 +620,12 @@ class _HomePageState extends State<HomePage> {
               },
               decoration: InputDecoration(
                 hintText: 'Search destinations...',
-                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primaryOrange, size: 22),
+                hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 14),
+                prefixIcon: Icon(Icons.search_rounded, color: theme.colorScheme.primary, size: 22),
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? GestureDetector(
@@ -615,10 +638,10 @@ class _HomePageState extends State<HomePage> {
                         child: Container(
                           margin: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
+                            color: theme.dividerColor,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.close_rounded, color: Colors.grey, size: 14),
+                          child: Icon(Icons.close_rounded, color: theme.textTheme.bodyMedium?.color, size: 14),
                         ),
                       )
                     : null,
@@ -629,17 +652,17 @@ class _HomePageState extends State<HomePage> {
             margin: const EdgeInsets.only(right: 8),
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppTheme.deepBlue.withAlpha(15),
+              color: theme.colorScheme.primary.withAlpha(25),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.tune_rounded, color: AppTheme.deepBlue, size: 20),
+            child: Icon(Icons.tune_rounded, color: theme.colorScheme.primary, size: 20),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
+  Widget _buildQuickActions(BuildContext context, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -648,7 +671,8 @@ class _HomePageState extends State<HomePage> {
             context,
             Icons.photo_library_rounded,
             'Gallery',
-            AppTheme.primaryOrange,
+            theme.colorScheme.primary,
+            theme,
             () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GalleryScreen())),
           ),
           const SizedBox(width: 10),
@@ -657,6 +681,7 @@ class _HomePageState extends State<HomePage> {
             Icons.favorite_rounded,
             'Favorites',
             const Color(0xFFE74C3C),
+            theme,
             () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FavoritesScreen())),
           ),
           const SizedBox(width: 10),
@@ -664,7 +689,8 @@ class _HomePageState extends State<HomePage> {
             context,
             Icons.book_online_rounded,
             'Bookings',
-            AppTheme.deepBlue,
+            theme.colorScheme.secondary,
+            theme,
             () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BookingsScreen())),
           ),
         ],
@@ -672,18 +698,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _quickAction(BuildContext context, IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _quickAction(BuildContext context, IconData icon, String label, Color color, ThemeData theme, VoidCallback onTap) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.cardColor,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: color.withAlpha(25),
+                color: color.withAlpha(theme.brightness == Brightness.dark ? 50 : 25),
                 blurRadius: 10,
                 offset: const Offset(0, 3),
               ),
@@ -706,7 +732,7 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: Colors.grey.shade800,
+                  color: theme.textTheme.titleLarge?.color,
                   letterSpacing: 0.1,
                 ),
               ),
@@ -717,25 +743,27 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildAiCard(BuildContext context) {
+  Widget _buildAiCard(BuildContext context, ThemeData theme) {
     return GestureDetector(
       onTap: () => widget.onTabChange?.call(2),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFF1A3A5C), Color(0xFF1E5A9E)],
+            colors: [
+              theme.colorScheme.primary,
+              theme.colorScheme.secondary,
+            ],
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.deepBlue.withAlpha(70),
+              color: theme.colorScheme.primary.withAlpha(70),
               blurRadius: 16,
               offset: const Offset(0, 6),
-              spreadRadius: 0,
             ),
           ],
         ),
@@ -804,4 +832,90 @@ class _HomePageState extends State<HomePage> {
         return Icons.directions_car;
     }
   }
+  Widget _buildViewAllButton(BuildContext context, ThemeData theme, int totalCount) {
+  return Material(
+    color: Colors.transparent,
+    child: InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const AllDestinationsScreen()),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppTheme.primaryOrange, Color(0xFFE8830A)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryOrange.withAlpha(80),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(40),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withAlpha(60)),
+              ),
+              child: const Icon(
+                Icons.travel_explore_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Explore All Destinations',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'View all $totalCount amazing places & search',
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(220),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha(30),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
 }

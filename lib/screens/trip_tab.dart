@@ -15,12 +15,11 @@ class TripTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final memories = MockDataService.getTripMemories().take(3).toList();
     final bookings = MockDataService.getBookings().take(3).toList();
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Trip'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
@@ -64,21 +63,58 @@ class TripTab extends StatelessWidget {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: ListTile(
                       leading: Container(
-                        width: 44, height: 44,
-                        decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(10)),
-                        child: Icon(icon, color: AppTheme.primaryOrange, size: 22),
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withAlpha(30),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(icon, color: theme.colorScheme.primary, size: 22),
                       ),
-                      title: Text(booking.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
-                      subtitle: Text(booking.details, style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      title: Text(
+                        booking.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: theme.textTheme.titleLarge?.color,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        booking.details,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       trailing: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('\$${booking.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppTheme.primaryOrange)),
+                          Text(
+                            '\$${booking.price.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: statusColor.withAlpha(30), borderRadius: BorderRadius.circular(8)),
-                            child: Text(_statusLabel(booking.status), style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: statusColor)),
+                            decoration: BoxDecoration(
+                              color: statusColor.withAlpha(30),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              _statusLabel(booking.status),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: statusColor,
+                              ),
+                            ),
                           ),
                         ],
                       ),

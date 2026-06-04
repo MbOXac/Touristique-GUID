@@ -216,12 +216,12 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   Widget build(BuildContext context) {
     final isSearching = _searchController.text.isNotEmpty;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+   return Container(
+  height: MediaQuery.of(context).size.height * 0.85,
+  decoration: BoxDecoration(
+    color: Theme.of(context).cardColor,
+    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+  ),
       child: Column(
         children: [
           // Handle bar
@@ -239,14 +239,14 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                const Text(
-                  'Select Country',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.deepBlue,
-                  ),
-                ),
+                Text(
+  'Select Country',
+  style: TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+    color: Theme.of(context).textTheme.titleLarge?.color,
+  ),
+),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -259,18 +259,21 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
             child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search country...',
-                prefixIcon: const Icon(Icons.search, color: AppTheme.primaryOrange),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
+  controller: _searchController,
+  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+  decoration: InputDecoration(
+    hintText: 'Search country...',
+    prefixIcon: const Icon(Icons.search, color: AppTheme.primaryOrange),
+    filled: true,
+    fillColor: Theme.of(context).brightness == Brightness.dark
+        ? AppTheme.darkBackground
+        : Colors.grey.shade100,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide.none,
+    ),
+  ),
+),
           ),
           const Divider(height: 1),
           // List
@@ -325,20 +328,27 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   }
 
   Widget _buildTile(Country country) {
-    final isSelected = widget.selectedCountry == country.name;
-    return ListTile(
-      leading: Text(country.flag, style: const TextStyle(fontSize: 28)),
-      title: Text(
-        country.name,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? AppTheme.primaryOrange : AppTheme.deepBlue,
+  final isSelected = widget.selectedCountry == country.name;
+  return Builder(
+    builder: (context) {
+      final theme = Theme.of(context);
+      return ListTile(
+        leading: Text(country.flag, style: const TextStyle(fontSize: 28)),
+        title: Text(
+          country.name,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected
+                ? AppTheme.primaryOrange
+                : theme.textTheme.titleLarge?.color,
+          ),
         ),
-      ),
-      trailing: isSelected
-          ? const Icon(Icons.check_circle, color: AppTheme.primaryOrange)
-          : null,
-      onTap: () => Navigator.pop(context, country),
-    );
-  }
+        trailing: isSelected
+            ? const Icon(Icons.check_circle, color: AppTheme.primaryOrange)
+            : null,
+        onTap: () => Navigator.pop(context, country),
+      );
+    },
+  );
+}
 }

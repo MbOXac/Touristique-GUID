@@ -71,8 +71,6 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Bookings'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -86,7 +84,11 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         children: ['All', 'Confirmed', 'Pending'].map((status) {
           final bookings = _filteredBookings(status);
           if (bookings.isEmpty) {
-            return const EmptyState(icon: Icons.calendar_today_outlined, title: 'No bookings', message: 'You have no bookings in this category.');
+            return const EmptyState(
+              icon: Icons.calendar_today_outlined,
+              title: 'No bookings',
+              message: 'You have no bookings in this category.',
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -99,6 +101,8 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
   }
 
   Widget _buildBookingCard(Booking booking) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 3,
@@ -108,8 +112,12 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
         child: Row(
           children: [
             Container(
-              width: 52, height: 52,
-              decoration: BoxDecoration(color: AppTheme.sandBeige, borderRadius: BorderRadius.circular(12)),
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.darkBackground : AppTheme.sandBeige,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Icon(_typeIcon(booking.type), color: AppTheme.primaryOrange, size: 26),
             ),
             const SizedBox(width: 14),
@@ -117,11 +125,28 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(booking.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppTheme.deepBlue), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    booking.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: theme.textTheme.titleLarge?.color,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 3),
-                  Text(booking.details, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(
+                    booking.details,
+                    style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 4),
-                  Text(_formatDate(booking.bookingDate), style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  Text(
+                    _formatDate(booking.bookingDate),
+                    style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                  ),
                 ],
               ),
             ),
@@ -129,12 +154,21 @@ class _BookingsScreenState extends State<BookingsScreen> with SingleTickerProvid
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text('\$${booking.price.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primaryOrange)),
+                Text(
+                  '\$${booking.price.toStringAsFixed(0)}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primaryOrange),
+                ),
                 const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: _statusColor(booking.status).withAlpha(30), borderRadius: BorderRadius.circular(10)),
-                  child: Text(_statusLabel(booking.status), style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _statusColor(booking.status))),
+                  decoration: BoxDecoration(
+                    color: _statusColor(booking.status).withAlpha(30),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _statusLabel(booking.status),
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: _statusColor(booking.status)),
+                  ),
                 ),
               ],
             ),

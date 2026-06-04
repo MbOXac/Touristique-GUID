@@ -9,6 +9,7 @@ class RatingBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -26,7 +27,10 @@ class RatingBadge extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             '($reviewCount)',
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
+            style: TextStyle(
+              color: theme.textTheme.bodyMedium?.color,
+              fontSize: 12,
+            ),
           ),
         ],
       ],

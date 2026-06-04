@@ -36,11 +36,10 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gallery'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -56,7 +55,12 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
           return Padding(
             padding: const EdgeInsets.all(8),
             child: items.isEmpty
-                ? const Center(child: Text('No photos in this category'))
+                ? Center(
+                    child: Text(
+                      'No photos in this category',
+                      style: TextStyle(color: theme.textTheme.bodyMedium?.color),
+                    ),
+                  )
                 : GalleryGrid(items: items, crossAxisCount: 2, shrinkWrap: false),
           );
         }).toList(),

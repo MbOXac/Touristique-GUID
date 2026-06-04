@@ -3,7 +3,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../models/destination.dart';
 import '../services/destination_service.dart';
-import '../theme/app_theme.dart';
 import 'destination_detail_screen.dart';
 
 class MapTab extends StatefulWidget {
@@ -39,12 +38,10 @@ class _MapTabState extends State<MapTab> {
           onTap: () => _openDestination(d),
         ),
         onTap: () async {
-          await _focusOn(d); 
+          await _focusOn(d);
           if (!mounted) return;
-          _openDestination(d);// NEW: auto zoom when clicking marker
+          _openDestination(d);
         },
-         
-        
       );
     }).toSet();
   }
@@ -56,24 +53,15 @@ class _MapTabState extends State<MapTab> {
       ),
     );
   }
-Future<void> _focusOn(Destination d) async {
-  debugPrint("FOCUS REQUEST: ${d.name}");
-  setState(() => _selectedDestinationId = d.id);
 
-  final c = _controller;
-  if (c == null) {
-    debugPrint('Map controller is null. Tap ignored.');
-    return;
+  Future<void> _focusOn(Destination d) async {
+    setState(() => _selectedDestinationId = d.id);
+    final c = _controller;
+    if (c == null) return;
+    await c.animateCamera(
+      CameraUpdate.newLatLngZoom(LatLng(d.lat, d.lng), 16.0),
+    );
   }
-
-  debugPrint('Animating camera to ${d.name}: ${d.lat}, ${d.lng}');
-  await c.animateCamera(
-    CameraUpdate.newLatLngZoom(
-      LatLng(d.lat, d.lng),
-      16.0,
-    ),
-  );
-}
 
   void _performSearch(String query) {
     if (query.trim().isEmpty) {
@@ -84,29 +72,27 @@ Future<void> _focusOn(Destination d) async {
       return;
     }
 
-    // Get all destinations and filter by partial name match (case-insensitive)
     _destinationService.getAllDestinations().then((allDestinations) {
       final results = allDestinations
           .where((d) => d.name.toLowerCase().contains(query.toLowerCase().trim()))
           .toList();
-      
+
       setState(() {
         _searchResults = results;
         _hasSearched = true;
       });
-
-      // Removed auto-focus to prevent keyboard dismissal during typing
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Map'),
-        backgroundColor: AppTheme.deepBlue.withOpacity(0.9),
-        foregroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor?.withAlpha(230),
         automaticallyImplyLeading: false,
         elevation: 0,
       ),
@@ -114,51 +100,42 @@ Future<void> _focusOn(Destination d) async {
         stream: _destinationService.streamAllDestinations(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: theme.colorScheme.primary),
+            );
           }
 
           final allDestinations = snapshot.data ?? [];
-          final markersForMap =
-              _hasSearched ? _searchResults : allDestinations;
+          final markersForMap = _hasSearched ? _searchResults : allDestinations;
 
-          final initialLat = allDestinations.isNotEmpty
-              ? allDestinations.first.lat
-              : 31.7917;
-          final initialLng = allDestinations.isNotEmpty
-              ? allDestinations.first.lng
-              : -7.0926;
+          final initialLat = allDestinations.isNotEmpty ? allDestinations.first.lat : 31.7917;
+          final initialLng = allDestinations.isNotEmpty ? allDestinations.first.lng : -7.0926;
 
           return Stack(
             children: [
-              // Full-screen Google Map (bottom layer)
               GoogleMap(
                 initialCameraPosition: CameraPosition(
                   target: LatLng(initialLat, initialLng),
-                  zoom: 6.5, // Morocco-level view
+                  zoom: 6.5,
                 ),
                 markers: _buildMarkers(markersForMap),
                 myLocationButtonEnabled: false,
                 zoomControlsEnabled: false,
                 mapToolbarEnabled: false,
-                onMapCreated: (c) { 
-                  _controller = c;
-                },
+                onMapCreated: (c) => _controller = c,
               ),
-
-              // Overlay UI (top layer)
               Column(
                 children: [
-                  // SafeArea Search Bar at top
                   SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha(26),
+                              color: Colors.black.withAlpha(40),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -168,31 +145,30 @@ Future<void> _focusOn(Destination d) async {
                           controller: _searchController,
                           textInputAction: TextInputAction.search,
                           onSubmitted: _performSearch,
+                          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                           decoration: InputDecoration(
                             hintText: 'Search by destination name...',
                             hintStyle: TextStyle(
-                              color: Colors.grey.shade400,
+                              color: theme.textTheme.bodyMedium?.color,
                               fontSize: 14,
                             ),
-                            prefixIcon: const Icon(
+                            prefixIcon: Icon(
                               Icons.search_rounded,
-                              color: AppTheme.primaryOrange,
+                              color: theme.colorScheme.primary,
                               size: 22,
                             ),
                             border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 14,
-                            ),
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            filled: false,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
                             suffixIcon: _searchController.text.isNotEmpty
                                 ? GestureDetector(
-                                    onTap: () {
-                                      _performSearch(_searchController.text);
-                                    },
+                                    onTap: () => _performSearch(_searchController.text),
                                     child: Container(
                                       margin: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: AppTheme.primaryOrange,
+                                        color: theme.colorScheme.primary,
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
@@ -208,20 +184,15 @@ Future<void> _focusOn(Destination d) async {
                       ),
                     ),
                   ),
-
                   const Spacer(),
-
-                  // Bottom overlay panel: Search results or empty state
                   if (_hasSearched)
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16),
-                        ),
+                        color: theme.cardColor,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withAlpha(38),
+                            color: Colors.black.withAlpha(50),
                             blurRadius: 12,
                             offset: const Offset(0, -2),
                           ),
@@ -233,18 +204,18 @@ Future<void> _focusOn(Destination d) async {
                             ? Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.search_off_rounded,
                                     size: 32,
-                                    color: Colors.grey,
+                                    color: theme.textTheme.bodyMedium?.color,
                                   ),
                                   const SizedBox(height: 8),
-                                  const Text(
+                                  Text(
                                     'No exact match',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: AppTheme.deepBlue,
+                                      color: theme.textTheme.titleLarge?.color,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -252,7 +223,7 @@ Future<void> _focusOn(Destination d) async {
                                     'Try searching for: "${_searchController.text}"',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Colors.grey.shade600,
+                                      color: theme.textTheme.bodyMedium?.color,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -265,17 +236,13 @@ Future<void> _focusOn(Destination d) async {
                                   itemCount: _searchResults.length,
                                   itemBuilder: (context, index) {
                                     final dest = _searchResults[index];
-                                    final selected =
-                                        dest.id == _selectedDestinationId;
+                                    final selected = dest.id == _selectedDestinationId;
 
                                     return Material(
                                       color: Colors.transparent,
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(12),
-                                        onTap: () {
-                                          debugPrint("CARD TAP: ${dest.name}");
-                                          _focusOn(dest);
-                                        },
+                                        onTap: () => _focusOn(dest),
                                         onLongPress: () => _openDestination(dest),
                                         child: Container(
                                           width: 160,
@@ -284,14 +251,14 @@ Future<void> _focusOn(Destination d) async {
                                             borderRadius: BorderRadius.circular(12),
                                             border: Border.all(
                                               color: selected
-                                                  ? AppTheme.primaryOrange
-                                                  : Colors.grey.shade300,
+                                                  ? theme.colorScheme.primary
+                                                  : theme.dividerColor,
                                               width: selected ? 2 : 1,
                                             ),
                                             boxShadow: selected
                                                 ? [
                                                     BoxShadow(
-                                                      color: AppTheme.primaryOrange.withAlpha(77),
+                                                      color: theme.colorScheme.primary.withAlpha(77),
                                                       blurRadius: 8,
                                                       spreadRadius: 1,
                                                     ),
@@ -315,10 +282,7 @@ Future<void> _focusOn(Destination d) async {
                                                     gradient: LinearGradient(
                                                       begin: Alignment.topCenter,
                                                       end: Alignment.bottomCenter,
-                                                      colors: [
-                                                        Colors.transparent,
-                                                        Colors.black45,
-                                                      ],
+                                                      colors: [Colors.transparent, Colors.black45],
                                                     ),
                                                   ),
                                                 ),
@@ -332,12 +296,9 @@ Future<void> _focusOn(Destination d) async {
                                                         child: Align(
                                                           alignment: Alignment.topRight,
                                                           child: Container(
-                                                            padding: const EdgeInsets.symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 3,
-                                                            ),
+                                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                                                             decoration: BoxDecoration(
-                                                              color: AppTheme.primaryOrange,
+                                                              color: theme.colorScheme.primary,
                                                               borderRadius: BorderRadius.circular(6),
                                                             ),
                                                             child: Text(
@@ -367,21 +328,14 @@ Future<void> _focusOn(Destination d) async {
                                                           const SizedBox(height: 2),
                                                           Row(
                                                             children: [
-                                                              const Icon(
-                                                                Icons.location_on,
-                                                                color: Colors.white70,
-                                                                size: 12,
-                                                              ),
+                                                              const Icon(Icons.location_on, color: Colors.white70, size: 12),
                                                               const SizedBox(width: 2),
                                                               Expanded(
                                                                 child: Text(
                                                                   dest.distance,
                                                                   maxLines: 1,
                                                                   overflow: TextOverflow.ellipsis,
-                                                                  style: const TextStyle(
-                                                                    color: Colors.white70,
-                                                                    fontSize: 10,
-                                                                  ),
+                                                                  style: const TextStyle(color: Colors.white70, fontSize: 10),
                                                                 ),
                                                               ),
                                                             ],
@@ -397,7 +351,6 @@ Future<void> _focusOn(Destination d) async {
                                         ),
                                       ),
                                     );
-
                                   },
                                 ),
                               ),

@@ -23,11 +23,7 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Memories'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
-      ),
+      appBar: AppBar(title: const Text('My Memories')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Add Memory – Coming soon!'), behavior: SnackBarBehavior.floating),
@@ -48,6 +44,8 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
   }
 
   Widget _buildMemoryCard(TripMemory memory, bool isLast) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,12 +53,19 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
           Column(
             children: [
               Container(
-                width: 40, height: 40,
+                width: 40,
+                height: 40,
                 decoration: const BoxDecoration(color: AppTheme.primaryOrange, shape: BoxShape.circle),
                 child: Center(child: Text(memory.mood, style: const TextStyle(fontSize: 20))),
               ),
               if (!isLast)
-                Expanded(child: Container(width: 2, color: AppTheme.sandBeige, margin: const EdgeInsets.symmetric(vertical: 4))),
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    color: isDark ? AppTheme.darkBorder : AppTheme.sandBeige,
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                  ),
+                ),
             ],
           ),
           const SizedBox(width: 12),
@@ -76,8 +81,20 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: Text(memory.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.deepBlue))),
-                        Text(_formatDate(memory.date), style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                        Expanded(
+                          child: Text(
+                            memory.title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: theme.textTheme.titleLarge?.color,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          _formatDate(memory.date),
+                          style: TextStyle(fontSize: 11, color: theme.textTheme.bodyMedium?.color),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -85,7 +102,10 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
                       children: [
                         const Icon(Icons.location_on, size: 13, color: AppTheme.primaryOrange),
                         const SizedBox(width: 3),
-                        Text(memory.location, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text(
+                          memory.location,
+                          style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -102,7 +122,16 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text(memory.description, style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
+                    Text(
+                      memory.description,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.textTheme.bodyMedium?.color,
+                        height: 1.5,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
