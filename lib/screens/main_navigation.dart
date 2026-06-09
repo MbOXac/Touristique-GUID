@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'map_tab.dart';
@@ -12,11 +13,35 @@ class MainNavigation extends StatefulWidget {
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> {
+class _MainNavigationState extends State<MainNavigation>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   void _onTabChange(int index) {
-    setState(() => _currentIndex = index);
+    if (_currentIndex != index) {
+      setState(() {
+        _currentIndex = index;
+        _animationController.reset();
+        _animationController.forward();
+      });
+    }
   }
 
   late final List<Widget> _tabs = [
@@ -29,39 +54,76 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
         children: _tabs,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(isDark ? 60 : 18),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
-            ),
-          ],
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(
+          left: 16,
+          right: 16,
+          bottom: 24,
         ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, Icons.explore_outlined, Icons.explore_rounded, 'Home', primary, isDark),
-                _buildNavItem(1, Icons.map_outlined, Icons.map_rounded, 'Map', primary, isDark),
-                _buildNavItem(2, Icons.chat_bubble_outline_rounded, Icons.chat_bubble_rounded, 'AI Chat', primary, isDark),
-                _buildNavItem(3, Icons.luggage_outlined, Icons.luggage_rounded, 'Trip', primary, isDark),
-                _buildNavItem(4, Icons.person_outline_rounded, Icons.person_rounded, 'Profile', primary, isDark),
-              ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(40),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+            child: Container(
+              height: 65,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.black.withOpacity(0.04),
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildNavItem(
+                      index: 0,
+                      outlinedIcon: Icons.home_outlined,
+                      filledIcon: Icons.home_rounded,
+                      isDark: isDark,
+                    ),
+                    _buildNavItem(
+                      index: 1,
+                      outlinedIcon: Icons.map_outlined,
+                      filledIcon: Icons.map_rounded,
+                      isDark: isDark,
+                    ),
+                    _buildNavItem(
+                      index: 2,
+                      outlinedIcon: Icons.chat_bubble_outline_rounded,
+                      filledIcon: Icons.chat_bubble_rounded,
+                      isDark: isDark,
+                    ),
+                    _buildNavItem(
+                      index: 3,
+                      outlinedIcon: Icons.luggage_outlined,
+                      filledIcon: Icons.luggage_rounded,
+                      isDark: isDark,
+                    ),
+                    _buildNavItem(
+                      index: 4,
+                      outlinedIcon: Icons.person_outline_rounded,
+                      filledIcon: Icons.person_rounded,
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -69,44 +131,39 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, IconData selectedIcon, String label, Color primary, bool isDark) {
+  Widget _buildNavItem({
+    required int index,
+    required IconData outlinedIcon,
+    required IconData filledIcon,
+    required bool isDark,
+  }) {
     final isSelected = _currentIndex == index;
-    final inactiveColor = isDark ? Colors.grey.shade400 : Colors.grey.shade500;
+    final activeColor = isDark ? Colors.white : Colors.black;
+    final inactiveColor =
+        isDark ? Colors.grey.shade400 : Colors.grey.shade600;
 
     return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
+      onTap: () => _onTabChange(index),
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? primary.withAlpha(30) : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                isSelected ? selectedIcon : icon,
-                key: ValueKey(isSelected),
-                color: isSelected ? primary : inactiveColor,
-                size: isSelected ? 24 : 22,
-              ),
+      child: SizedBox(
+        width: 52,
+        height: 52,
+        child: Center(
+          child: ScaleTransition(
+            scale: isSelected
+                ? Tween<double>(begin: 0.75, end: 1.0).animate(
+                    CurvedAnimation(
+                      parent: _animationController,
+                      curve: Curves.elasticOut,
+                    ),
+                  )
+                : const AlwaysStoppedAnimation(1.0),
+            child: Icon(
+              isSelected ? filledIcon : outlinedIcon,
+              color: isSelected ? activeColor : inactiveColor,
+              size: isSelected ? 28 : 25,
             ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                color: isSelected ? primary : inactiveColor,
-                letterSpacing: 0.1,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
