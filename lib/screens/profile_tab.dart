@@ -10,9 +10,17 @@ import 'profile_settings/language_screen.dart';
 import 'profile_settings/help_support_screen.dart';
 import 'profile_settings/about_screen.dart';
 import 'profile_settings/appearance_screen.dart';
+import 'package:flutter/rendering.dart';
 
 class ProfileTab extends StatefulWidget {
-  const ProfileTab({super.key});
+  final VoidCallback? onScrollDown;
+  final VoidCallback? onScrollUp;
+
+  const ProfileTab({
+    super.key,
+    this.onScrollDown,
+    this.onScrollUp,
+  });
   @override
   State<ProfileTab> createState() => _ProfileTabState();
 }
@@ -21,6 +29,7 @@ class _ProfileTabState extends State<ProfileTab> {
   String? name;
   String? email;
   String? language = 'English';
+  bool _bottomBarHidden = false;
 
   @override
   void initState() {
@@ -57,7 +66,23 @@ class _ProfileTabState extends State<ProfileTab> {
         title: const Text('Profile'),
         automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
+      body: NotificationListener<UserScrollNotification>(
+  onNotification: (notification) {
+    if (notification.direction == ScrollDirection.reverse &&
+        !_bottomBarHidden) {
+      _bottomBarHidden = true;
+      widget.onScrollDown?.call();
+    }
+
+    if (notification.direction == ScrollDirection.forward &&
+        _bottomBarHidden) {
+      _bottomBarHidden = false;
+      widget.onScrollUp?.call();
+    }
+
+    return false;
+  },
+  child: SingleChildScrollView(
         child: Column(
           children: [
             Container(
@@ -156,6 +181,7 @@ class _ProfileTabState extends State<ProfileTab> {
           ],
         ),
       ),
+      ), 
     );
   }
 

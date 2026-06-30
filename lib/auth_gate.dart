@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'screens/home_page.dart';    // Change to your main app page
-import 'screens/login_page.dart';  // Change to your login/sign up page
+import 'package:flutter/material.dart';
+
+import 'screens/main_navigation.dart';
+import 'screens/login_page.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -12,18 +13,19 @@ class AuthGate extends StatelessWidget {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show a loading indicator while checking auth state
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        if (snapshot.hasData) {
-          // User is signed in!
-          return const HomePage();
-        } else {
-          // User is NOT signed in
-          return const LoginPage();
+
+        if (snapshot.hasData && snapshot.data != null) {
+          // User is logged in - Initialize Firestore
+          //Future.microtask(() => FirestoreInit.initializeUserCollection());
+          return const MainNavigation();
         }
+
+        // User is not logged in
+        return const LoginPage();
       },
     );
   }

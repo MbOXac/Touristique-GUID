@@ -8,15 +8,18 @@ import 'profile_tab.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
-
+       
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
 class _MainNavigationState extends State<MainNavigation>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _animationController;
+    late final AnimationController _bottomBarController;
+     late final Animation<Offset> _bottomBarAnimation;
+     bool _isBottomBarVisible = true; 
 
   @override
   void initState() {
@@ -26,11 +29,26 @@ class _MainNavigationState extends State<MainNavigation>
       vsync: this,
     );
     _animationController.forward();
+    _bottomBarController = AnimationController(
+  vsync: this,
+  duration: const Duration(milliseconds: 250),
+);
+
+_bottomBarAnimation = Tween<Offset>(
+  begin: Offset.zero,
+  end: const Offset(0, 2),
+).animate(
+  CurvedAnimation(
+    parent: _bottomBarController,
+    curve: Curves.easeInOut,
+  ),
+);
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _bottomBarController.dispose();
     super.dispose();
   }
 
@@ -43,13 +61,36 @@ class _MainNavigationState extends State<MainNavigation>
       });
     }
   }
+  void hideBottomBar() {
+  if (_isBottomBarVisible) {
+    _isBottomBarVisible = false;
+    _bottomBarController.forward();
+  }
+}
+
+void showBottomBar() {
+  if (!_isBottomBarVisible) {
+    _isBottomBarVisible = true;
+    _bottomBarController.reverse();
+  }
+}
 
   late final List<Widget> _tabs = [
-    HomePage(onTabChange: _onTabChange),
+    HomePage(
+      onTabChange: _onTabChange,
+      onScrollDown: hideBottomBar,
+      onScrollUp: showBottomBar,
+    ),
     const MapTab(),
     const AiChatTab(),
-    const TripTab(),
-    const ProfileTab(),
+    TripTab(
+      onScrollDown: hideBottomBar,
+      onScrollUp: showBottomBar,
+    ),
+    ProfileTab(
+      onScrollDown: hideBottomBar,
+      onScrollUp: showBottomBar,
+    ),
   ];
 
   @override
@@ -62,8 +103,10 @@ class _MainNavigationState extends State<MainNavigation>
         index: _currentIndex,
         children: _tabs,
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(
+         bottomNavigationBar: SlideTransition(
+         position: _bottomBarAnimation,
+         child: Padding(
+         padding: const EdgeInsets.only(
           left: 16,
           right: 16,
           bottom: 24,
@@ -128,7 +171,9 @@ class _MainNavigationState extends State<MainNavigation>
           ),
         ),
       ),
+         ),
     );
+    
   }
 
   Widget _buildNavItem({

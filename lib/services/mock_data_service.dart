@@ -38,10 +38,5 @@ class MockDataService {
         TripMemory(id: 'm3', title: 'Kasbah Discovery', photos: ['assets/images/destination_1.jpg', 'assets/images/destination_1.jpg'], date: DateTime(2024, 3, 10), description: 'Explored ancient mud-brick kasbahs. The history and architecture is breathtaking.', mood: '🏛️', location: 'Draa Valley'),
       ];
 
-  static List<Booking> getBookings() => [
-        Booking(id: 'b1', type: BookingType.hotel, name: 'Riad Merzouga', bookingDate: DateTime(2024, 4, 20), price: 89.0, status: BookingStatus.confirmed, details: '2 nights · 1 room · Breakfast included'),
-        Booking(id: 'b2', type: BookingType.tour, name: 'Camel Trek Sahara', bookingDate: DateTime(2024, 4, 21), price: 45.0, status: BookingStatus.confirmed, details: '3hr sunset trek · Group of 4'),
-        Booking(id: 'b3', type: BookingType.restaurant, name: 'Café des Dunes', bookingDate: DateTime(2024, 4, 22), price: 28.0, status: BookingStatus.pending, details: 'Dinner for 2 · 7:00 PM'),
-        Booking(id: 'b4', type: BookingType.transport, name: 'Ouarzazate Transfer', bookingDate: DateTime(2024, 4, 19), price: 35.0, status: BookingStatus.cancelled, details: 'Private car · Airport pickup'),
-      ];
+
 }

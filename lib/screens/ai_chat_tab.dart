@@ -38,6 +38,7 @@ class _AiChatTabState extends State<AiChatTab> {
     }
   }
 
+  // ... (Keep your _sendMessage, _scrollToBottom, _resetChat, _showInfoDialog, and dispose methods exactly as they were)
   Future<void> _sendMessage(String text) async {
     final message = text.trim();
     if (message.isEmpty || _isLoading) return;
@@ -79,18 +80,55 @@ class _AiChatTabState extends State<AiChatTab> {
     });
   }
 
+  void _showInfoDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('About AI Assistant'),
+        content: const Text(
+          'This AI travel assistant is powered by Google Gemini.\n\n'
+          'Ask anything about Southeast Morocco — itineraries, riads, '
+          'activities, food, culture, or hidden gems!',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Got it')),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_initError != null) return _buildErrorScreen();
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8F9FD),
       appBar: AppBar(
-        title: const Text('AI Travel Assistant'),
-        automaticallyImplyLeading: false,
+        elevation: 0,
+        backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
+        centerTitle: false,
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: AppTheme.primaryOrange.withOpacity(0.2),
+              child: const Icon(Icons.explore, color: AppTheme.primaryOrange, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Travel Guide', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
+                const Text('Online Now', style: TextStyle(color: Colors.green, fontSize: 12)),
+              ],
+            ),
+          ],
+        ),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), tooltip: 'New conversation', onPressed: _resetChat),
-          IconButton(icon: const Icon(Icons.info_outline), onPressed: _showInfoDialog),
+          IconButton(icon: const Icon(Icons.refresh_rounded, color: Colors.grey), onPressed: _resetChat),
+          IconButton(icon: const Icon(Icons.info_outline_rounded, color: Colors.grey), onPressed: _showInfoDialog),
         ],
       ),
       body: Column(
@@ -98,46 +136,66 @@ class _AiChatTabState extends State<AiChatTab> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               itemCount: _messages.length + (_messages.length == 1 ? 1 : 0),
               itemBuilder: (context, index) {
                 if (_messages.length == 1 && index == 1) return _buildSuggestions(theme);
                 final msg = _messages[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: msg.isUser ? _buildUserMessage(msg.text, theme) : _buildAssistantMessage(msg.text, theme),
-                );
+                return _buildChatBubble(msg, theme);
               },
             ),
           ),
-          if (_isLoading) _buildTypingIndicator(theme),
           _buildInputArea(theme),
         ],
       ),
     );
   }
 
-  Widget _buildSuggestions(ThemeData theme) {
+  Widget _buildChatBubble(_ChatMessage msg, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: msg.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          Text(
-            'Quick suggestions:',
-            style: TextStyle(fontWeight: FontWeight.w600, color: theme.textTheme.bodyMedium?.color, fontSize: 13),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Row(
+            mainAxisAlignment: msg.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              _suggestionChip('🐪 Best camel treks', theme),
-              _suggestionChip('🏨 Top riads to stay', theme),
-              _suggestionChip('🌅 Sahara sunrise tips', theme),
-              _suggestionChip('📅 3-day itinerary', theme),
-              _suggestionChip('🍽️ Local food guide', theme),
-              _suggestionChip('🗺️ Hidden gems', theme),
+              if (!msg.isUser) _buildAvatar(Icons.auto_awesome, AppTheme.deepBlue),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: msg.isUser 
+                        ? AppTheme.primaryOrange 
+                        : (isDark ? AppTheme.darkCard : Colors.white),
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(20),
+                      topRight: const Radius.circular(20),
+                      bottomLeft: Radius.circular(msg.isUser ? 20 : 4),
+                      bottomRight: Radius.circular(msg.isUser ? 4 : 20),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    msg.text,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: msg.isUser ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (msg.isUser) _buildAvatar(Icons.person, AppTheme.sandBeige),
             ],
           ),
         ],
@@ -145,118 +203,45 @@ class _AiChatTabState extends State<AiChatTab> {
     );
   }
 
-  Widget _buildAssistantMessage(String text, ThemeData theme) {
-    final isDark = theme.brightness == Brightness.dark;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: isDark ? AppTheme.primaryOrange : AppTheme.deepBlue,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? AppTheme.darkCard : const Color(0xFFF0F4FF),
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
-              border: isDark ? Border.all(color: AppTheme.darkBorder) : null,
-            ),
-            child: SelectableText(
-              text,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.5,
-                color: isDark ? AppTheme.darkTextPrimary : Colors.black87,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 40),
-      ],
+  Widget _buildAvatar(IconData icon, Color bgColor) {
+    return Container(
+      width: 30,
+      height: 30,
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+      child: Icon(icon, size: 16, color: Colors.white),
     );
   }
 
-  Widget _buildUserMessage(String text, ThemeData theme) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(width: 40),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: AppTheme.primaryOrange,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
-              ),
-            ),
-            child: SelectableText(
-              text,
-              style: const TextStyle(fontSize: 14, height: 1.5, color: Colors.white),
-            ),
+  Widget _buildSuggestions(ThemeData theme) {
+    return FadeInUp( // Custom animation feel
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _suggestionChip('🐪 Best camel treks', theme),
+              _suggestionChip('🏨 Top riads', theme),
+              _suggestionChip('🌅 Sahara tips', theme),
+              _suggestionChip('🍽️ Local food', theme),
+            ],
           ),
         ),
-        const SizedBox(width: 10),
-        Container(
-          width: 36,
-          height: 36,
-          decoration: const BoxDecoration(color: AppTheme.sandBeige, shape: BoxShape.circle),
-          child: const Icon(Icons.person_rounded, color: AppTheme.earthBrown, size: 20),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _suggestionChip(String label, ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
-    return ActionChip(
-      label: Text(label, style: TextStyle(fontSize: 12, color: isDark ? AppTheme.darkTextPrimary : Colors.black87)),
-      onPressed: () => _sendMessage(label),
-      backgroundColor: isDark ? AppTheme.darkCard : AppTheme.sandBeige,
-      side: const BorderSide(color: AppTheme.primaryOrange),
-    );
-  }
-
-  Widget _buildTypingIndicator(ThemeData theme) {
-    final isDark = theme.brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: isDark ? AppTheme.primaryOrange : AppTheme.deepBlue,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 10),
-          const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primaryOrange),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            'AI is thinking...',
-            style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontStyle: FontStyle.italic),
-          ),
-        ],
+      padding: const EdgeInsets.only(right: 8),
+      child: ActionChip(
+        label: Text(label),
+        labelStyle: TextStyle(fontSize: 12, color: AppTheme.primaryOrange, fontWeight: FontWeight.bold),
+        onPressed: () => _sendMessage(label),
+        backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
+        side: BorderSide(color: AppTheme.primaryOrange.withOpacity(0.3)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
@@ -264,39 +249,44 @@ class _AiChatTabState extends State<AiChatTab> {
   Widget _buildInputArea(ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        border: Border(top: BorderSide(color: theme.dividerColor)),
+        color: isDark ? AppTheme.darkCard : Colors.white,
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)],
       ),
       child: SafeArea(
         child: Row(
           children: [
             Expanded(
-              child: TextField(
-                controller: _controller,
-                enabled: !_isLoading,
-                textInputAction: TextInputAction.send,
-                style: TextStyle(color: theme.textTheme.bodyLarge?.color),
-                decoration: InputDecoration(
-                  hintText: 'Ask about Southeast Morocco...',
-                  hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
-                  filled: true,
-                  fillColor: isDark ? AppTheme.darkBackground : const Color(0xFFF5F5F5),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.darkBackground : const Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.circular(25),
                 ),
-                onSubmitted: _sendMessage,
+                child: TextField(
+                  controller: _controller,
+                  enabled: !_isLoading,
+                  decoration: InputDecoration(
+                    hintText: _isLoading ? 'AI is thinking...' : 'Plan your trip...',
+                    hintStyle: const TextStyle(fontSize: 14),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    prefixIcon: _isLoading 
+                      ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 2)))
+                      : const Icon(Icons.chat_bubble_outline, size: 20),
+                  ),
+                  onSubmitted: _sendMessage,
+                ),
               ),
             ),
-            const SizedBox(width: 8),
-            CircleAvatar(
-              backgroundColor: _isLoading ? Colors.grey : AppTheme.primaryOrange,
-              child: IconButton(
-                icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-                onPressed: _isLoading ? null : () => _sendMessage(_controller.text),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: _isLoading ? null : () => _sendMessage(_controller.text),
+              child: CircleAvatar(
+                radius: 24,
+                backgroundColor: AppTheme.primaryOrange,
+                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
               ),
             ),
           ],
@@ -307,42 +297,17 @@ class _AiChatTabState extends State<AiChatTab> {
 
   Widget _buildErrorScreen() {
     return Scaffold(
-      appBar: AppBar(title: const Text('AI Travel Assistant'), automaticallyImplyLeading: false),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 64),
-              const SizedBox(height: 16),
-              const Text('Chatbot Configuration Error', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              Text(_initError!, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              const Text('Make sure you created the .env file with your GEMINI_API_KEY.',
-                  textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.cloud_off, size: 80, color: Colors.grey),
+            const SizedBox(height: 20),
+            Text('Connection Error', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
+            Text(_initError ?? "Please check your settings"),
+          ],
         ),
-      ),
-    );
-  }
-
-  void _showInfoDialog() {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('About AI Assistant'),
-        content: const Text(
-          'This AI travel assistant is powered by Google Gemini.\n\n'
-          'Ask anything about Southeast Morocco — itineraries, riads, '
-          'activities, food, culture, or hidden gems!\n\n'
-          'Replies are in the same language you write in.',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Got it')),
-        ],
       ),
     );
   }
@@ -352,6 +317,23 @@ class _AiChatTabState extends State<AiChatTab> {
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+}
+
+// Simple animation helper (Optional: You can replace with your own or remove)
+class FadeInUp extends StatelessWidget {
+  final Widget child;
+  const FadeInUp({required this.child});
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 500),
+      builder: (context, double value, child) {
+        return Opacity(opacity: value, child: Padding(padding: EdgeInsets.only(top: (1 - value) * 20), child: child));
+      },
+      child: child,
+    );
   }
 }
 

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-
+import '../models/booking.dart';
 import '../services/photo_service.dart';
 import '../services/trueway_service.dart';
+import 'booking_form_screen.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final TruewayPlace place;
@@ -33,15 +34,12 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   }
 
   Future<void> _loadContent() async {
-    // Load photo & description in parallel
     final photoFuture = _photoService.getBestPhoto(
       placeName: widget.place.name,
       category: widget.place.mainCategory,
     );
-
-    final descFuture = _photoService.getWikipediaDescription(
-      widget.place.name,
-    );
+    final descFuture =
+        _photoService.getWikipediaDescription(widget.place.name);
 
     final photo = await photoFuture;
     final desc = await descFuture;
@@ -56,17 +54,86 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     }
   }
 
+  // ✅ Detect booking type from place types
+  BookingType get _bookingType {
+    final types = widget.place.types.map((t) => t.toLowerCase()).toList();
+    if (types.any((t) => t.contains('hotel') ||
+        t.contains('lodging') ||
+        t.contains('accommodation'))) {
+      return BookingType.hotel;
+    } else if (types.any((t) => t.contains('restaurant') ||
+        t.contains('food') ||
+        t.contains('cafe'))) {
+      return BookingType.restaurant;
+    } else if (types.any((t) =>
+        t.contains('tour') || t.contains('attraction'))) {
+      return BookingType.tour;
+    } else {
+      return BookingType.activity;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final place = widget.place;
 
     return Scaffold(
       backgroundColor: Colors.white,
+
+      // ✅ Book Now Bottom Button
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(20),
+              blurRadius: 12,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => BookingFormScreen(
+                name: place.name,
+                imageUrl: _photoUrl ?? '',
+                type: _bookingType,
+                pricePerPerson: 30.0,
+              ),
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.black,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 4,
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.bookmark_add_rounded,
+                  color: Colors.white, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Book Now',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+
       body: CustomScrollView(
         slivers: [
-          // ══════════════════════════════════════
-          // 📸 PHOTO HEADER
-          // ══════════════════════════════════════
           SliverAppBar(
             expandedHeight: 280,
             pinned: true,
@@ -108,14 +175,12 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Photo
                   if (_isLoadingPhoto)
                     Container(
                       color: Colors.grey[200],
                       child: const Center(
                         child: CircularProgressIndicator(
-                          color: Colors.black,
-                        ),
+                            color: Colors.black),
                       ),
                     )
                   else
@@ -133,7 +198,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         ),
                       ),
                     ),
-                  // Gradient overlay
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
@@ -148,7 +212,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       ),
                     ),
                   ),
-                  // Place name overlay
                   Positioned(
                     bottom: 20,
                     left: 20,
@@ -182,7 +245,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius:
+                                    BorderRadius.circular(20),
                               ),
                               child: Text(
                                 t.replaceAll('_', ' '),
@@ -203,9 +267,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             ),
           ),
 
-          // ══════════════════════════════════════
-          // 📋 CONTENT
-          // ══════════════════════════════════════
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -228,8 +289,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      if (place.phoneNumber != null)
+                      if (place.phoneNumber != null) ...[
+                        const SizedBox(width: 10),
                         Expanded(
                           child: _actionButton(
                             icon: Icons.phone_rounded,
@@ -246,6 +307,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                             },
                           ),
                         ),
+                      ],
                       if (place.website != null) ...[
                         const SizedBox(width: 10),
                         Expanded(
@@ -270,20 +332,17 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
                   const SizedBox(height: 24),
 
-                  // 📍 INFO CARDS
                   _infoCard(
                     icon: Icons.location_on_rounded,
                     title: 'Address',
                     value: place.address,
                   ),
-
                   if (place.phoneNumber != null)
                     _infoCard(
                       icon: Icons.phone_rounded,
                       title: 'Phone',
                       value: place.phoneNumber!,
                     ),
-
                   if (place.website != null)
                     _infoCard(
                       icon: Icons.language_rounded,
@@ -291,7 +350,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       value: place.website!,
                       isLink: true,
                     ),
-
                   if (place.distance != null)
                     _infoCard(
                       icon: Icons.directions_walk_rounded,
@@ -299,7 +357,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       value: '${place.distanceText} from you',
                     ),
 
-                  // 📚 DESCRIPTION FROM WIKIPEDIA
                   if (_isLoadingDescription)
                     const Padding(
                       padding: EdgeInsets.symmetric(vertical: 20),
@@ -314,7 +371,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         ),
                       ),
                     )
-                  else if (_description != null && _description!.isNotEmpty)
+                  else if (_description != null &&
+                      _description!.isNotEmpty)
                     Container(
                       margin: const EdgeInsets.only(top: 16),
                       padding: const EdgeInsets.all(16),
@@ -328,11 +386,8 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         children: [
                           Row(
                             children: [
-                              const Icon(
-                                Icons.menu_book_rounded,
-                                size: 18,
-                                color: Colors.black,
-                              ),
+                              const Icon(Icons.menu_book_rounded,
+                                  size: 18, color: Colors.black),
                               const SizedBox(width: 8),
                               const Text(
                                 'About',
@@ -377,7 +432,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
                   const SizedBox(height: 20),
 
-                  // 🗺️ MINI MAP
                   const Text(
                     'Location',
                     style: TextStyle(
@@ -396,8 +450,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     clipBehavior: Clip.antiAlias,
                     child: FlutterMap(
                       options: MapOptions(
-                        initialCenter:
-                            LatLng(place.lat, place.lng),
+                        initialCenter: LatLng(place.lat, place.lng),
                         initialZoom: 15,
                         interactionOptions: const InteractionOptions(
                           flags: InteractiveFlag.none,
@@ -442,7 +495,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 30),
                 ],
               ),
@@ -453,7 +505,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     );
   }
 
-  // 🎯 Action Button
   Widget _actionButton({
     required IconData icon,
     required String label,
@@ -484,11 +535,9 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isPrimary ? Colors.white : Colors.black,
-              size: 22,
-            ),
+            Icon(icon,
+                color: isPrimary ? Colors.white : Colors.black,
+                size: 22),
             const SizedBox(height: 4),
             Text(
               label,
@@ -504,7 +553,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     );
   }
 
-  // 📍 Info Card
   Widget _infoCard({
     required IconData icon,
     required String title,

@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 import '../models/activity.dart';
+import '../models/booking.dart';
 import '../theme/app_theme.dart';
+import '../screens/booking_form_screen.dart';
 
 class ActivityDetailModal extends StatelessWidget {
   final Activity activity;
 
   const ActivityDetailModal({super.key, required this.activity});
+
+  // ✅ Parse price from "100 DH" → 100.0
+  double get _parsedPrice {
+    try {
+      final cleaned = activity.price
+          .replaceAll(RegExp(r'[^0-9.]'), '')
+          .trim();
+      return double.tryParse(cleaned) ?? 0.0;
+    } catch (_) {
+      return 0.0;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +45,22 @@ class ActivityDetailModal extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ─── Drag Handle ─────────────────────────────
                 Center(
                   child: Container(
                     margin: const EdgeInsets.only(top: 14, bottom: 6),
                     width: 44,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
+                      color: isDark
+                          ? Colors.grey.shade700
+                          : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
+
+                // ─── Header Card ──────────────────────────────
                 Container(
                   margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   padding: const EdgeInsets.all(18),
@@ -49,7 +68,10 @@ class ActivityDetailModal extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [categoryColor.withAlpha(25), categoryColor.withAlpha(50)],
+                      colors: [
+                        categoryColor.withAlpha(25),
+                        categoryColor.withAlpha(50)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: categoryColor.withAlpha(50)),
@@ -64,7 +86,10 @@ class ActivityDetailModal extends StatelessWidget {
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [categoryColor.withAlpha(180), categoryColor],
+                            colors: [
+                              categoryColor.withAlpha(180),
+                              categoryColor
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
@@ -75,7 +100,10 @@ class ActivityDetailModal extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: Icon(_getCategoryIcon(activity.category), color: Colors.white, size: 28),
+                        child: Icon(
+                            _getCategoryIcon(activity.category),
+                            color: Colors.white,
+                            size: 28),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -94,7 +122,8 @@ class ActivityDetailModal extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
                                 color: categoryColor,
                                 borderRadius: BorderRadius.circular(20),
@@ -115,6 +144,8 @@ class ActivityDetailModal extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                // ─── Stats Row ────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   child: Row(
@@ -141,6 +172,8 @@ class ActivityDetailModal extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                // ─── Description ──────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                   child: Column(
@@ -159,6 +192,8 @@ class ActivityDetailModal extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                // ─── Details ──────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                   child: Column(
@@ -186,6 +221,8 @@ class ActivityDetailModal extends StatelessWidget {
                     ],
                   ),
                 ),
+
+                // ─── Book Activity Button ✅ FIXED ────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 28, 16, 32),
                   child: SizedBox(
@@ -197,25 +234,25 @@ class ActivityDetailModal extends StatelessWidget {
                         foregroundColor: Colors.white,
                         elevation: 3,
                         shadowColor: AppTheme.primaryOrange.withAlpha(80),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16)),
                       ),
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                                const SizedBox(width: 8),
-                                Text('Booked: ${activity.name}'),
-                              ],
+                        // ✅ Close the modal first
+                        Navigator.pop(context);
+
+                        // ✅ Open BookingFormScreen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BookingFormScreen(
+                              name: activity.name,
+                              imageUrl: '',
+                              type: BookingType.activity,
+                              pricePerPerson: _parsedPrice,
                             ),
-                            backgroundColor: const Color(0xFF27AE60),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            margin: const EdgeInsets.all(16),
                           ),
                         );
-                        Navigator.pop(context);
                       },
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -224,7 +261,10 @@ class ActivityDetailModal extends StatelessWidget {
                           SizedBox(width: 8),
                           Text(
                             'Book Activity',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, letterSpacing: 0.3),
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3),
                           ),
                         ],
                       ),
@@ -245,7 +285,9 @@ class ActivityDetailModal extends StatelessWidget {
         Container(
           width: 4,
           height: 18,
-          decoration: BoxDecoration(color: AppTheme.primaryOrange, borderRadius: BorderRadius.circular(2)),
+          decoration: BoxDecoration(
+              color: AppTheme.primaryOrange,
+              borderRadius: BorderRadius.circular(2)),
         ),
         const SizedBox(width: 8),
         Text(
@@ -295,7 +337,8 @@ class ActivityDetailModal extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: color),
+            style: TextStyle(
+                fontSize: 15, fontWeight: FontWeight.w800, color: color),
           ),
         ],
       ),
@@ -359,25 +402,25 @@ class ActivityDetailModal extends StatelessWidget {
 
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
-      case 'nature': return Icons.eco_rounded;
+      case 'nature':    return Icons.eco_rounded;
       case 'adventure': return Icons.terrain_rounded;
-      case 'cultural': return Icons.account_balance_rounded;
-      case 'water': return Icons.water_rounded;
-      case 'hiking': return Icons.hiking_rounded;
-      case 'sports': return Icons.sports_rounded;
-      default: return Icons.local_activity_rounded;
+      case 'cultural':  return Icons.account_balance_rounded;
+      case 'water':     return Icons.water_rounded;
+      case 'hiking':    return Icons.hiking_rounded;
+      case 'sports':    return Icons.sports_rounded;
+      default:          return Icons.local_activity_rounded;
     }
   }
 
   Color _getCategoryColor(String category) {
     switch (category.toLowerCase()) {
-      case 'nature': return const Color(0xFF27AE60);
+      case 'nature':    return const Color(0xFF27AE60);
       case 'adventure': return const Color(0xFFE74C3C);
-      case 'cultural': return const Color(0xFF8E44AD);
-      case 'water': return const Color(0xFF2980B9);
-      case 'hiking': return const Color(0xFF795548);
-      case 'sports': return const Color(0xFFFF6B35);
-      default: return AppTheme.primaryOrange;
+      case 'cultural':  return const Color(0xFF8E44AD);
+      case 'water':     return const Color(0xFF2980B9);
+      case 'hiking':    return const Color(0xFF795548);
+      case 'sports':    return const Color(0xFFFF6B35);
+      default:          return AppTheme.primaryOrange;
     }
   }
 }
