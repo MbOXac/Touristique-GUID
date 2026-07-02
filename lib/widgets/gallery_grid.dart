@@ -38,7 +38,7 @@ class GalleryGrid extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                Image.asset(item.imagePath, fit: BoxFit.cover),
+                Image.asset(item.imageUrl, fit: BoxFit.cover),
                 Positioned(
                   bottom: 0, left: 0, right: 0,
                   child: Container(
@@ -85,7 +85,7 @@ class GalleryGrid extends StatelessWidget {
         insetPadding: EdgeInsets.zero,
         child: Stack(
           children: [
-            Center(child: Image.asset(item.imagePath, fit: BoxFit.contain)),
+            Center(child: Image.asset(item.imageUrl, fit: BoxFit.contain)),
             Positioned(
               top: 40, right: 16,
               child: IconButton(

@@ -1,177 +1,73 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Liste de Tâches</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      justify-content: center;
-      padding: 40px 20px;
-    }
-    .conteneur {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 500px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 20px;
-    }
-    .input-groupe {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    input {
-      flex: 1;
-      padding: 12px;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      font-size: 16px;
-      outline: none;
-    }
-    input:focus { border-color: orange; }
-    button {
-      padding: 12px 20px;
-      background: orange;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover { background: #e67e22; }
-    ul { list-style: none; }
-    li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      margin-bottom: 8px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      border-left: 4px solid orange;
-    }
-    li.fait {
-      opacity: 0.5;
-      text-decoration: line-through;
-      border-left-color: green;
-    }
-    .btn-suppr {
-      background: red;
-      padding: 5px 10px;
-      font-size: 12px;
-    }
-    .erreur { color: red; font-size: 14px; margin-bottom: 10px; }
-    .compteur { text-align: center; color: gray; margin-top: 15px; }
-  </style>
-</head>
-<body>
-  <div class="conteneur">
-    <h1>📝 Liste de Tâches</h1>
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'firebase_options.dart';
+import 'screens/splash_page.dart';
+import 'theme/app_theme.dart';
+import 'screens/login_page.dart';
+import 'services/theme_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'services/cloudinary_service.dart';
 
-    <div class="input-groupe">
-      <input type="text" id="champTache" 
-             placeholder="Nouvelle tâche...">
-      <button id="btnAjouter">Ajouter</button>
-    </div>
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  CloudinaryService().initialize();
+  runApp(const TouristiqueApp());
+}
 
-    <p class="erreur" id="erreur"></p>
-    <ul id="listeTaches"></ul>
-    <p class="compteur" id="compteur">0 tâche(s)</p>
-  </div>
+class TouristiqueApp extends StatefulWidget {
+  const TouristiqueApp({super.key});
 
-  <script>
-    let taches = [];
+  @override
+  State<TouristiqueApp> createState() => _TouristiqueAppState();
+}
 
-    // Ajouter une tâche
-    document.getElementById("btnAjouter")
-      .addEventListener("click", ajouterTache);
+class _TouristiqueAppState extends State<TouristiqueApp> {
+  final ThemeService _themeService = ThemeService();
 
-    // Ajouter avec Entrée
-    document.getElementById("champTache")
-      .addEventListener("keydown", function(e) {
-        if (e.key === "Enter") ajouterTache();
-      });
+  @override
+  void initState() {
+    super.initState();
+    _themeService.addListener(_onThemeChanged);
+  }
 
-    function ajouterTache() {
-      let champ = document.getElementById("champTache");
-      let erreur = document.getElementById("erreur");
-      let valeur = champ.value.trim();
+  @override
+  void dispose() {
+    _themeService.removeListener(_onThemeChanged);
+    super.dispose();
+  }
 
-      // Validation
-      if (valeur === "") {
-        erreur.textContent = "⚠️ Veuillez saisir une tâche!";
-        return;
-      }
+  void _onThemeChanged() => setState(() {});
 
-      erreur.textContent = "";
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Touristique GUID',
+      debugShowCheckedModeBanner: false,
+      theme: _themeService.themeData,
+      home: const AuthGate(),
+    );
+  }
+}
 
-      // Ajouter au tableau
-      taches.push({ texte: valeur, fait: false });
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
 
-      // Vider le champ
-      champ.value = "";
-
-      // Afficher
-      afficherTaches();
-    }
-
-    function afficherTaches() {
-      let liste = document.getElementById("listeTaches");
-      let compteur = document.getElementById("compteur");
-
-      // Vider la liste
-      liste.innerHTML = "";
-
-      // Afficher chaque tâche
-      taches.forEach(function(tache, index) {
-        let li = document.createElement("li");
-        if (tache.fait) li.classList.add("fait");
-
-        li.innerHTML = `
-          <span>${tache.texte}</span>
-          <div>
-            <button onclick="basculer(${index})"
-                    style="background:green; 
-                           padding:5px 10px; 
-                           font-size:12px; 
-                           margin-right:5px">
-              ✓
-            </button>
-            <button class="btn-suppr" 
-                    onclick="supprimer(${index})">
-              ✗
-            </button>
-          </div>
-        `;
-
-        liste.appendChild(li);
-      });
-
-      // Mettre à jour le compteur
-      let faites = taches.filter(t => t.fait).length;
-      compteur.textContent = 
-        `${taches.length} tâche(s) — ${faites} terminée(s)`;
-    }
-
-    function basculer(index) {
-      taches[index].fait = !taches[index].fait;
-      afficherTaches();
-    }
-
-    function supprimer(index) {
-      taches.splice(index, 1);
-      afficherTaches();
-    }
-  </script>
-</body>
-</html>
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          ThemeService().loadTheme();
+          return const SplashPage();
+        }
+        return const LoginPage();
+      },
+    );
+  }
+}

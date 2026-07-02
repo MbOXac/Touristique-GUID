@@ -9,12 +9,22 @@ class BookingFormScreen extends StatefulWidget {
   final BookingType type;
   final double pricePerPerson;
 
+  /// When true, this is a circuit booking: the price is per person for the
+  /// whole tour (total = pricePerPerson * people), the end date is optional,
+  /// and prices are shown in MAD.
+  final bool isCircuit;
+
+  /// Optional fixed number of days for circuit bookings (used for the summary).
+  final int? circuitDurationDays;
+
   const BookingFormScreen({
     super.key,
     required this.name,
     required this.imageUrl,
     required this.type,
     required this.pricePerPerson,
+    this.isCircuit = false,
+    this.circuitDurationDays,
   });
 
   @override
@@ -29,12 +39,24 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   bool _isLoading = false;
 
   int get _numberOfDays {
+    if (widget.isCircuit) {
+      return widget.circuitDurationDays ?? 1;
+    }
     if (_startDate == null || _endDate == null) return 1;
     return _endDate!.difference(_startDate!).inDays;
   }
 
   double get _totalPrice {
+    if (widget.isCircuit) {
+      // Circuit price is per person for the whole tour.
+      return widget.pricePerPerson * _guests;
+    }
     return widget.pricePerPerson * _guests * _numberOfDays;
+  }
+
+  String _money(double value) {
+    final amount = value.toStringAsFixed(0);
+    return widget.isCircuit ? '$amount MAD' : '\$$amount';
   }
 
   String _formatDate(DateTime? date) {
@@ -103,7 +125,17 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   }
 
   Future<void> _confirmBooking() async {
-    if (_startDate == null || _endDate == null) {
+    if (widget.isCircuit) {
+      if (_startDate == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a start date!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    } else if (_startDate == null || _endDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content:
@@ -177,7 +209,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Total: \$${_totalPrice.toStringAsFixed(0)}',
+                  'Total: ${_money(_totalPrice)}',
                   style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
@@ -348,7 +380,9 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                             color: AppTheme.primaryOrange),
                         const SizedBox(width: 10),
                         Text(
-                          '\$${widget.pricePerPerson.toStringAsFixed(0)} per person/day',
+                          widget.isCircuit
+                              ? '${widget.pricePerPerson.toStringAsFixed(0)} MAD per person'
+                              : '\$${widget.pricePerPerson.toStringAsFixed(0)} per person/day',
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
@@ -424,7 +458,8 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      if (!widget.isCircuit) const SizedBox(width: 12),
+                      if (!widget.isCircuit)
                       Expanded(
                         child: GestureDetector(
                           onTap: _pickEndDate,
@@ -582,7 +617,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
 
                   // ─── Summary ───────────────────────────
                   if (_startDate != null &&
-                      _endDate != null) ...[
+                      (widget.isCircuit || _endDate != null)) ...[
                     const Text(
                       '🧾 Booking Summary',
                       style: TextStyle(
@@ -611,23 +646,28 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                           _summaryRow(
                               '📍 Place', widget.name),
                           _divider(),
-                          _summaryRow('📅 Check In',
+                          _summaryRow(
+                              widget.isCircuit ? '📅 Start' : '📅 Check In',
                               _formatDate(_startDate)),
-                          _divider(),
-                          _summaryRow('📅 Check Out',
-                              _formatDate(_endDate)),
+                          if (!widget.isCircuit) ...[
+                            _divider(),
+                            _summaryRow('📅 Check Out',
+                                _formatDate(_endDate)),
+                          ],
                           _divider(),
                           _summaryRow(
                               '🌙 Duration',
                               '$_numberOfDays day${_numberOfDays > 1 ? 's' : ''}'),
                           _divider(),
                           _summaryRow(
-                              '👥 Guests',
+                              widget.isCircuit ? '👥 People' : '👥 Guests',
                               '$_guests guest${_guests > 1 ? 's' : ''}'),
                           _divider(),
                           _summaryRow(
-                              '💰 Price/person/day',
-                              '\$${widget.pricePerPerson.toStringAsFixed(0)}'),
+                              widget.isCircuit
+                                  ? '💰 Price/person'
+                                  : '💰 Price/person/day',
+                              _money(widget.pricePerPerson)),
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.all(12),
@@ -650,7 +690,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                   ),
                                 ),
                                 Text(
-                                  '\$${_totalPrice.toStringAsFixed(0)}',
+                                  _money(_totalPrice),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 20,

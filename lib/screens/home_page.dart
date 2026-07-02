@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/destination.dart';
+import '../models/circuit.dart';
 import '../services/destination_service.dart';
+import '../services/circuit_service.dart';
 import '../services/mock_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/destination_card.dart';
+import '../widgets/circuit_mini_card.dart';
 import '../widgets/section_header.dart';
 import '../widgets/preview_card.dart';
 import '../widgets/horizontal_carousel.dart';
+import 'circuits_list_screen.dart';
 import 'gallery_screen.dart';
 import 'favorites_screen.dart';
 import 'bookings_screen.dart';
@@ -15,6 +19,7 @@ import 'top_rated_screen.dart';
 import 'all_destinations_screen.dart';
 import 'hotel_search_screen.dart';
 import 'activity_search_screen.dart';
+import 'car_search_screen.dart';
 import 'package:flutter/rendering.dart';
 
 class HomePage extends StatefulWidget {
@@ -35,6 +40,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final DestinationService _destinationService = DestinationService();
+  final CircuitService _circuitService = CircuitService();
   final TextEditingController _searchController = TextEditingController();
   
   String _searchQuery = '';
@@ -120,6 +126,19 @@ bool _bottomBarHidden = false;
                           ))
                       .toList(),
                 ),
+                const SizedBox(height: 16),
+
+                // ✅ Popular Circuits Section
+                SectionHeader(
+                  title: 'Popular Circuits',
+                  onSeeAll: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>  CircuitsListScreen(),
+                    ),
+                  ),
+                ),
+                _buildPopularCircuits(context, theme),
                 const SizedBox(height: 16),
 
                 // ✅ Explore Destinations Section Header
@@ -343,14 +362,12 @@ bool _bottomBarHidden = false;
                   subtitle: 'Rent',
                   color: const Color(0xFFE74C3C),
                   theme: theme,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Car Rental Coming Soon! 🚗'),
-                        backgroundColor: AppTheme.primaryOrange,
-                      ),
-                    );
-                  },
+                       onTap: () => Navigator.push(
+                         context,
+                       MaterialPageRoute(
+                      builder: (_) => const CarSearchScreen(),
+                    ),
+                 ),
                 ),
               ),
             ],
@@ -602,6 +619,71 @@ bool _bottomBarHidden = false;
     );
   }
 
+  // ─── Popular Circuits ─────────────────────────────────────────
+  Widget _buildPopularCircuits(BuildContext context, ThemeData theme) {
+    return FutureBuilder<List<Circuit>>(
+      future: _circuitService.getPopularCircuits(limit: 6),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox(
+            height: 210,
+            child: Center(
+              child: SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(
+                  color: theme.colorScheme.primary,
+                  strokeWidth: 3,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final circuits = snapshot.data ?? [];
+        if (circuits.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.cardColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.route_rounded,
+                      color: AppTheme.primaryOrange, size: 22),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'No circuits yet — check back soon!',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return SizedBox(
+          height: 215,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: circuits.length,
+            itemBuilder: (context, index) =>
+                CircuitMiniCard(circuit: circuits[index]),
+          ),
+        );
+      },
+    );
+  }
+
   // ─── Quick Actions ────────────────────────────────────────────
   Widget _buildQuickActions(BuildContext context, ThemeData theme) {
     return Padding(
@@ -704,7 +786,7 @@ bool _bottomBarHidden = false;
   // ─── AI Card ──────────────────────────────────────────────────
   Widget _buildAiCard(BuildContext context, ThemeData theme) {
     return GestureDetector(
-      onTap: () => widget.onTabChange?.call(2),
+      onTap: () => widget.onTabChange?.call(3),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(18),

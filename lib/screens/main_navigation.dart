@@ -5,6 +5,7 @@ import 'map_tab.dart';
 import 'ai_chat_tab.dart';
 import 'trip_tab.dart';
 import 'profile_tab.dart';
+import 'circuits_list_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -81,6 +82,7 @@ void showBottomBar() {
       onScrollDown: hideBottomBar,
       onScrollUp: showBottomBar,
     ),
+    const CircuitsListScreen(),
     const MapTab(),
     const AiChatTab(),
     TripTab(
@@ -142,24 +144,30 @@ void showBottomBar() {
                     ),
                     _buildNavItem(
                       index: 1,
+                      outlinedIcon: Icons.route_outlined,
+                      filledIcon: Icons.route_rounded,
+                      isDark: isDark,
+                    ),
+                    _buildNavItem(
+                      index: 2,
                       outlinedIcon: Icons.map_outlined,
                       filledIcon: Icons.map_rounded,
                       isDark: isDark,
                     ),
                     _buildNavItem(
-                      index: 2,
+                      index: 3,
                       outlinedIcon: Icons.chat_bubble_outline_rounded,
                       filledIcon: Icons.chat_bubble_rounded,
                       isDark: isDark,
                     ),
                     _buildNavItem(
-                      index: 3,
+                      index: 4,
                       outlinedIcon: Icons.luggage_outlined,
                       filledIcon: Icons.luggage_rounded,
                       isDark: isDark,
                     ),
                     _buildNavItem(
-                      index: 4,
+                      index: 5,
                       outlinedIcon: Icons.person_outline_rounded,
                       filledIcon: Icons.person_rounded,
                       isDark: isDark,

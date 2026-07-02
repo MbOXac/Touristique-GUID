@@ -1,20 +1,9 @@
-import '../models/gallery_item.dart';
 import '../models/favorite_place.dart';
 import '../models/top_rated_place.dart';
 import '../models/trip_memory.dart';
-import '../models/booking.dart';
 
 class MockDataService {
-  static List<GalleryItem> getGalleryItems() => const [
-        GalleryItem(id: 'g1', title: 'Erg Chebbi Dunes', imagePath: 'assets/images/destination_2.jpg', category: 'destination', rating: 4.9, likes: 234, uploadedBy: 'Sarah M.'),
-        GalleryItem(id: 'g2', title: 'Todra Gorge Sunrise', imagePath: 'assets/images/destination_3.jpg', category: 'destination', rating: 4.8, likes: 189, uploadedBy: 'Ahmed K.'),
-        GalleryItem(id: 'g3', title: 'Draa Valley', imagePath: 'assets/images/destination_1.jpg', category: 'destination', rating: 4.7, likes: 156, uploadedBy: 'Fatima Z.'),
-        GalleryItem(id: 'g4', title: 'Palm Oasis', imagePath: 'assets/images/destination_4.jpg', category: 'user', rating: 4.6, likes: 98, uploadedBy: 'Marco R.'),
-        GalleryItem(id: 'g5', title: 'Camel Ride Memory', imagePath: 'assets/images/destination_2.jpg', category: 'memory', rating: 4.9, likes: 312, uploadedBy: 'Yuki T.'),
-        GalleryItem(id: 'g6', title: 'Kasbah at Sunset', imagePath: 'assets/images/destination_1.jpg', category: 'user', rating: 4.7, likes: 145, uploadedBy: 'Carlos B.'),
-        GalleryItem(id: 'g7', title: 'Night in Sahara', imagePath: 'assets/images/destination_2.jpg', category: 'memory', rating: 5.0, likes: 421, uploadedBy: 'Emma W.'),
-        GalleryItem(id: 'g8', title: 'Tinghir Gardens', imagePath: 'assets/images/destination_4.jpg', category: 'destination', rating: 4.5, likes: 87, uploadedBy: 'Hassan A.'),
-      ];
+
 
   static List<FavoritePlace> getFavoritePlaces() => [
         FavoritePlace(id: 'f1', name: 'Riad Merzouga', category: 'hotel', imagePath: 'assets/images/destination_2.jpg', rating: 4.8, address: 'Merzouga Village, Errachidia'),
