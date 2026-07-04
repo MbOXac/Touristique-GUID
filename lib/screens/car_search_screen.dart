@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/car.dart';
-import '../services/car_service.dart';
+import '../services/car_firestore_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/car_image.dart';
 import 'car_detail_screen.dart';
 
 class CarSearchScreen extends StatefulWidget {
@@ -12,11 +13,14 @@ class CarSearchScreen extends StatefulWidget {
 }
 
 class _CarSearchScreenState extends State<CarSearchScreen> {
-  final TextEditingController _searchController = TextEditingController();
   List<Car> _cars = [];
   List<Car> _filtered = [];
+  List<String> _availableCities = [];
+  String _selectedCity = '';
   String _selectedTransmission = 'All';
   String _selectedFuel = 'All';
+  bool _isLoading = false;
+  bool _isLoadingCities = true;
 
   final List<String> _transmissions = ['All', 'Automatic', 'Manual'];
   final List<String> _fuels = ['All', 'Petrol', 'Diesel', 'Hybrid'];
@@ -24,33 +28,55 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
   @override
   void initState() {
     super.initState();
-    _cars = CarService.getCars();
-    _filtered = _cars;
+    _loadAvailableCities();
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+  // Load all available cities from Firestore
+  Future<void> _loadAvailableCities() async {
+    setState(() => _isLoadingCities = true);
+    final cities = await CarFirestoreService.getAllCities();
+    setState(() {
+      _availableCities = cities;
+      _isLoadingCities = false;
+    });
   }
 
+  // Search cars by city
+  Future<void> _searchCarsByCity(String city) async {
+    if (city.isEmpty) {
+      setState(() {
+        _cars = [];
+        _filtered = [];
+        _selectedCity = '';
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _selectedCity = city;
+    });
+
+    final cars = await CarFirestoreService.searchCarsByCity(city);
+
+    setState(() {
+      _cars = cars;
+      _filtered = cars;
+      _isLoading = false;
+    });
+  }
+
+  // Apply filters
   void _applyFilters() {
     setState(() {
       _filtered = _cars.where((car) {
-        final matchSearch = car.name
-            .toLowerCase()
-            .contains(_searchController.text.toLowerCase()) ||
-            car.brand
-                .toLowerCase()
-                .contains(_searchController.text.toLowerCase());
-
         final matchTransmission = _selectedTransmission == 'All' ||
             car.transmission == _selectedTransmission;
 
         final matchFuel =
             _selectedFuel == 'All' || car.fuel == _selectedFuel;
 
-        return matchSearch && matchTransmission && matchFuel;
+        return matchTransmission && matchFuel;
       }).toList();
     });
   }
@@ -123,7 +149,16 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Search Bar
+                  // City Search Bar with Autocomplete
+                  Text(
+                    'Search by City',
+                    style: TextStyle(
+                      color: theme.textTheme.titleLarge?.color,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
                       color: theme.cardColor,
@@ -136,31 +171,164 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                         ),
                       ],
                     ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (_) => _applyFilters(),
-                      decoration: InputDecoration(
-                        hintText: 'Search cars...',
-                        prefixIcon: Icon(
-                          Icons.search_rounded,
-                          color: theme.colorScheme.primary,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear_rounded),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  _applyFilters();
+                    child: _isLoadingCities
+                        ? const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2),
+                                ),
+                                SizedBox(width: 12),
+                                Text('Loading cities...'),
+                              ],
+                            ),
+                          )
+                        : Autocomplete<String>(
+                            optionsBuilder:
+                                (TextEditingValue textEditingValue) {
+                              if (textEditingValue.text.isEmpty) {
+                                return _availableCities;
+                              }
+                              return _availableCities.where(
+                                  (String option) {
+                                return option.toLowerCase().contains(
+                                    textEditingValue.text
+                                        .toLowerCase());
+                              });
+                            },
+                            onSelected: (String selection) {
+                              _searchCarsByCity(selection);
+                            },
+                            fieldViewBuilder: (
+                              BuildContext context,
+                              TextEditingController
+                                  textEditingController,
+                              FocusNode focusNode,
+                              VoidCallback onFieldSubmitted,
+                            ) {
+                              return TextField(
+                                controller: textEditingController,
+                                focusNode: focusNode,
+                                onChanged: (value) {
+                                  if (value.isEmpty) {
+                                    setState(() {
+                                      _cars = [];
+                                      _filtered = [];
+                                      _selectedCity = '';
+                                    });
+                                  }
                                 },
-                              )
-                            : null,
-                      ),
-                    ),
+                                onSubmitted: (value) {
+                                  if (value.isNotEmpty) {
+                                    _searchCarsByCity(value);
+                                  }
+                                },
+                                decoration: InputDecoration(
+                                  hintText: 'Enter city name...',
+                                  prefixIcon: Icon(
+                                    Icons.location_on_rounded,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  border: InputBorder.none,
+                                  contentPadding:
+                                      const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
+                                  suffixIcon: ValueListenableBuilder(
+                                    valueListenable: textEditingController,
+                                    builder: (context, value, child) {
+                                      return value.text.isNotEmpty
+                                          ? IconButton(
+                                              icon: const Icon(
+                                                  Icons.clear_rounded),
+                                              onPressed: () {
+                                                textEditingController
+                                                    .clear();
+                                                setState(() {
+                                                  _cars = [];
+                                                  _filtered = [];
+                                                  _selectedCity = '';
+                                                });
+                                              },
+                                            )
+                                          : const SizedBox.shrink();
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                            optionsViewBuilder: (
+                              BuildContext context,
+                              AutocompleteOnSelected<String>
+                                  onSelected,
+                              Iterable<String> options,
+                            ) {
+                              return Align(
+                                alignment: Alignment.topLeft,
+                                child: Material(
+                                  elevation: 4,
+                                  borderRadius:
+                                      BorderRadius.circular(12),
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxHeight: 200,
+                                      maxWidth: 350,
+                                    ),
+                                    child: ListView.builder(
+                                      padding: EdgeInsets.zero,
+                                      shrinkWrap: true,
+                                      itemCount: options.length,
+                                      itemBuilder:
+                                          (BuildContext context,
+                                              int index) {
+                                        final String option =
+                                            options.elementAt(index);
+                                        return InkWell(
+                                          onTap: () =>
+                                              onSelected(option),
+                                          child: Padding(
+                                            padding:
+                                                const EdgeInsets
+                                                    .symmetric(
+                                              horizontal: 16,
+                                              vertical: 12,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  Icons
+                                                      .location_city_rounded,
+                                                  size: 16,
+                                                  color: theme
+                                                      .colorScheme
+                                                      .primary,
+                                                ),
+                                                const SizedBox(
+                                                    width: 8),
+                                                Text(
+                                                  option,
+                                                  style:
+                                                      const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                   ),
                   const SizedBox(height: 16),
 
@@ -183,7 +351,8 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                           const SizedBox(width: 8),
                       itemBuilder: (context, index) {
                         final t = _transmissions[index];
-                        final isSelected = _selectedTransmission == t;
+                        final isSelected =
+                            _selectedTransmission == t;
                         return GestureDetector(
                           onTap: () {
                             setState(
@@ -212,8 +381,8 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                               style: TextStyle(
                                 color: isSelected
                                     ? Colors.white
-                                    : theme
-                                        .textTheme.bodyMedium?.color,
+                                    : theme.textTheme.bodyMedium
+                                        ?.color,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12,
                               ),
@@ -272,8 +441,8 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                               style: TextStyle(
                                 color: isSelected
                                     ? Colors.white
-                                    : theme
-                                        .textTheme.bodyMedium?.color,
+                                    : theme.textTheme.bodyMedium
+                                        ?.color,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12,
                               ),
@@ -286,14 +455,39 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                   const SizedBox(height: 20),
 
                   // Results count
-                  Text(
-                    '${_filtered.length} cars available',
-                    style: TextStyle(
-                      color: theme.textTheme.titleLarge?.color,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
+                  if (_isLoading)
+                    Center(
+                      child: CircularProgressIndicator(
+                        color: theme.colorScheme.primary,
+                      ),
+                    )
+                  else if (_selectedCity.isNotEmpty)
+                    Text(
+                      '${_filtered.length} cars available in $_selectedCity',
+                      style: TextStyle(
+                        color: theme.textTheme.titleLarge?.color,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
+                    )
+                  else
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 16,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Enter a city to search for cars',
+                          style: TextStyle(
+                            color: theme.textTheme.bodyMedium?.color,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
                   const SizedBox(height: 12),
                 ],
               ),
@@ -303,7 +497,9 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
           // Car List
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-            sliver: _filtered.isEmpty
+            sliver: _filtered.isEmpty &&
+                    !_isLoading &&
+                    _selectedCity.isNotEmpty
                 ? SliverToBoxAdapter(
                     child: Center(
                       child: Padding(
@@ -318,7 +514,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No cars found',
+                              'No cars found in $_selectedCity',
                               style: TextStyle(
                                 color: theme
                                     .textTheme.titleLarge?.color,
@@ -328,7 +524,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Try a different search or filter',
+                              'Try a different city or filter',
                               style: TextStyle(
                                 color: theme
                                     .textTheme.bodyMedium?.color,
@@ -339,24 +535,39 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                       ),
                     ),
                   )
-                : SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final car = _filtered[index];
-                        return _CarCard(
-                          car: car,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  CarDetailScreen(car: car),
+                : _isLoading
+                    ? SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(top: 100),
+                            child: CircularProgressIndicator(
+                              color: theme.colorScheme.primary,
                             ),
                           ),
-                        );
-                      },
-                      childCount: _filtered.length,
-                    ),
-                  ),
+                        ),
+                      )
+                    : _filtered.isEmpty
+                        ? const SliverToBoxAdapter(
+                            child: SizedBox.shrink())
+                        : SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final car = _filtered[index];
+                                return _CarCard(
+                                  car: car,
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          CarDetailScreen(car: car),
+                                    ),
+                                  ),
+                                );
+                              },
+                              childCount: _filtered.length,
+                            ),
+                          ),
           ),
         ],
       ),
@@ -402,11 +613,15 @@ class _CarCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  Image.asset(
-                    car.image,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
+                  Hero(
+                    tag: 'car_image_${car.id}',
+                    child: CarImage(
+                      imageUrl: car.image,
+                      height: 180,
+                      width: double.infinity,
+                      cacheWidth: 600,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                   Container(
                     height: 180,
@@ -497,6 +712,87 @@ class _CarCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Company Info
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color:
+                          theme.colorScheme.primary.withAlpha(10),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.business_rounded,
+                              size: 16,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                car.company,
+                                style: TextStyle(
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.phone_rounded,
+                              size: 14,
+                              color:
+                                  theme.textTheme.bodySmall?.color,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                car.companyPhone,
+                                style: TextStyle(
+                                  color: theme
+                                      .textTheme.bodySmall?.color,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.email_rounded,
+                              size: 14,
+                              color:
+                                  theme.textTheme.bodySmall?.color,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                car.companyEmail,
+                                style: TextStyle(
+                                  color: theme
+                                      .textTheme.bodySmall?.color,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Car specs
                   Row(
                     children: [
                       _InfoChip(
@@ -516,6 +812,8 @@ class _CarCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
+
+                  // Price & Button
                   Row(
                     mainAxisAlignment:
                         MainAxisAlignment.spaceBetween,
@@ -558,7 +856,7 @@ class _CarCard extends StatelessWidget {
                           ),
                         ),
                         child: const Text(
-                          'View',
+                          'Book',
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
                           ),

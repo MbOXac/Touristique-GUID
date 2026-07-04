@@ -8,31 +8,30 @@ environment:
   sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
+  flutter:
+    sdk: flutter
   cloud_firestore: ^6.3.0
   firebase_core: ^4.7.0
   firebase_auth: any
-  image_picker: ^1.1.2  # ✅ Already have
   google_sign_in: ^5.4.4
   google_generative_ai: ^0.4.6
   flutter_dotenv: ^5.1.0
-  flutter:
-    sdk: flutter
-  http: ^1.6.0  # ✅ Already have
+  http: ^1.6.0
   flutter_map: ^8.3.0
   latlong2: ^0.9.1
   geolocator: ^14.0.2
   url_launcher: ^6.3.2
   flutter_map_cancellable_tile_provider: ^3.1.1
-  
-  # 🆕 Gallery Enhancements
   cached_network_image: ^3.3.1
   photo_view: ^0.14.0
   flutter_staggered_grid_view: ^0.7.0
   share_plus: ^7.2.2
   shimmer: ^3.0.0
   uuid: ^4.3.3
-  cloudinary_public: ^0.21.0  # 🆕 Cloudinary
+  cloudinary_public: ^0.21.0
   path: ^1.8.3
+  image_picker: ^1.1.2
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:

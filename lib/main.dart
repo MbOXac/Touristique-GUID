@@ -5,6 +5,8 @@ import 'firebase_options.dart';
 import 'services/cloudinary_service.dart';
 import 'auth_gate.dart';
 import 'theme/app_theme.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'services/car_image_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,11 +18,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+    
   // Initialize Cloudinary
   CloudinaryService().initialize();
 
   runApp(const MyApp());
+
+   
 }
 
 class MyApp extends StatelessWidget {

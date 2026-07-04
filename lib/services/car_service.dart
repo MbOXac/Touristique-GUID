@@ -1,86 +1,34 @@
 import '../models/car.dart';
+import 'car_firestore_service.dart';
 
 class CarService {
-  static List<Car> getCars() {
-    return const [
-      Car(
-        id: '1',
-        name: 'Toyota Corolla',
-        brand: 'Toyota',
-        image: 'assets/images/car1.jpg',
-        pricePerDay: 42,
-        seats: 5,
-        transmission: 'Automatic',
-        fuel: 'Petrol',
-        company: 'Hertz',
-        rating: 4.8,
-        luggage: 3,
-      ),
-      Car(
-        id: '2',
-        name: 'Hyundai Tucson',
-        brand: 'Hyundai',
-        image: 'assets/images/car2.jpg',
-        pricePerDay: 58,
-        seats: 5,
-        transmission: 'Automatic',
-        fuel: 'Diesel',
-        company: 'Avis',
-        rating: 4.7,
-        luggage: 4,
-      ),
-      Car(
-        id: '3',
-        name: 'Dacia Duster',
-        brand: 'Dacia',
-        image: 'assets/images/car3.jpg',
-        pricePerDay: 39,
-        seats: 5,
-        transmission: 'Manual',
-        fuel: 'Diesel',
-        company: 'Budget',
-        rating: 4.5,
-        luggage: 4,
-      ),
-      Car(
-        id: '4',
-        name: 'Mercedes C-Class',
-        brand: 'Mercedes',
-        image: 'assets/images/car4.jpg',
-        pricePerDay: 120,
-        seats: 5,
-        transmission: 'Automatic',
-        fuel: 'Petrol',
-        company: 'Sixt',
-        rating: 4.9,
-        luggage: 5,
-      ),
-      Car(
-        id: '5',
-        name: 'Volkswagen Golf',
-        brand: 'Volkswagen',
-        image: 'assets/images/car5.jpg',
-        pricePerDay: 55,
-        seats: 5,
-        transmission: 'Automatic',
-        fuel: 'Hybrid',
-        company: 'Europcar',
-        rating: 4.8,
-        luggage: 3,
-      ),
-      Car(
-        id: '6',
-        name: 'Peugeot 208',
-        brand: 'Peugeot',
-        image: 'assets/images/car6.jpg',
-        pricePerDay: 37,
-        seats: 5,
-        transmission: 'Manual',
-        fuel: 'Petrol',
-        company: 'Keddy',
-        rating: 4.6,
-        luggage: 2,
-      ),
-    ];
+  // Get cars from Firestore by city
+  static Future<List<Car>> searchCars({
+    required String cityName,
+    required String pickUpDate,
+    required String dropOffDate,
+  }) async {
+    try {
+      // First try Firestore
+      final firestoreCars =
+          await CarFirestoreService.searchCarsByCity(cityName);
+
+      if (firestoreCars.isNotEmpty) {
+        print('✅ Found ${firestoreCars.length} cars in Firestore');
+        return firestoreCars;
+      }
+
+      // TODO: If Firestore empty, try API here
+      print('⚠️ No cars in Firestore, will try API later');
+      return [];
+    } catch (e) {
+      print('❌ Error in CarService: $e');
+      return [];
+    }
+  }
+
+  // Get all cities from Firestore
+  static Future<List<String>> getAllCities() async {
+    return await CarFirestoreService.getAllCities();
   }
 }

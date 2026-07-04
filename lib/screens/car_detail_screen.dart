@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/car.dart';
 import '../theme/app_theme.dart';
+import '../widgets/car_image.dart';
 import 'car_booking_screen.dart';
 
 class CarDetailScreen extends StatelessWidget {
@@ -23,9 +24,12 @@ class CarDetailScreen extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.asset(
-                    car.image,
+                  CarImage(
+                    imageUrl: car.image,
                     fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                    cacheWidth: 1200,
                   ),
                   Container(
                     decoration: const BoxDecoration(
@@ -319,6 +323,7 @@ class _SpecCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 12,
@@ -407,3 +412,4 @@ class _FeatureRow extends StatelessWidget {
     );
   }
 }
+  
