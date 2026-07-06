@@ -1,15 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'home_page.dart';
 import 'map_tab.dart';
 import 'ai_chat_tab.dart';
 import 'trip_tab.dart';
 import 'profile_tab.dart';
-import 'circuits_list_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
-       
+
   @override
   State<MainNavigation> createState() => _MainNavigationState();
 }
@@ -18,9 +17,22 @@ class _MainNavigationState extends State<MainNavigation>
     with TickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _animationController;
-    late final AnimationController _bottomBarController;
-     late final Animation<Offset> _bottomBarAnimation;
-     bool _isBottomBarVisible = true; 
+
+  static const _tabLabels = ['Home', 'Map', 'AI Guide', 'Trips', 'Profile'];
+  static const _outlinedIcons = [
+    Icons.home_outlined,
+    Icons.map_outlined,
+    Icons.auto_awesome_outlined,
+    Icons.luggage_outlined,
+    Icons.person_outline_rounded,
+  ];
+  static const _filledIcons = [
+    Icons.home_rounded,
+    Icons.map_rounded,
+    Icons.auto_awesome_rounded,
+    Icons.luggage_rounded,
+    Icons.person_rounded,
+  ];
 
   @override
   void initState() {
@@ -30,26 +42,11 @@ class _MainNavigationState extends State<MainNavigation>
       vsync: this,
     );
     _animationController.forward();
-    _bottomBarController = AnimationController(
-  vsync: this,
-  duration: const Duration(milliseconds: 250),
-);
-
-_bottomBarAnimation = Tween<Offset>(
-  begin: Offset.zero,
-  end: const Offset(0, 2),
-).animate(
-  CurvedAnimation(
-    parent: _bottomBarController,
-    curve: Curves.easeInOut,
-  ),
-);
   }
 
   @override
   void dispose() {
     _animationController.dispose();
-    _bottomBarController.dispose();
     super.dispose();
   }
 
@@ -62,149 +59,69 @@ _bottomBarAnimation = Tween<Offset>(
       });
     }
   }
-  void hideBottomBar() {
-  if (_isBottomBarVisible) {
-    _isBottomBarVisible = false;
-    _bottomBarController.forward();
-  }
-}
-
-void showBottomBar() {
-  if (!_isBottomBarVisible) {
-    _isBottomBarVisible = true;
-    _bottomBarController.reverse();
-  }
-}
 
   late final List<Widget> _tabs = [
-    HomePage(
-      onTabChange: _onTabChange,
-      onScrollDown: hideBottomBar,
-      onScrollUp: showBottomBar,
-    ),
-    const CircuitsListScreen(),
+    HomePage(onTabChange: _onTabChange),
     const MapTab(),
     const AiChatTab(),
-    TripTab(
-      onScrollDown: hideBottomBar,
-      onScrollUp: showBottomBar,
-    ),
-    ProfileTab(
-      onScrollDown: hideBottomBar,
-      onScrollUp: showBottomBar,
-    ),
+    const TripTab(),
+    const ProfileTab(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
         children: _tabs,
       ),
-         bottomNavigationBar: SlideTransition(
-         position: _bottomBarAnimation,
-         child: Padding(
-         padding: const EdgeInsets.only(
-          left: 16,
-          right: 16,
-          bottom: 24,
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkAppBar : AppTheme.cream,
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+              width: 1,
+            ),
+          ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(40),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-            child: Container(
-              height: 65,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.black.withOpacity(0.04),
-                borderRadius: BorderRadius.circular(40),
-                border: Border.all(
-                  color: isDark
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.black.withOpacity(0.1),
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(
-                      index: 0,
-                      outlinedIcon: Icons.home_outlined,
-                      filledIcon: Icons.home_rounded,
-                      isDark: isDark,
-                    ),
-                    _buildNavItem(
-                      index: 1,
-                      outlinedIcon: Icons.route_outlined,
-                      filledIcon: Icons.route_rounded,
-                      isDark: isDark,
-                    ),
-                    _buildNavItem(
-                      index: 2,
-                      outlinedIcon: Icons.map_outlined,
-                      filledIcon: Icons.map_rounded,
-                      isDark: isDark,
-                    ),
-                    _buildNavItem(
-                      index: 3,
-                      outlinedIcon: Icons.chat_bubble_outline_rounded,
-                      filledIcon: Icons.chat_bubble_rounded,
-                      isDark: isDark,
-                    ),
-                    _buildNavItem(
-                      index: 4,
-                      outlinedIcon: Icons.luggage_outlined,
-                      filledIcon: Icons.luggage_rounded,
-                      isDark: isDark,
-                    ),
-                    _buildNavItem(
-                      index: 5,
-                      outlinedIcon: Icons.person_outline_rounded,
-                      filledIcon: Icons.person_rounded,
-                      isDark: isDark,
-                    ),
-                  ],
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              children: List.generate(
+                _tabLabels.length,
+                (index) => Expanded(
+                  child: _buildNavItem(index: index, isDark: isDark),
                 ),
               ),
             ),
           ),
         ),
       ),
-         ),
     );
-    
   }
 
-  Widget _buildNavItem({
-    required int index,
-    required IconData outlinedIcon,
-    required IconData filledIcon,
-    required bool isDark,
-  }) {
+  Widget _buildNavItem({required int index, required bool isDark}) {
     final isSelected = _currentIndex == index;
-    final activeColor = isDark ? Colors.white : Colors.black;
+    final activeColor = AppTheme.primaryOrange;
     final inactiveColor =
-        isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+        isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
+    final color = isSelected ? activeColor : inactiveColor;
 
     return GestureDetector(
       onTap: () => _onTabChange(index),
       behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 52,
-        height: 52,
-        child: Center(
-          child: ScaleTransition(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ScaleTransition(
             scale: isSelected
-                ? Tween<double>(begin: 0.75, end: 1.0).animate(
+                ? Tween<double>(begin: 0.8, end: 1.0).animate(
                     CurvedAnimation(
                       parent: _animationController,
                       curve: Curves.elasticOut,
@@ -212,12 +129,21 @@ void showBottomBar() {
                   )
                 : const AlwaysStoppedAnimation(1.0),
             child: Icon(
-              isSelected ? filledIcon : outlinedIcon,
-              color: isSelected ? activeColor : inactiveColor,
-              size: isSelected ? 28 : 25,
+              isSelected ? _filledIcons[index] : _outlinedIcons[index],
+              color: color,
+              size: 24,
             ),
           ),
-        ),
+          const SizedBox(height: 3),
+          Text(
+            _tabLabels[index],
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ],
       ),
     );
   }

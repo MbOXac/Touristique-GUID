@@ -215,11 +215,13 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final isSearching = _searchController.text.isNotEmpty;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
    return Container(
   height: MediaQuery.of(context).size.height * 0.85,
   decoration: BoxDecoration(
-    color: Theme.of(context).cardColor,
+    color: theme.cardColor,
     borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
   ),
       child: Column(
@@ -230,7 +232,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: isDark ? Colors.grey.shade700 : Colors.grey.shade300,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -265,9 +267,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
     hintText: 'Search country...',
     prefixIcon: const Icon(Icons.search, color: AppTheme.primaryOrange),
     filled: true,
-    fillColor: Theme.of(context).brightness == Brightness.dark
-        ? AppTheme.darkBackground
-        : Colors.grey.shade100,
+    fillColor: isDark ? AppTheme.darkBackground : AppTheme.softBackground,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide.none,
@@ -282,10 +282,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
                 if (!isSearching) ...[
-                  _sectionLabel('POPULAR'),
+                  _sectionLabel(theme, 'POPULAR'),
                   ...CountryPicker.popularCountries.map(_buildTile),
                   const SizedBox(height: 8),
-                  _sectionLabel('ALL COUNTRIES'),
+                  _sectionLabel(theme, 'ALL COUNTRIES'),
                 ],
                 ..._filteredCountries.map(_buildTile),
                 if (_filteredCountries.isEmpty)
@@ -294,11 +294,12 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     child: Center(
                       child: Column(
                         children: [
-                          Icon(Icons.search_off, size: 48, color: Colors.grey.shade400),
+                          Icon(Icons.search_off,
+                              size: 48, color: theme.textTheme.bodyMedium?.color?.withAlpha(150)),
                           const SizedBox(height: 12),
                           Text(
                             'No country found',
-                            style: TextStyle(color: Colors.grey.shade600),
+                            style: TextStyle(color: theme.textTheme.bodyMedium?.color),
                           ),
                         ],
                       ),
@@ -312,7 +313,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
     );
   }
 
-  Widget _sectionLabel(String label) {
+  Widget _sectionLabel(ThemeData theme, String label) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 16, 8),
       child: Text(
@@ -320,7 +321,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.bold,
-          color: Colors.grey.shade600,
+          color: theme.textTheme.bodySmall?.color,
           letterSpacing: 1.2,
         ),
       ),

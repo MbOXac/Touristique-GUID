@@ -5,12 +5,14 @@ import '../models/circuit.dart';
 import '../services/destination_service.dart';
 import '../services/circuit_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/destination_card.dart';
+import '../constants/app_radius.dart';
 import '../widgets/circuit_mini_card.dart';
 import '../widgets/section_header.dart';
 import '../widgets/preview_card.dart';
+import '../widgets/rating_badge.dart';
 import '../widgets/horizontal_carousel.dart';
 import 'circuits_list_screen.dart';
+import 'circuit_detail_screen.dart';
 import 'destination_detail_screen.dart';
 import 'gallery_screen.dart';
 import 'favorites_screen.dart';
@@ -42,8 +44,17 @@ class _HomePageState extends State<HomePage> {
   final DestinationService _destinationService = DestinationService();
   final CircuitService _circuitService = CircuitService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   String _searchQuery = '';
+  String _selectedCategory = 'All';
+  static const List<String> _discoverCategories = [
+    'All',
+    'Desert',
+    'Village',
+    'Canyon',
+    'Oasis',
+    'Camp',
+  ];
 bool _bottomBarHidden = false;
   @override
   void dispose() {
@@ -76,14 +87,18 @@ bool _bottomBarHidden = false;
   },
   child: CustomScrollView(
         slivers: [
-          _buildAppBar(context, theme),
+          _buildHeader(context, theme),
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: 4),
                 _buildSearchBar(context, theme),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
+
+                // ✅ Featured Circuit hero banner
+                _buildFeaturedCircuitHero(context, theme),
+                const SizedBox(height: 20),
 
                 // ✅ Quick Actions (Gallery, Favorites, Bookings)
                 _buildQuickActions(context, theme),
@@ -149,9 +164,9 @@ bool _bottomBarHidden = false;
                 ),
                 const SizedBox(height: 16),
 
-                // ✅ Popular Circuits Section
+                // ✅ Circuits Section
                 SectionHeader(
-                  title: 'Popular Circuits',
+                  title: 'Circuits',
                   onSeeAll: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -162,9 +177,9 @@ bool _bottomBarHidden = false;
                 _buildPopularCircuits(context, theme),
                 const SizedBox(height: 16),
 
-                // ✅ Explore Destinations Section Header
+                // ✅ Discover Section Header
                 SectionHeader(
-                  title: 'Explore Destinations',
+                  title: 'Discover',
                   onSeeAll: () => Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -172,6 +187,8 @@ bool _bottomBarHidden = false;
                     ),
                   ),
                 ),
+                _buildCategoryChips(context, theme),
+                const SizedBox(height: 4),
               ],
             ),
           ),
@@ -229,6 +246,14 @@ bool _bottomBarHidden = false;
                     .where((dest) => dest.name
                         .toLowerCase()
                         .contains(_searchQuery.toLowerCase()))
+                    .toList();
+              }
+
+              if (_selectedCategory != 'All') {
+                destinations = destinations
+                    .where((dest) =>
+                        dest.tags.toLowerCase().contains(_selectedCategory.toLowerCase()) ||
+                        dest.description.toLowerCase().contains(_selectedCategory.toLowerCase()))
                     .toList();
               }
 
@@ -299,10 +324,9 @@ bool _bottomBarHidden = false;
                         );
                       }
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: DestinationCard(
-                          destination: displayedDestinations[index],
-                        ),
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _buildDestinationRow(
+                            context, theme, displayedDestinations[index]),
                       );
                     },
                     childCount: displayedDestinations.length +
@@ -471,91 +495,38 @@ bool _bottomBarHidden = false;
     );
   }
 
-  // ─── App Bar ──────────────────────────────────────────────────
-  SliverAppBar _buildAppBar(BuildContext context, ThemeData theme) {
+  // ─── Header (plain cream, iOS large-title style) ───────────────
+  Widget _buildHeader(BuildContext context, ThemeData theme) {
      final user = FirebaseAuth.instance.currentUser;
-    return SliverAppBar(
-      expandedHeight: 240,
-      pinned: true,
-      stretch: true,
-      backgroundColor: theme.appBarTheme.backgroundColor,
-      flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground],
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset('assets/images/welcome.jpg', fit: BoxFit.cover),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x33000000), Color(0xCC000000)],
-                  stops: [0.0, 1.0],
+    return SliverToBoxAdapter(
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Hello, ${_userName(user)} 👋',
+                style: TextStyle(
+                  color: theme.textTheme.bodyMedium?.color,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color:
-                                  theme.colorScheme.primary.withAlpha(220),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              '🇲🇦 Southeast Morocco',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                       'Hello, ${_userName(user)}! 👋',
-                                     style: const TextStyle(
-                        color: Colors.white,
-                         fontWeight: FontWeight.w800,
-                            fontSize: 26,
-                           letterSpacing: -0.5,
-                              height: 1.1,
-                               ),
-                                ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Discover breathtaking destinations',
-                        style: TextStyle(
-                          color: Colors.white.withAlpha(200),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          height: 1.3,
-                        ),
-                      ),
-                    ],
-                  ),
+              const SizedBox(height: 6),
+              Text(
+                'Explore Southeast Morocco',
+                style: TextStyle(
+                  color: theme.textTheme.titleLarge?.color,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 30,
+                  letterSpacing: -0.6,
+                  height: 1.15,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -590,7 +561,7 @@ bool _bottomBarHidden = false;
                 });
               },
               decoration: InputDecoration(
-                hintText: 'Search destinations...',
+                hintText: 'Search dunes, kasbahs, oases...',
                 hintStyle: TextStyle(
                     color: theme.textTheme.bodyMedium?.color,
                     fontSize: 14),
@@ -636,6 +607,122 @@ bool _bottomBarHidden = false;
                 color: theme.colorScheme.primary, size: 20),
           ),
         ],
+      ),
+    );
+  }
+
+  // ─── Featured Circuit hero banner ──────────────────────────────
+  Widget _buildFeaturedCircuitHero(BuildContext context, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: FutureBuilder<List<Circuit>>(
+        future: _circuitService.getPopularCircuits(limit: 1),
+        builder: (context, snapshot) {
+          final circuits = snapshot.data ?? [];
+          if (snapshot.connectionState == ConnectionState.waiting || circuits.isEmpty) {
+            return const SizedBox.shrink();
+          }
+
+          final circuit = circuits.first;
+          final stopsCount = circuit.destinationIds.isNotEmpty ? circuit.destinationIds.length : circuit.itinerary.length;
+
+          return GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => CircuitDetailScreen(circuit: circuit)),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: AppTheme.heroGradient,
+                borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.deepBlue.withAlpha(90),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'FEATURED CIRCUIT',
+                          style: TextStyle(
+                            color: AppTheme.goldAccent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          circuit.title,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          stopsCount > 0
+                              ? '${circuit.durationText} · $stopsCount stops'
+                              : circuit.durationText,
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(210),
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        ElevatedButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => CircuitDetailScreen(circuit: circuit)),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.goldAccent,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                            textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                          ),
+                          child: const Text('View circuit'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.card),
+                    child: SizedBox(
+                      width: 84,
+                      height: 104,
+                      child: circuit.imageUrl.isNotEmpty
+                          ? Image.network(
+                              circuit.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: Colors.white.withAlpha(30),
+                                child: Icon(circuit.typeIcon, color: Colors.white, size: 28),
+                              ),
+                            )
+                          : Container(
+                              color: Colors.white.withAlpha(30),
+                              child: Icon(circuit.typeIcon, color: Colors.white, size: 28),
+                            ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -702,6 +789,130 @@ bool _bottomBarHidden = false;
           ),
         );
       },
+    );
+  }
+
+  // ─── Discover: category filter chips ───────────────────────────
+  Widget _buildCategoryChips(BuildContext context, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _discoverCategories.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final category = _discoverCategories[index];
+          final isSelected = category == _selectedCategory;
+          return GestureDetector(
+            onTap: () => setState(() => _selectedCategory = category),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: isSelected ? AppTheme.primaryOrange : theme.cardColor,
+                borderRadius: BorderRadius.circular(AppRadius.button),
+                border: Border.all(
+                  color: isSelected
+                      ? AppTheme.primaryOrange
+                      : (isDark ? AppTheme.darkBorder : Colors.grey.shade300),
+                ),
+              ),
+              child: Text(
+                category,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : theme.textTheme.bodyLarge?.color,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ─── Discover: destination row ──────────────────────────────────
+  Widget _buildDestinationRow(BuildContext context, ThemeData theme, Destination destination) {
+    final isDark = theme.brightness == Brightness.dark;
+    final placeholderBg = isDark ? AppTheme.darkCard : Colors.grey.shade200;
+    final placeholderIconColor = isDark ? Colors.grey.shade600 : Colors.grey.shade400;
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => DestinationDetailScreen(destination: destination)),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 60 : 15),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.badge),
+              child: SizedBox(
+                width: 56,
+                height: 56,
+                child: destination.imageURLs.isNotEmpty
+                    ? Image.network(
+                        destination.imageURLs.first,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: placeholderBg,
+                          child: Icon(Icons.landscape_outlined, color: placeholderIconColor, size: 22),
+                        ),
+                      )
+                    : Container(
+                        color: placeholderBg,
+                        child: Icon(Icons.landscape_outlined, color: placeholderIconColor, size: 22),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    destination.name,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: theme.textTheme.titleLarge?.color,
+                      letterSpacing: -0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    destination.tags.isNotEmpty ? destination.tags : destination.distance,
+                    style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            RatingBadge(rating: destination.rating),
+            const SizedBox(width: 8),
+            const Icon(Icons.attach_money_rounded, color: AppTheme.goldAccent, size: 18),
+          ],
+        ),
+      ),
     );
   }
 
@@ -807,7 +1018,7 @@ bool _bottomBarHidden = false;
   // ─── AI Card ──────────────────────────────────────────────────
   Widget _buildAiCard(BuildContext context, ThemeData theme) {
     return GestureDetector(
-      onTap: () => widget.onTabChange?.call(3),
+      onTap: () => widget.onTabChange?.call(2),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(18),
@@ -901,11 +1112,7 @@ bool _bottomBarHidden = false;
           padding:
               const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppTheme.primaryOrange, Color(0xFFE8830A)],
-            ),
+            gradient: AppTheme.orangeGradient,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(

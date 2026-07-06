@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import '../constants/app_radius.dart';
+import '../constants/app_spacing.dart';
 import '../models/booking.dart';
 import '../services/tripadvisor_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/rating_badge.dart';
 import 'booking_form_screen.dart';
-import 'attraction_detail_screen.dart'; // ✅ ADD THIS
+import 'attraction_detail_screen.dart';
 
 class ActivitySearchScreen extends StatefulWidget {
   const ActivitySearchScreen({super.key});
@@ -71,7 +74,7 @@ class _ActivitySearchScreenState
         children: [
           // ─── Search Bar ───────────────────────────────
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               color: theme.cardColor,
               boxShadow: [
@@ -87,48 +90,19 @@ class _ActivitySearchScreenState
               children: [
                 TextField(
                   controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText:
-                        '📍 Enter location (e.g. Marrakech...)',
-                    prefixIcon: const Icon(
-                        Icons.location_on_rounded,
-                        color: Color(0xFF27AE60)),
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(14),
-                      borderSide: BorderSide(
-                          color: Colors.grey.withAlpha(80)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                          color: Color(0xFF27AE60), width: 2),
-                    ),
-                    filled: true,
-                    fillColor: isDark
-                        ? AppTheme.darkBackground
-                        : Colors.grey.shade50,
+                  decoration: const InputDecoration(
+                    hintText: 'Enter location (e.g. Marrakech...)',
+                    prefixIcon: Icon(Icons.location_on_rounded),
                   ),
                   onSubmitted: (_) => _searchAttractions(),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading
                         ? null
                         : _searchAttractions,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color(0xFF27AE60),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(14),
-                      ),
-                    ),
                     child: _isLoading
                         ? const SizedBox(
                             width: 22,
@@ -138,14 +112,7 @@ class _ActivitySearchScreenState
                               strokeWidth: 2.5,
                             ),
                           )
-                        : const Text(
-                            '🔍 Search Activities',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
-                            ),
-                          ),
+                        : const Text('Search Activities'),
                   ),
                 ),
               ],
@@ -168,34 +135,36 @@ class _ActivitySearchScreenState
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFF27AE60).withAlpha(20),
+                color: AppTheme.goldAccent.withAlpha(30),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.paragliding_rounded,
-                  size: 40, color: Color(0xFF27AE60)),
+                  size: 40, color: AppTheme.goldAccent),
             ),
-            const SizedBox(height: 16),
-            const Text('Search Activities',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.lg),
+            Text('Search Activities',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                )),
+            const SizedBox(height: AppSpacing.sm),
             Text('Enter a location to find activities',
-                style: TextStyle(color: Colors.grey[500])),
+                style: theme.textTheme.bodyMedium),
           ],
         ),
       );
     }
 
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-                color: Color(0xFF27AE60)),
-            SizedBox(height: 16),
-            Text('Searching activities...'),
+            const CircularProgressIndicator(
+                color: AppTheme.primaryOrange),
+            const SizedBox(height: AppSpacing.lg),
+            Text('Searching activities...',
+                style: theme.textTheme.bodyMedium),
           ],
         ),
       );
@@ -210,17 +179,14 @@ class _ActivitySearchScreenState
             children: [
               const Icon(Icons.error_outline,
                   size: 50, color: Colors.red),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Text(_errorMessage!,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton(
                 onPressed: _searchAttractions,
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryOrange),
-                child: const Text('Try Again',
-                    style: TextStyle(color: Colors.white)),
+                child: const Text('Try Again'),
               ),
             ],
           ),
@@ -233,23 +199,24 @@ class _ActivitySearchScreenState
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search_off_rounded,
-                size: 60, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text('No activities found',
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
+            Icon(Icons.search_off_rounded,
+                size: 60, color: theme.textTheme.bodyMedium?.color),
+            const SizedBox(height: AppSpacing.lg),
+            Text('No activities found',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                )),
+            const SizedBox(height: AppSpacing.sm),
             Text('Try a different location',
-                style: TextStyle(color: Colors.grey[500])),
+                style: theme.textTheme.bodyMedium),
           ],
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
       itemCount: _attractions.length,
       itemBuilder: (context, index) => _buildAttractionCard(
           _attractions[index], theme, isDark),
@@ -258,6 +225,11 @@ class _ActivitySearchScreenState
 
   Widget _buildAttractionCard(AttractionModel attraction,
       ThemeData theme, bool isDark) {
+    final placeholderBg =
+        isDark ? AppTheme.darkCard : Colors.grey.shade200;
+    final placeholderIconColor =
+        isDark ? Colors.grey.shade600 : Colors.grey.shade400;
+
     return GestureDetector(
       // ✅ TAP → OPENS DETAIL SCREEN
       onTap: () => Navigator.push(
@@ -268,19 +240,26 @@ class _ActivitySearchScreenState
           ),
         ),
       ),
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 16),
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ─── Image ──────────────────────────────────
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16)),
-              child: attraction.photoUrl.isNotEmpty
+      child: Container(
+        margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 70 : 30),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ─── Image ──────────────────────────────────
+              attraction.photoUrl.isNotEmpty
                   ? Image.network(
                       attraction.photoUrl,
                       height: 180,
@@ -288,221 +267,182 @@ class _ActivitySearchScreenState
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         height: 180,
-                        color: const Color(0xFF27AE60)
-                            .withAlpha(30),
-                        child: const Icon(
-                            Icons.paragliding_rounded,
+                        color: placeholderBg,
+                        child: Icon(Icons.paragliding_rounded,
                             size: 60,
-                            color: Color(0xFF27AE60)),
+                            color: placeholderIconColor),
                       ),
                     )
                   : Container(
                       height: 180,
-                      color:
-                          const Color(0xFF27AE60).withAlpha(30),
-                      child: const Icon(
-                          Icons.paragliding_rounded,
-                          size: 60,
-                          color: Color(0xFF27AE60)),
+                      color: placeholderBg,
+                      child: Icon(Icons.paragliding_rounded,
+                          size: 60, color: placeholderIconColor),
                     ),
-            ),
 
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Category Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF27AE60)
-                          .withAlpha(30),
-                      borderRadius:
-                          BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      attraction.category,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF27AE60),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Category Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.goldAccent.withAlpha(30),
+                        borderRadius:
+                            BorderRadius.circular(AppRadius.chip),
+                      ),
+                      child: Text(
+                        attraction.category,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.earthBrown,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
 
-                  // Name
-                  Text(
-                    attraction.name,
-                    style: const TextStyle(
+                    // Name
+                    Text(
+                      attraction.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
-                        fontSize: 16),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
+                        fontSize: 16,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
 
-                  // Location
-                  if (attraction.location.isNotEmpty)
+                    // Location
+                    if (attraction.location.isNotEmpty)
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_rounded,
+                              size: 14,
+                              color: theme.textTheme.bodyMedium?.color),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              attraction.location,
+                              style: theme.textTheme.bodySmall,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: AppSpacing.sm),
+
+                    // ✅ "Tap for details" hint
                     Row(
                       children: [
-                        const Icon(Icons.location_on_rounded,
-                            size: 14, color: Colors.grey),
+                        const Icon(
+                          Icons.touch_app_rounded,
+                          size: 13,
+                          color: AppTheme.primaryOrange,
+                        ),
                         const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            attraction.location,
-                            style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          'Tap to see details & photos',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
                       ],
                     ),
-                  const SizedBox(height: 10),
+                    const SizedBox(height: AppSpacing.sm),
 
-                  // ✅ "Tap for details" hint
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.touch_app_rounded,
-                        size: 13,
-                        color: Color(0xFF27AE60),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Tap to see details & photos',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[500],
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Rating + Price Row
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (attraction.rating > 0)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: AppTheme.oasisGreen
-                                .withAlpha(30),
-                            borderRadius:
-                                BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.star_rounded,
-                                  size: 14,
-                                  color: AppTheme.oasisGreen),
-                              const SizedBox(width: 4),
-                              Text(
-                                attraction.rating
-                                    .toStringAsFixed(1),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    color:
-                                        AppTheme.oasisGreen),
-                              ),
-                              if (attraction.reviewCount > 0)
-                                Text(
-                                  ' (${attraction.reviewCount})',
-                                  style: const TextStyle(
-                                      fontSize: 11,
-                                      color:
-                                          AppTheme.oasisGreen),
-                                ),
-                            ],
-                          ),
-                        ),
-                      attraction.price > 0
-                          ? RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text:
-                                        '\$${attraction.price.toStringAsFixed(0)}',
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight:
-                                          FontWeight.w800,
-                                      color: AppTheme
-                                          .primaryOrange,
-                                    ),
-                                  ),
-                                  const TextSpan(
-                                    text: '/person',
-                                    style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : const Text(
-                              'Free Entry',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF27AE60),
-                              ),
+                    // Rating + Price Row
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (attraction.rating > 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: AppTheme.goldAccent
+                                  .withAlpha(30),
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      AppRadius.badge),
                             ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
+                            child: RatingBadge(
+                              rating: attraction.rating,
+                              reviewCount: attraction.reviewCount > 0
+                                  ? attraction.reviewCount
+                                  : null,
+                            ),
+                          ),
+                        attraction.price > 0
+                            ? RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text:
+                                          '\$${attraction.price.toStringAsFixed(0)}',
+                                      style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight:
+                                            FontWeight.w800,
+                                        color: AppTheme
+                                            .primaryOrange,
+                                      ),
+                                    ),
+                                    TextSpan(
+                                      text: '/person',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: theme.textTheme
+                                              .bodyMedium?.color),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const Text(
+                                'Free Entry',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.oasisGreen,
+                                ),
+                              ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.md),
 
-                  // Book Now Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => BookingFormScreen(
-                            name: attraction.name,
-                            imageUrl: attraction.photoUrl,
-                            type: BookingType.activity,
-                            pricePerPerson:
-                                attraction.price > 0
-                                    ? attraction.price
-                                    : 25.0,
+                    // Book Now Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BookingFormScreen(
+                              name: attraction.name,
+                              imageUrl: attraction.photoUrl,
+                              type: BookingType.activity,
+                              pricePerPerson:
+                                  attraction.price > 0
+                                      ? attraction.price
+                                      : 25.0,
+                            ),
                           ),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF27AE60),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Book Activity 🎯',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        child: const Text('Book Activity'),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/settings_group.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
@@ -29,74 +30,75 @@ class HelpSupportScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Help & Support'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
-      ),
+      appBar: const LargeTitleBar(title: 'Help & Support'),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.email_outlined, color: AppTheme.primaryOrange),
-              title: const Text('Contact Us'),
-              subtitle: const Text('support@touristique.ma'),
-              trailing: const Icon(Icons.chevron_right),
+          const SettingsSectionLabel('Support'),
+          SettingsGroupCard(children: [
+            SettingsRow(
+              icon: Icons.email_outlined,
+              iconColor: AppTheme.primaryOrange,
+              label: 'Contact Us',
+              subtitle: 'support@touristique.ma',
+              showChevron: true,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Opening email app...')),
                 );
               },
             ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.bug_report_outlined, color: AppTheme.primaryOrange),
-              title: const Text('Report a Bug'),
-              trailing: const Icon(Icons.chevron_right),
+            SettingsRow(
+              icon: Icons.bug_report_outlined,
+              iconColor: AppTheme.deepBlue,
+              label: 'Report a Bug',
+              showChevron: true,
               onTap: () {},
             ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.star_outline, color: AppTheme.primaryOrange),
-              title: const Text('Rate the App'),
-              trailing: const Icon(Icons.chevron_right),
+            SettingsRow(
+              icon: Icons.star_outline,
+              iconColor: AppTheme.goldAccent,
+              label: 'Rate the App',
+              showChevron: true,
               onTap: () {},
             ),
+          ]),
+          const SettingsSectionLabel('Frequently asked questions'),
+          SettingsGroupCard(
+            children: _faqs
+                .map((faq) => Theme(
+                      data: theme.copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        iconColor: theme.textTheme.bodySmall?.color,
+                        collapsedIconColor: theme.textTheme.bodySmall?.color,
+                        leading: Container(
+                          width: 30,
+                          height: 30,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppTheme.earthBrown,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.help_outline, color: Colors.white, size: 17),
+                        ),
+                        title: Text(
+                          faq['question']!,
+                          style: theme.textTheme.bodyLarge
+                              ?.copyWith(fontWeight: FontWeight.w600, fontSize: 15),
+                        ),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            child: Text(faq['answer']!, style: theme.textTheme.bodyMedium),
+                          ),
+                        ],
+                      ),
+                    ))
+                .toList(),
           ),
-          const SizedBox(height: 24),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Text(
-              'FREQUENTLY ASKED QUESTIONS',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ..._faqs.map((faq) => Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ExpansionTile(
-                  leading: const Icon(Icons.help_outline, color: AppTheme.primaryOrange),
-                  title: Text(faq['question']!,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                      child: Text(faq['answer']!, style: const TextStyle(color: Colors.black54)),
-                    ),
-                  ],
-                ),
-              )),
         ],
       ),
     );

@@ -147,7 +147,7 @@ class _ReviewDialogState extends State<ReviewDialog> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 4),
-              Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+              Text(_error!, style: TextStyle(color: theme.colorScheme.error, fontSize: 13)),
             ],
             const SizedBox(height: 8),
             SizedBox(

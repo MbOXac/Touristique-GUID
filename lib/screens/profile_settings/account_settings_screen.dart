@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
+import '../../constants/app_radius.dart';
 import '../../widgets/country_picker.dart';
+import '../../widgets/settings_group.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -164,11 +166,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account Settings'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
-      ),
+      appBar: const LargeTitleBar(title: 'Account Settings'),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryOrange))
           : SingleChildScrollView(
@@ -203,7 +201,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _sectionTitle('Personal Information'),
+                    _sectionTitle(context, 'Personal Information'),
                     const SizedBox(height: 12),
 
                     // Name
@@ -218,6 +216,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
                     // Email (read-only)
                     _buildReadOnlyField(
+                      context: context,
                       label: 'Email',
                       value: _email ?? '',
                       icon: Icons.email_outlined,
@@ -231,7 +230,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
+                          border: Border.all(color: Theme.of(context).dividerColor),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -241,16 +240,19 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Birthday',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                Text('Birthday', style: Theme.of(context).textTheme.bodySmall),
                                 Text(
                                   _birthday != null ? _formatDate(_birthday!) : 'Select your birthday',
-                                  style: const TextStyle(fontSize: 16, color: AppTheme.deepBlue),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(fontSize: 16),
                                 ),
                               ],
                             ),
                             const Spacer(),
-                            const Icon(Icons.calendar_today, color: Colors.grey, size: 18),
+                            Icon(Icons.calendar_today,
+                                color: Theme.of(context).textTheme.bodySmall?.color, size: 18),
                           ],
                         ),
                       ),
@@ -260,10 +262,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     // Gender
                     DropdownButtonFormField<String>(
                       initialValue: _gender,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Gender',
-                        prefixIcon: const Icon(Icons.wc_outlined, color: AppTheme.primaryOrange),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: Icon(Icons.wc_outlined),
                       ),
                       items: _genders
                           .map((g) => DropdownMenuItem(value: g, child: Text(g)))
@@ -288,7 +289,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey.shade300),
+                          border: Border.all(color: Theme.of(context).dividerColor),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -298,8 +299,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Country',
-                                    style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                Text('Country', style: Theme.of(context).textTheme.bodySmall),
                                 Row(
                                   children: [
                                     if (_selectedCountry != null) ...[
@@ -309,28 +309,43 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                                     ],
                                     Text(
                                       _selectedCountry?.name ?? 'Select your country',
-                                      style: const TextStyle(fontSize: 16, color: AppTheme.deepBlue),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.copyWith(fontSize: 16),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
                             const Spacer(),
-                            const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                            Icon(Icons.arrow_drop_down,
+                                color: Theme.of(context).textTheme.bodySmall?.color),
                           ],
                         ),
                       ),
                     ),
 
                     const SizedBox(height: 24),
-                    _sectionTitle('Security'),
+                    _sectionTitle(context, 'Security'),
                     const SizedBox(height: 12),
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.lock_outline, color: AppTheme.primaryOrange),
-                        title: const Text('Change Password'),
-                        subtitle: const Text('Reset link will be sent to your email'),
-                        trailing: const Icon(Icons.chevron_right),
+                    // Inline (unmargined) grouped-card row — this screen already
+                    // sits inside a 16px-padded form, so SettingsGroupCard's own
+                    // outer margin is skipped to avoid double-indenting it.
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppTheme.darkCard
+                            : AppTheme.lightCard,
+                        borderRadius: BorderRadius.circular(AppRadius.card),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: SettingsRow(
+                        icon: Icons.lock_outline,
+                        iconColor: AppTheme.primaryOrange,
+                        label: 'Change Password',
+                        subtitle: 'Reset link will be sent to your email',
+                        showChevron: true,
                         onTap: _changePassword,
                       ),
                     ),
@@ -363,13 +378,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  Widget _sectionTitle(String title) {
+  Widget _sectionTitle(BuildContext context, String title) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Text(
       title,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.bold,
-        color: AppTheme.deepBlue,
+        color: isDark ? AppTheme.darkTextPrimary : AppTheme.deepBlue,
         letterSpacing: 0.5,
       ),
     );
@@ -388,37 +405,39 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppTheme.primaryOrange),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: Icon(icon),
       ),
     );
   }
 
   Widget _buildReadOnlyField({
+    required BuildContext context,
     required String label,
     required String value,
     required IconData icon,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        border: Border.all(color: Colors.grey.shade300),
+        color: isDark ? AppTheme.darkCard : Colors.grey.shade100,
+        border: Border.all(color: theme.dividerColor),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.grey),
+          Icon(icon, color: theme.textTheme.bodySmall?.color),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-              Text(value, style: const TextStyle(fontSize: 16, color: Colors.black54)),
+              Text(label, style: theme.textTheme.bodySmall),
+              Text(value, style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16)),
             ],
           ),
           const Spacer(),
-          const Icon(Icons.lock_outline, color: Colors.grey, size: 16),
+          Icon(Icons.lock_outline, color: theme.textTheme.bodySmall?.color, size: 16),
         ],
       ),
     );

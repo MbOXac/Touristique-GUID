@@ -6,6 +6,7 @@ import '../models/gallery_item.dart';
 import '../services/gallery_service.dart';
 import 'image_viewer_screen.dart';
 import '../widgets/image_card.dart';
+import '../theme/app_theme.dart';
 
 class UserGalleryScreen extends StatefulWidget {
   final String userId;
@@ -55,13 +56,18 @@ class _UserGalleryScreenState extends State<UserGalleryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // Header
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
+            backgroundColor: theme.appBarTheme.backgroundColor,
             flexibleSpace: FlexibleSpaceBar(
               background: FutureBuilder<Map<String, dynamic>>(
                 future: _userInfoFuture,
@@ -72,25 +78,27 @@ class _UserGalleryScreenState extends State<UserGalleryScreen> {
 
                   final userInfo = snapshot.data!;
                   return Container(
-                    color: Colors.grey[100],
+                    color: isDark ? AppTheme.darkSurface : AppTheme.sandBeige.withAlpha(140),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         CircleAvatar(
                           radius: 40,
+                          backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
                           backgroundImage: userInfo['avatar'].isNotEmpty
                               ? CachedNetworkImageProvider(userInfo['avatar'])
                               : null,
                           child: userInfo['avatar'].isEmpty
-                              ? const Icon(Icons.person, size: 40)
+                              ? Icon(Icons.person, size: 40, color: theme.iconTheme.color)
                               : null,
                         ),
                         const SizedBox(height: 12),
                         Text(
                           userInfo['name'],
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
+                            color: theme.textTheme.titleLarge?.color,
                           ),
                         ),
                       ],
@@ -120,7 +128,7 @@ class _UserGalleryScreenState extends State<UserGalleryScreen> {
                         return Container(
                           height: (index % 2 == 0) ? 200 : 300,
                           decoration: BoxDecoration(
-                            color: Colors.grey[300],
+                            color: isDark ? AppTheme.darkCard : const Color(0xFFEDE6D9),
                             borderRadius: BorderRadius.circular(12),
                           ),
                         );
@@ -138,17 +146,25 @@ class _UserGalleryScreenState extends State<UserGalleryScreen> {
                         padding: const EdgeInsets.all(32),
                         child: Column(
                           children: [
-                            Icon(
-                              Icons.photo_library_outlined,
-                              size: 80,
-                              color: Colors.grey[400],
+                            Container(
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: theme.colorScheme.primary.withAlpha(22),
+                              ),
+                              child: Icon(
+                                Icons.photo_library_outlined,
+                                size: 56,
+                                color: theme.colorScheme.primary,
+                              ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 20),
                             Text(
                               'No images yet',
                               style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[600],
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: theme.textTheme.titleMedium?.color,
                               ),
                             ),
                           ],

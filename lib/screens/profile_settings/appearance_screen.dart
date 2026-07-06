@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import '../../services/theme_service.dart';
+import '../../widgets/settings_group.dart';
 
 class AppearanceScreen extends StatefulWidget {
   const AppearanceScreen({super.key});
@@ -17,49 +18,47 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Appearance')),
+      appBar: const LargeTitleBar(title: 'Appearance'),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
-          Text(
-            '🎨 Choose your theme',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: theme.textTheme.titleLarge?.color,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '🎨 Choose your theme',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: theme.textTheme.titleLarge?.color,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pick a theme that matches your mood',
+                  style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 14),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(child: _themeCard(AppThemeType.light, theme)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _themeCard(AppThemeType.dark, theme)),
+                  ],
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Pick a theme that matches your mood',
-            style: TextStyle(color: theme.textTheme.bodyMedium?.color, fontSize: 14),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(child: _themeCard(AppThemeType.light, theme)),
-              const SizedBox(width: 12),
-              Expanded(child: _themeCard(AppThemeType.dark, theme)),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(Icons.lightbulb_outline, color: theme.colorScheme.primary),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Your theme is saved and syncs across devices.',
-                      style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color),
-                    ),
-                  ),
-                ],
-              ),
+          SettingsGroupCard(children: [
+            SettingsRow(
+              icon: Icons.lightbulb_outline,
+              iconColor: AppTheme.goldAccent,
+              label: 'Your theme is saved and syncs across devices.',
             ),
-          ),
+          ]),
         ],
       ),
     );

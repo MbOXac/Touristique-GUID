@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 /// Reusable car image widget.
 /// Automatically loads network URLs (http/https) or local assets.
@@ -25,6 +26,7 @@ class CarImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     Widget image;
 
     if (_isNetwork) {
@@ -34,10 +36,10 @@ class CarImage extends StatelessWidget {
         width: width,
         cacheWidth: cacheWidth,
         fit: fit,
-        errorBuilder: (context, error, stackTrace) => _placeholder(),
+        errorBuilder: (context, error, stackTrace) => _placeholder(isDark),
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
-          return _loading();
+          return _loading(isDark);
         },
       );
     } else {
@@ -46,7 +48,7 @@ class CarImage extends StatelessWidget {
         height: height,
         width: width,
         fit: fit,
-        errorBuilder: (context, error, stackTrace) => _placeholder(),
+        errorBuilder: (context, error, stackTrace) => _placeholder(isDark),
       );
     }
 
@@ -60,26 +62,29 @@ class CarImage extends StatelessWidget {
     return image;
   }
 
-  Widget _placeholder() {
+  Widget _placeholder(bool isDark) {
     return Container(
       height: height,
       width: width,
-      color: Colors.grey[300],
-      child: const Icon(
+      color: isDark ? AppTheme.darkCard : AppTheme.sandBeige.withAlpha(120),
+      child: Icon(
         Icons.directions_car,
         size: 60,
-        color: Colors.grey,
+        color: isDark ? Colors.grey.shade600 : AppTheme.earthBrown.withAlpha(150),
       ),
     );
   }
 
-  Widget _loading() {
+  Widget _loading(bool isDark) {
     return Container(
       height: height,
       width: width,
-      color: Colors.grey[200],
+      color: isDark ? AppTheme.darkCard : AppTheme.softBackground,
       child: const Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: AppTheme.primaryOrange,
+          strokeWidth: 2.5,
+        ),
       ),
     );
   }

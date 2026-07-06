@@ -211,14 +211,15 @@ class _CircuitMapScreenState extends State<CircuitMapScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: selected
-                            ? AppTheme.primaryOrange
-                            : theme.cardColor,
+                        gradient: selected ? AppTheme.orangeGradient : null,
+                        color: selected ? null : theme.cardColor,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withAlpha(30),
-                            blurRadius: 6,
+                            color: selected
+                                ? AppTheme.primaryOrange.withAlpha(90)
+                                : Colors.black.withAlpha(30),
+                            blurRadius: selected ? 10 : 6,
                             offset: const Offset(0, 2),
                           ),
                         ],
@@ -296,8 +297,9 @@ class _CircuitMapScreenState extends State<CircuitMapScreen> {
             bottom: 24,
             child: FloatingActionButton.small(
               heroTag: 'circuit-map-loc',
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: theme.cardColor,
+              foregroundColor: theme.iconTheme.color,
+              elevation: 3,
               onPressed: _goToMyLocation,
               child: const Icon(Icons.my_location_rounded),
             ),

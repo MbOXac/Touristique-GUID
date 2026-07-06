@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/booking.dart';
 import '../services/booking_service.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_spacing.dart';
+import '../constants/app_radius.dart';
 
 class BookingFormScreen extends StatefulWidget {
   final String name;
@@ -172,78 +174,70 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    color: AppTheme.oasisGreen.withAlpha(30),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_circle_rounded,
-                    color: AppTheme.oasisGreen,
-                    size: 40,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Booking Confirmed! 🎉',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${widget.name} has been booked!',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 13, color: Colors.grey),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Total: ${_money(_totalPrice)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                    color: AppTheme.primaryOrange,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryOrange,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14),
+          builder: (ctx) {
+            final dialogTheme = Theme.of(ctx);
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.sheet),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: AppTheme.oasisGreen.withAlpha(30),
+                      shape: BoxShape.circle,
                     ),
-                    child: const Text(
-                      'View My Bookings',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: AppTheme.oasisGreen,
+                      size: 42,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Booking Confirmed! 🎉',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 19,
+                      color: dialogTheme.textTheme.titleLarge?.color,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    '${widget.name} has been booked!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: dialogTheme.textTheme.bodyMedium?.color,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs + 2),
+                  Text(
+                    'Total: ${_money(_totalPrice)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                      color: AppTheme.primaryOrange,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xl - 4),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        Navigator.pop(context);
+                      },
+                      child: const Text('View My Bookings'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       }
     } catch (e) {
@@ -364,21 +358,18 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                 children: [
                   // ─── Price Card ────────────────────────
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryOrange
-                          .withAlpha(20),
-                      borderRadius:
-                          BorderRadius.circular(14),
+                      color: AppTheme.primaryOrange.withAlpha(20),
+                      borderRadius: BorderRadius.circular(AppRadius.card),
                       border: Border.all(
-                          color: AppTheme.primaryOrange
-                              .withAlpha(60)),
+                          color: AppTheme.primaryOrange.withAlpha(60)),
                     ),
                     child: Row(
                       children: [
                         const Icon(Icons.payments_rounded,
-                            color: AppTheme.primaryOrange),
-                        const SizedBox(width: 10),
+                            color: AppTheme.goldAccent),
+                        const SizedBox(width: AppSpacing.sm + 2),
                         Text(
                           widget.isCircuit
                               ? '${widget.pricePerPerson.toStringAsFixed(0)} MAD per person'
@@ -392,41 +383,41 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ─── Dates ─────────────────────────────
-                  const Text(
+                  Text(
                     '📅 Select Dates',
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   Row(
                     children: [
                       Expanded(
                         child: GestureDetector(
                           onTap: _pickStartDate,
                           child: Container(
-                            padding: const EdgeInsets.all(14),
+                            padding: const EdgeInsets.all(AppSpacing.md + 2),
                             decoration: BoxDecoration(
                               color: theme.cardColor,
-                              borderRadius:
-                                  BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(AppRadius.card),
                               border: Border.all(
                                 color: _startDate != null
                                     ? AppTheme.primaryOrange
-                                    : Colors.grey
-                                        .withAlpha(80),
+                                    : (isDark
+                                        ? AppTheme.darkBorder
+                                        : AppTheme.lightBorder),
+                                width: _startDate != null ? 1.5 : 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black
-                                      .withAlpha(
-                                          isDark ? 40 : 10),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                                  color: Colors.black.withAlpha(isDark ? 70 : 30),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
@@ -438,7 +429,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                   'Check In',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Colors.grey[500],
+                                    color: theme.textTheme.bodySmall?.color,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -450,7 +441,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                     fontWeight: FontWeight.w700,
                                     color: _startDate != null
                                         ? AppTheme.primaryOrange
-                                        : Colors.grey,
+                                        : theme.textTheme.bodyMedium?.color,
                                   ),
                                 ),
                               ],
@@ -458,30 +449,29 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                           ),
                         ),
                       ),
-                      if (!widget.isCircuit) const SizedBox(width: 12),
+                      if (!widget.isCircuit) const SizedBox(width: AppSpacing.md),
                       if (!widget.isCircuit)
                       Expanded(
                         child: GestureDetector(
                           onTap: _pickEndDate,
                           child: Container(
-                            padding: const EdgeInsets.all(14),
+                            padding: const EdgeInsets.all(AppSpacing.md + 2),
                             decoration: BoxDecoration(
                               color: theme.cardColor,
-                              borderRadius:
-                                  BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(AppRadius.card),
                               border: Border.all(
                                 color: _endDate != null
                                     ? AppTheme.primaryOrange
-                                    : Colors.grey
-                                        .withAlpha(80),
+                                    : (isDark
+                                        ? AppTheme.darkBorder
+                                        : AppTheme.lightBorder),
+                                width: _endDate != null ? 1.5 : 1,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black
-                                      .withAlpha(
-                                          isDark ? 40 : 10),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                                  color: Colors.black.withAlpha(isDark ? 70 : 30),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 5),
                                 ),
                               ],
                             ),
@@ -493,7 +483,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                   'Check Out',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Colors.grey[500],
+                                    color: theme.textTheme.bodySmall?.color,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -505,7 +495,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                     fontWeight: FontWeight.w700,
                                     color: _endDate != null
                                         ? AppTheme.primaryOrange
-                                        : Colors.grey,
+                                        : theme.textTheme.bodyMedium?.color,
                                   ),
                                 ),
                               ],
@@ -515,30 +505,29 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ─── Guests ────────────────────────────
-                  const Text(
+                  Text(
                     '👥 Number of Guests',
                     style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
+                      color: theme.textTheme.titleLarge?.color,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                        horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                     decoration: BoxDecoration(
                       color: theme.cardColor,
-                      borderRadius:
-                          BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadius.card),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha(
-                              isDark ? 40 : 10),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                          color: Colors.black.withAlpha(isDark ? 70 : 30),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
@@ -548,9 +537,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       children: [
                         Text(
                           '$_guests Guest${_guests > 1 ? 's' : ''}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
+                            color: theme.textTheme.bodyLarge?.color,
                           ),
                         ),
                         Row(
@@ -567,11 +557,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                 decoration: BoxDecoration(
                                   color: _guests > 1
                                       ? AppTheme.primaryOrange
-                                      : Colors.grey
-                                          .withAlpha(80),
-                                  borderRadius:
-                                      BorderRadius.circular(
-                                          10),
+                                      : (isDark
+                                          ? AppTheme.darkBorder
+                                          : AppTheme.lightBorder),
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(
                                     Icons.remove,
@@ -579,15 +568,16 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                     size: 18),
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: AppSpacing.lg),
                             Text(
                               '$_guests',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 18,
+                                color: theme.textTheme.bodyLarge?.color,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: AppSpacing.lg),
                             GestureDetector(
                               onTap: () {
                                 if (_guests < 20) {
@@ -613,31 +603,30 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // ─── Summary ───────────────────────────
                   if (_startDate != null &&
                       (widget.isCircuit || _endDate != null)) ...[
-                    const Text(
+                    Text(
                       '🧾 Booking Summary',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
+                        color: theme.textTheme.titleLarge?.color,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(AppSpacing.lg),
                       decoration: BoxDecoration(
                         color: theme.cardColor,
-                        borderRadius:
-                            BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(AppRadius.card),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withAlpha(
-                                isDark ? 40 : 10),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            color: Colors.black.withAlpha(isDark ? 70 : 30),
+                            blurRadius: 14,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -668,25 +657,24 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                   ? '💰 Price/person'
                                   : '💰 Price/person/day',
                               _money(widget.pricePerPerson)),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: AppSpacing.md),
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
-                              color: AppTheme.primaryOrange
-                                  .withAlpha(20),
-                              borderRadius:
-                                  BorderRadius.circular(10),
+                              color: AppTheme.primaryOrange.withAlpha(20),
+                              borderRadius: BorderRadius.circular(AppRadius.badge),
                             ),
                             child: Row(
                               mainAxisAlignment:
                                   MainAxisAlignment
                                       .spaceBetween,
                               children: [
-                                const Text(
+                                Text(
                                   'TOTAL PRICE',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 14,
+                                    color: theme.textTheme.titleLarge?.color,
                                   ),
                                 ),
                                 Text(
@@ -704,7 +692,7 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: AppSpacing.xl),
                   ],
 
                   // ─── Confirm Button ─────────────────────
@@ -713,20 +701,6 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                     child: ElevatedButton(
                       onPressed:
                           _isLoading ? null : _confirmBooking,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            AppTheme.primaryOrange,
-                        disabledBackgroundColor:
-                            AppTheme.primaryOrange
-                                .withAlpha(100),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 18),
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(16),
-                        ),
-                        elevation: 4,
-                      ),
                       child: _isLoading
                           ? const SizedBox(
                               width: 24,
@@ -736,17 +710,10 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
                                 strokeWidth: 2.5,
                               ),
                             )
-                          : const Text(
-                              'Confirm Booking 🎉',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 16,
-                              ),
-                            ),
+                          : const Text('Confirm Booking 🎉'),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.lg + 4),
                 ],
               ),
             ),
@@ -757,24 +724,26 @@ class _BookingFormScreenState extends State<BookingFormScreen> {
   }
 
   Widget _summaryRow(String label, String value) {
+    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs + 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
-              style: const TextStyle(
-                  fontSize: 13, color: Colors.grey)),
+              style: TextStyle(
+                  fontSize: 13, color: theme.textTheme.bodyMedium?.color)),
           Text(value,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700)),
+                  fontWeight: FontWeight.w700,
+                  color: theme.textTheme.bodyLarge?.color)),
         ],
       ),
     );
   }
 
   Widget _divider() {
-    return Divider(color: Colors.grey.withAlpha(40), height: 1);
+    return Divider(color: Theme.of(context).dividerTheme.color, height: 1);
   }
 }

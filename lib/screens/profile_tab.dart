@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_radius.dart';
 import '../models/gallery_item.dart';
 import '../services/favorite_service.dart';
 import '../services/gallery_service.dart';
+import '../widgets/settings_group.dart';
 import 'login_page.dart';
 import 'favorites_screen.dart';
 import 'profile_settings/account_settings_screen.dart';
@@ -111,7 +113,7 @@ class _ProfileTabState extends State<ProfileTab> {
                     decoration: BoxDecoration(
                       color: AppTheme.sandBeige,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.primaryOrange, width: 3),
+                      border: Border.all(color: AppTheme.goldAccent, width: 3),
                     ),
                     child: const Icon(Icons.person_rounded, size: 52, color: AppTheme.earthBrown),
                   ),
@@ -160,21 +162,28 @@ class _ProfileTabState extends State<ProfileTab> {
             const SizedBox(height: 8),
             _buildSettingsSection(context, 'Account', [
               _SettingItem(Icons.manage_accounts_outlined, 'Account Settings', 'Manage your account',
-                  () => _navigateTo(const AccountSettingsScreen())),
+                  () => _navigateTo(const AccountSettingsScreen()),
+                  iconColor: AppTheme.primaryOrange),
               _SettingItem(Icons.notifications_outlined, 'Notifications', 'Push & email preferences',
-                  () => _navigateTo(const NotificationsScreen())),
+                  () => _navigateTo(const NotificationsScreen()),
+                  iconColor: AppTheme.deepBlue),
               _SettingItem(Icons.privacy_tip_outlined, 'Privacy', 'Control your data',
-                  () => _navigateTo(const PrivacyScreen())),
+                  () => _navigateTo(const PrivacyScreen()),
+                  iconColor: AppTheme.oasisGreen),
             ]),
             _buildSettingsSection(context, 'App', [
               _SettingItem(Icons.palette_outlined, 'Appearance', 'Themes & colors',
-                  () => _navigateTo(const AppearanceScreen())),
+                  () => _navigateTo(const AppearanceScreen()),
+                  iconColor: AppTheme.goldAccent),
               _SettingItem(Icons.language_outlined, 'Language', language ?? 'English',
-                  () => _navigateTo(const LanguageScreen())),
+                  () => _navigateTo(const LanguageScreen()),
+                  iconColor: AppTheme.deepBlue),
               _SettingItem(Icons.help_outline_rounded, 'Help & Support', 'FAQ, contact us',
-                  () => _navigateTo(const HelpSupportScreen())),
+                  () => _navigateTo(const HelpSupportScreen()),
+                  iconColor: AppTheme.earthBrown),
               _SettingItem(Icons.info_outline_rounded, 'About', 'Version 1.0.0',
-                  () => _navigateTo(const AboutScreen())),
+                  () => _navigateTo(const AboutScreen()),
+                  iconColor: AppTheme.primaryOrange),
             ]),
             const SizedBox(height: 16),
             Padding(
@@ -196,7 +205,7 @@ class _ProfileTabState extends State<ProfileTab> {
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.red),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.button)),
                   ),
                 ),
               ),
@@ -212,61 +221,28 @@ class _ProfileTabState extends State<ProfileTab> {
   Widget _statBadge(String value, String label) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.primaryOrange)),
+        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppTheme.goldAccent)),
         Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
       ],
     );
   }
 
   Widget _buildSettingsSection(BuildContext context, String sectionTitle, List<_SettingItem> items) {
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-          child: Text(
-            sectionTitle,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: theme.textTheme.bodyMedium?.color,
-              letterSpacing: 1.0,
-            ),
-          ),
-        ),
-        Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          elevation: 1,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Column(
-            children: List.generate(items.length, (index) {
-              final item = items[index];
-              return Column(
-                children: [
-                  ListTile(
-                    leading: Icon(item.icon, color: AppTheme.primaryOrange, size: 22),
-                    title: Text(
-                      item.title,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: theme.textTheme.titleLarge?.color,
-                      ),
-                    ),
-                    subtitle: Text(
-                      item.subtitle,
-                      style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
-                    ),
-                    trailing: Icon(Icons.chevron_right, color: theme.textTheme.bodyMedium?.color),
+        SettingsSectionLabel(sectionTitle),
+        SettingsGroupCard(
+          children: items
+              .map((item) => SettingsRow(
+                    icon: item.icon,
+                    iconColor: item.iconColor,
+                    label: item.title,
+                    subtitle: item.subtitle,
+                    showChevron: true,
                     onTap: item.onTap,
-                  ),
-                  if (index < items.length - 1)
-                    Divider(height: 1, indent: 56, color: theme.dividerColor),
-                ],
-              );
-            }),
-          ),
+                  ))
+              .toList(),
         ),
       ],
     );
@@ -278,5 +254,7 @@ class _SettingItem {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  const _SettingItem(this.icon, this.title, this.subtitle, this.onTap);
+  final Color iconColor;
+  const _SettingItem(this.icon, this.title, this.subtitle, this.onTap,
+      {this.iconColor = AppTheme.primaryOrange});
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'main_navigation.dart';
 
 class WelcomePage extends StatelessWidget {
@@ -15,17 +16,18 @@ class WelcomePage extends StatelessWidget {
             'assets/images/welcome.jpg',
             fit: BoxFit.cover,
           ),
-          // Gradient overlay
+          // Navy-tinted scrim so the hero image reads through a Desert Luxe tone
+          // rather than plain black, matching the app's onboarding convention.
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0x33000000),
-                  Color(0xCC000000),
+                  Colors.transparent,
+                  AppTheme.deepBlue.withAlpha(235),
                 ],
-                stops: [0.3, 1.0],
+                stops: const [0.3, 1.0],
               ),
             ),
           ),
@@ -44,7 +46,7 @@ class WelcomePage extends StatelessWidget {
                         'Welcome to',
                         style: TextStyle(
                           fontSize: 18,
-                          color: Color(0xFFD2691E),
+                          color: AppTheme.goldAccent,
                           fontWeight: FontWeight.w500,
                           letterSpacing: 1.2,
                         ),

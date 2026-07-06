@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/booking.dart';
 import '../services/booking_service.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_spacing.dart';
+import '../constants/app_radius.dart';
 import '../widgets/empty_state.dart';
 
 class BookingsScreen extends StatefulWidget {
@@ -39,11 +41,13 @@ class _BookingsScreenState extends State<BookingsScreen>
     }
   }
 
+  // Desert Luxe status mapping: confirmed=oasis green, pending=warm gold,
+  // cancelled=muted terracotta.
   Color _statusColor(BookingStatus status) {
     switch (status) {
       case BookingStatus.confirmed: return AppTheme.oasisGreen;
-      case BookingStatus.pending: return Colors.orange;
-      case BookingStatus.cancelled: return Colors.red;
+      case BookingStatus.pending: return AppTheme.goldAccent;
+      case BookingStatus.cancelled: return AppTheme.primaryOrange;
     }
   }
 
@@ -62,6 +66,9 @@ class _BookingsScreenState extends State<BookingsScreen>
   }
 
   // ✅ Cancel booking with confirmation dialog
+  // NOTE: dialog chrome (shape/colors) restyled only — the AlertDialog picks
+  // up the app-wide rounded DialogThemeData automatically since no
+  // shape/backgroundColor override is set here. Cancel logic below untouched.
   void _cancelBooking(Booking booking) {
     showDialog(
       context: context,
@@ -69,11 +76,11 @@ class _BookingsScreenState extends State<BookingsScreen>
         title: const Text('Cancel Booking'),
         content: Text('Cancel "${booking.name}"?'),
         actions: [
-          TextButton(
+          OutlinedButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('No'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await BookingService.cancelBooking(booking.id);
@@ -86,8 +93,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                 );
               }
             },
-            child: const Text('Yes, Cancel',
-                style: TextStyle(color: Colors.red)),
+            child: const Text('Yes, Cancel'),
           ),
         ],
       ),
@@ -95,6 +101,7 @@ class _BookingsScreenState extends State<BookingsScreen>
   }
 
   // ✅ Delete booking with confirmation dialog
+  // NOTE: chrome-only restyle, same rationale as _cancelBooking above.
   void _deleteBooking(Booking booking) {
     showDialog(
       context: context,
@@ -102,11 +109,11 @@ class _BookingsScreenState extends State<BookingsScreen>
         title: const Text('Delete Booking'),
         content: Text('Delete "${booking.name}" permanently?'),
         actions: [
-          TextButton(
+          OutlinedButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('No'),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
               await BookingService.deleteBooking(booking.id);
@@ -119,8 +126,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                 );
               }
             },
-            child: const Text('Delete',
-                style: TextStyle(color: Colors.red)),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -193,7 +199,7 @@ class _BookingsScreenState extends State<BookingsScreen>
 
         // ✅ Show bookings from Firestore
         return ListView.builder(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           itemCount: bookings.length,
           itemBuilder: (context, index) =>
               _buildBookingCard(bookings[index]),
@@ -202,17 +208,31 @@ class _BookingsScreenState extends State<BookingsScreen>
     );
   }
 
+  // Rounded, theme-aware shadow card — same visual pattern as CircuitCard
+  // (lib/widgets/circuit_card.dart): theme.cardColor fill, 16px radius,
+  // soft elevation via BoxShadow rather than the default Material Card.
   Widget _buildBookingCard(Booking booking) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final statusColor = _statusColor(booking.status);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 70 : 30),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(AppSpacing.md),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Icon
             Container(
@@ -222,12 +242,12 @@ class _BookingsScreenState extends State<BookingsScreen>
                 color: isDark
                     ? AppTheme.darkBackground
                     : AppTheme.sandBeige,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.badge),
               ),
               child: Icon(_typeIcon(booking.type),
                   color: AppTheme.primaryOrange, size: 26),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: AppSpacing.md),
 
             // Info
             Expanded(
@@ -253,7 +273,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     _formatDate(booking.bookingDate),
                     style: TextStyle(
@@ -263,7 +283,7 @@ class _BookingsScreenState extends State<BookingsScreen>
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: AppSpacing.sm),
 
             // Price + Status + Actions
             Column(
@@ -276,23 +296,24 @@ class _BookingsScreenState extends State<BookingsScreen>
                       fontSize: 16,
                       color: AppTheme.primaryOrange),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.sm),
+                // Status pill — chip-radius, tinted background + colored label.
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                      horizontal: AppSpacing.sm, vertical: 3),
                   decoration: BoxDecoration(
-                    color: _statusColor(booking.status).withAlpha(30),
-                    borderRadius: BorderRadius.circular(10),
+                    color: statusColor.withAlpha(30),
+                    borderRadius: BorderRadius.circular(AppRadius.chip),
                   ),
                   child: Text(
                     _statusLabel(booking.status),
                     style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: _statusColor(booking.status)),
+                        color: statusColor),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: AppSpacing.sm),
 
                 // ✅ Action buttons
                 if (booking.status == BookingStatus.pending)
@@ -301,16 +322,16 @@ class _BookingsScreenState extends State<BookingsScreen>
                     child: const Text('Cancel',
                         style: TextStyle(
                             fontSize: 11,
-                            color: Colors.red,
+                            color: AppTheme.primaryOrange,
                             fontWeight: FontWeight.bold)),
                   ),
                 if (booking.status == BookingStatus.cancelled)
                   GestureDetector(
                     onTap: () => _deleteBooking(booking),
-                    child: const Text('Delete',
+                    child: Text('Delete',
                         style: TextStyle(
                             fontSize: 11,
-                            color: Colors.red,
+                            color: theme.colorScheme.error,
                             fontWeight: FontWeight.bold)),
                   ),
               ],

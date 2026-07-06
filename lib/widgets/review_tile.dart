@@ -30,7 +30,6 @@ class ReviewTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -148,7 +147,7 @@ class ReviewTile extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 height: 1.5,
-                color: isDark ? AppTheme.darkTextSecondary : Colors.grey.shade800,
+                color: theme.textTheme.bodyMedium?.color,
               ),
             ),
           ],

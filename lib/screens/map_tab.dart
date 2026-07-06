@@ -8,6 +8,7 @@ import '../services/destination_service.dart';
 import '../services/nominatim_service.dart';
 import '../services/trueway_service.dart';
 import '../services/photo_service.dart';
+import '../theme/app_theme.dart';
 import 'destination_detail_screen.dart';
 import 'place_detail_screen.dart';
 
@@ -544,8 +545,11 @@ class _MapTabState extends State<MapTab> {
   // ─────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
         children: [
           // 🗺️ MAP
@@ -754,6 +758,17 @@ class _MapTabState extends State<MapTab> {
                         final cat = _categories[index];
                         final isSelected =
                             _selectedCategory == cat['label'];
+                        // These pills float directly over the map tiles (no
+                        // solid app-bar backdrop behind them like
+                        // CategoryChips has), so the unselected state stays
+                        // a near-opaque card color rather than a truly
+                        // translucent one — otherwise labels lose contrast
+                        // against busy map imagery.
+                        final unselectedBg = isDark
+                            ? AppTheme.darkCard.withAlpha(235)
+                            : Colors.white.withAlpha(235);
+                        final unselectedLabel =
+                            isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: GestureDetector(
@@ -766,14 +781,17 @@ class _MapTabState extends State<MapTab> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? Colors.black
-                                    : Colors.white,
+                                gradient: isSelected
+                                    ? AppTheme.orangeGradient
+                                    : null,
+                                color: isSelected ? null : unselectedBg,
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.12),
-                                    blurRadius: 6,
+                                    color: isSelected
+                                        ? AppTheme.primaryOrange.withAlpha(90)
+                                        : Colors.black.withOpacity(0.12),
+                                    blurRadius: isSelected ? 10 : 6,
                                     offset: const Offset(0, 2),
                                   ),
                                 ],
@@ -786,7 +804,7 @@ class _MapTabState extends State<MapTab> {
                                     size: 14,
                                     color: isSelected
                                         ? Colors.white
-                                        : Colors.black,
+                                        : unselectedLabel,
                                   ),
                                   const SizedBox(width: 5),
                                   Text(
@@ -794,9 +812,11 @@ class _MapTabState extends State<MapTab> {
                                     style: TextStyle(
                                       color: isSelected
                                           ? Colors.white
-                                          : Colors.black,
+                                          : unselectedLabel,
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
                                     ),
                                   ),
                                 ],
@@ -948,6 +968,7 @@ class _MapTabState extends State<MapTab> {
               children: [
                 _mapControlButton(
                   icon: Icons.layers_rounded,
+                  active: _showLayerMenu || _currentMapStyle != 'streets',
                   onTap: () {
                     setState(() => _showLayerMenu = !_showLayerMenu);
                   },
@@ -980,19 +1001,23 @@ class _MapTabState extends State<MapTab> {
             ),
           ),
 
-          // 🎨 LAYER SWITCHER MENU
+          // 🎨 LAYER SWITCHER MENU — compact pill-button segmented control
           if (_showLayerMenu)
             Positioned(
               bottom: _showBottomSheet ? 300 : (_hasSearched ? 230 : 80),
               right: 70,
               child: Container(
-                padding: const EdgeInsets.all(12),
+                width: 168,
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
+                  color: isDark ? AppTheme.darkCard : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: isDark
+                      ? Border.all(color: AppTheme.darkBorder)
+                      : null,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withOpacity(isDark ? 0.4 : 0.2),
                       blurRadius: 15,
                       offset: const Offset(0, 4),
                     ),
@@ -1002,25 +1027,35 @@ class _MapTabState extends State<MapTab> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 4),
                       child: Text(
                         'Map Type',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.black,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          color: isDark
+                              ? AppTheme.darkTextSecondary
+                              : AppTheme.lightTextSecondary,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    _layerOption('Streets', 'streets', Icons.map_rounded),
-                    _layerOption('Satellite', 'satellite',
-                        Icons.satellite_alt_rounded),
-                    _layerOption('Hybrid', 'hybrid', Icons.layers_rounded),
-                    _layerOption('Terrain', 'terrain', Icons.terrain_rounded),
-                    _layerOption('Dark', 'dark', Icons.dark_mode_rounded),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _layerOption('Streets', 'streets', Icons.map_rounded),
+                        _layerOption('Satellite', 'satellite',
+                            Icons.satellite_alt_rounded),
+                        _layerOption(
+                            'Hybrid', 'hybrid', Icons.layers_rounded),
+                        _layerOption(
+                            'Terrain', 'terrain', Icons.terrain_rounded),
+                        _layerOption('Dark', 'dark', Icons.dark_mode_rounded),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -1031,10 +1066,17 @@ class _MapTabState extends State<MapTab> {
   }
 
   // ─────────────────────────────────────────────────
-  // 🎨 LAYER OPTION
+  // 🎨 LAYER OPTION — compact terracotta-highlighted pill
   // ─────────────────────────────────────────────────
   Widget _layerOption(String label, String style, IconData icon) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final isSelected = _currentMapStyle == style;
+    final unselectedBg = isDark
+        ? Colors.white.withAlpha(18)
+        : AppTheme.sandBeige.withAlpha(120);
+    final unselectedLabel =
+        isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -1043,24 +1085,24 @@ class _MapTabState extends State<MapTab> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.black : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? AppTheme.primaryOrange : unselectedBg,
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                size: 18, color: isSelected ? Colors.white : Colors.black),
-            const SizedBox(width: 8),
+                size: 15,
+                color: isSelected ? Colors.white : unselectedLabel),
+            const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.black,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? Colors.white : unselectedLabel,
               ),
             ),
           ],
@@ -1212,18 +1254,26 @@ class _MapTabState extends State<MapTab> {
   // 📍 DESTINATION BOTTOM SHEET
   // ─────────────────────────────────────────────────
   Widget _buildDestinationBottomSheet(Destination dest) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final sheetBg = isDark ? AppTheme.darkSurface : AppTheme.softBackground;
+    final titleColor =
+        isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
+    final secondaryColor =
+        isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
+
     return Container(
       padding: EdgeInsets.fromLTRB(
         20, 20, 20, 20 + MediaQuery.of(context).padding.bottom,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: sheetBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black12,
+              color: Colors.black.withOpacity(isDark ? 0.4 : 0.12),
               blurRadius: 20,
-              offset: Offset(0, -5)),
+              offset: const Offset(0, -5)),
         ],
       ),
       child: Column(
@@ -1233,7 +1283,7 @@ class _MapTabState extends State<MapTab> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: isDark ? AppTheme.darkBorder : Colors.grey[300],
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -1250,7 +1300,7 @@ class _MapTabState extends State<MapTab> {
                   errorBuilder: (_, __, ___) => Container(
                     width: 75,
                     height: 75,
-                    color: Colors.grey[200],
+                    color: isDark ? AppTheme.darkCard : Colors.grey[200],
                     child:
                         const Icon(Icons.image_not_supported_rounded),
                   ),
@@ -1262,34 +1312,35 @@ class _MapTabState extends State<MapTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(dest.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black)),
+                            fontWeight: FontWeight.w800,
+                            color: titleColor)),
                     const SizedBox(height: 4),
                     Row(
                       children: [
                         const Icon(Icons.star_rounded,
-                            size: 16, color: Colors.amber),
+                            size: 16, color: AppTheme.goldAccent),
                         const SizedBox(width: 4),
                         Text('${dest.rating}',
                             style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13)),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                                color: AppTheme.goldAccent)),
                         const SizedBox(width: 10),
                         Icon(Icons.directions_walk_rounded,
-                            size: 14, color: Colors.grey[600]),
+                            size: 14, color: secondaryColor),
                         const SizedBox(width: 4),
                         Text(dest.distance,
                             style: TextStyle(
-                                color: Colors.grey[600], fontSize: 12)),
+                                color: secondaryColor, fontSize: 12)),
                       ],
                     ),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close_rounded),
+                icon: Icon(Icons.close_rounded, color: secondaryColor),
                 onPressed: () => setState(() {
                   _showBottomSheet = false;
                   _selectedDestinationId = null;
@@ -1298,13 +1349,13 @@ class _MapTabState extends State<MapTab> {
             ],
           ),
           const SizedBox(height: 12),
-          Divider(color: Colors.grey[200]),
+          Divider(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
           const SizedBox(height: 8),
           Text(dest.description,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                  color: Colors.grey[700], fontSize: 13, height: 1.5)),
+                  color: secondaryColor, fontSize: 13, height: 1.5)),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -1314,11 +1365,11 @@ class _MapTabState extends State<MapTab> {
                   icon: const Icon(Icons.directions_rounded, size: 18),
                   label: const Text('Directions'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
+                    backgroundColor: AppTheme.primaryOrange,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 13),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(30)),
                     elevation: 0,
                   ),
                 ),
@@ -1330,12 +1381,12 @@ class _MapTabState extends State<MapTab> {
                   icon: const Icon(Icons.info_outline_rounded, size: 18),
                   label: const Text('Details'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.black,
+                    foregroundColor: AppTheme.goldAccent,
                     side: const BorderSide(
-                        color: Colors.black, width: 1.5),
+                        color: AppTheme.goldAccent, width: 1.5),
                     padding: const EdgeInsets.symmetric(vertical: 13),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(30)),
                   ),
                 ),
               ),
@@ -1352,16 +1403,23 @@ class _MapTabState extends State<MapTab> {
   Widget _buildTruewayBottomSheet(TruewayPlace place) {
     final photoKey = '${place.name}_${place.mainCategory}';
     final cachedPhoto = _photoCache[photoKey];
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final sheetBg = isDark ? AppTheme.darkSurface : AppTheme.softBackground;
+    final secondaryColor =
+        isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary;
+    final primaryTextColor =
+        isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: sheetBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black12,
+              color: Colors.black.withOpacity(isDark ? 0.4 : 0.12),
               blurRadius: 20,
-              offset: Offset(0, -5)),
+              offset: const Offset(0, -5)),
         ],
       ),
       child: Column(
@@ -1487,7 +1545,7 @@ class _MapTabState extends State<MapTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Category tags
+                // Category tags — terracotta pill chips
                 Wrap(
                   spacing: 6,
                   runSpacing: 4,
@@ -1495,7 +1553,7 @@ class _MapTabState extends State<MapTab> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black,
+                      color: AppTheme.terracotta,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -1508,7 +1566,9 @@ class _MapTabState extends State<MapTab> {
                   )).toList(),
                 ),
                 const SizedBox(height: 12),
-                Divider(color: Colors.grey[200]),
+                Divider(
+                    color:
+                        isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                 const SizedBox(height: 8),
 
                 // Address
@@ -1516,13 +1576,13 @@ class _MapTabState extends State<MapTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(Icons.location_on_rounded,
-                        size: 18, color: Colors.grey[600]),
+                        size: 18, color: secondaryColor),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         place.address,
                         style: TextStyle(
-                            color: Colors.grey[700],
+                            color: secondaryColor,
                             fontSize: 13,
                             height: 1.5),
                       ),
@@ -1536,12 +1596,12 @@ class _MapTabState extends State<MapTab> {
                   Row(
                     children: [
                       Icon(Icons.phone_rounded,
-                          size: 18, color: Colors.grey[600]),
+                          size: 18, color: secondaryColor),
                       const SizedBox(width: 8),
                       Text(
                         place.phoneNumber!,
-                        style: const TextStyle(
-                            color: Colors.black,
+                        style: TextStyle(
+                            color: primaryTextColor,
                             fontSize: 13,
                             fontWeight: FontWeight.w500),
                       ),
@@ -1555,12 +1615,12 @@ class _MapTabState extends State<MapTab> {
                   Row(
                     children: [
                       Icon(Icons.directions_walk_rounded,
-                          size: 18, color: Colors.grey[600]),
+                          size: 18, color: secondaryColor),
                       const SizedBox(width: 8),
                       Text(
                         '${place.distanceText} away',
                         style: TextStyle(
-                            color: Colors.grey[700], fontSize: 13),
+                            color: secondaryColor, fontSize: 13),
                       ),
                     ],
                   ),
@@ -1579,12 +1639,12 @@ class _MapTabState extends State<MapTab> {
                             size: 18),
                         label: const Text('Directions'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
+                          backgroundColor: AppTheme.primaryOrange,
                           foregroundColor: Colors.white,
                           padding:
                               const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(30)),
                           elevation: 0,
                         ),
                       ),
@@ -1598,13 +1658,13 @@ class _MapTabState extends State<MapTab> {
                             size: 18),
                         label: const Text('Details'),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.black,
+                          foregroundColor: AppTheme.goldAccent,
                           side: const BorderSide(
-                              color: Colors.black, width: 1.5),
+                              color: AppTheme.goldAccent, width: 1.5),
                           padding:
                               const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                              borderRadius: BorderRadius.circular(30)),
                         ),
                       ),
                     ),
@@ -1704,24 +1764,34 @@ class _MapTabState extends State<MapTab> {
   Widget _mapControlButton({
     required IconData icon,
     required VoidCallback onTap,
+    bool active = false,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final bg = isDark ? AppTheme.darkCard : Colors.white;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 42,
         height: 42,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: active ? AppTheme.primaryOrange : bg,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withOpacity(isDark ? 0.35 : 0.15),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Icon(icon, color: Colors.black, size: 20),
+        child: Icon(
+          icon,
+          color: active
+              ? Colors.white
+              : (isDark ? AppTheme.darkTextPrimary : Colors.black),
+          size: 20,
+        ),
       ),
     );
   }

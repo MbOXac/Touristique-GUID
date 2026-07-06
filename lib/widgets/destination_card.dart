@@ -198,9 +198,7 @@ class DestinationCard extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [AppTheme.primaryOrange, Color(0xFFE8830A)],
-                              ),
+                              gradient: AppTheme.orangeGradient,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(

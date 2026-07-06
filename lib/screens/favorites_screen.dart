@@ -49,8 +49,6 @@ class _FavoritesScreenState extends State<FavoritesScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          indicatorColor: AppTheme.primaryOrange,
-          labelColor: AppTheme.primaryOrange,
           tabs: const [
             Tab(text: 'All'),
             Tab(text: 'Destinations'),
@@ -352,9 +350,7 @@ class _DestinationFavoriteCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       margin: EdgeInsets.zero,
-      elevation: 3,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         onTap: () => _open(context),
         child: compact
@@ -531,9 +527,7 @@ class _TripFavoriteCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       margin: EdgeInsets.zero,
-      elevation: 3,
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         onTap: () => _open(context),
         child: compact
@@ -736,7 +730,6 @@ class _GalleryFavoriteCard extends StatelessWidget {
       child: Card(
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import '../models/gallery_item.dart';
+import '../theme/app_theme.dart';
 
 class FullImageViewer extends StatefulWidget {
   final GalleryItem item;
@@ -51,6 +52,7 @@ class _FullImageViewerState extends State<FullImageViewer> {
               value: event == null
                   ? 0
                   : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
+              color: AppTheme.goldAccent,
             ),
           ),
         ),

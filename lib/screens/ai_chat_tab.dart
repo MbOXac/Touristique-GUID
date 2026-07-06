@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_spacing.dart';
+import '../constants/app_radius.dart';
 import '../services/gemini_service.dart';
 
 class AiChatTab extends StatefulWidget {
@@ -105,30 +107,30 @@ class _AiChatTabState extends State<AiChatTab> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? AppTheme.darkBackground : const Color(0xFFF8F9FD),
+      backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.softBackground,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
+        scrolledUnderElevation: 0,
+        backgroundColor: isDark ? AppTheme.darkBackground : AppTheme.softBackground,
         centerTitle: false,
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: AppTheme.primaryOrange.withOpacity(0.2),
-              child: const Icon(Icons.explore, color: AppTheme.primaryOrange, size: 20),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Travel Guide', style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
-                const Text('Online Now', style: TextStyle(color: Colors.green, fontSize: 12)),
-              ],
-            ),
-          ],
+        title: Text(
+          'Touristique Guid AI',
+          style: TextStyle(
+            color: isDark ? AppTheme.darkTextPrimary : AppTheme.deepBlue,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+          ),
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh_rounded, color: Colors.grey), onPressed: _resetChat),
-          IconButton(icon: const Icon(Icons.info_outline_rounded, color: Colors.grey), onPressed: _showInfoDialog),
+          IconButton(
+            icon: Icon(Icons.refresh_rounded, color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
+            onPressed: _resetChat,
+          ),
+          IconButton(
+            icon: Icon(Icons.info_outline_rounded, color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
+            onPressed: _showInfoDialog,
+          ),
         ],
       ),
       body: Column(
@@ -136,7 +138,7 @@ class _AiChatTabState extends State<AiChatTab> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 20),
               itemCount: _messages.length + (_messages.length == 1 ? 1 : 0),
               itemBuilder: (context, index) {
                 if (_messages.length == 1 && index == 1) return _buildSuggestions(theme);
@@ -166,20 +168,20 @@ class _AiChatTabState extends State<AiChatTab> {
               const SizedBox(width: 8),
               Flexible(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12),
                   decoration: BoxDecoration(
-                    color: msg.isUser 
-                        ? AppTheme.primaryOrange 
-                        : (isDark ? AppTheme.darkCard : Colors.white),
+                    color: msg.isUser
+                        ? AppTheme.primaryOrange
+                        : (isDark ? AppTheme.darkCard : AppTheme.lightCard),
                     borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(20),
-                      topRight: const Radius.circular(20),
-                      bottomLeft: Radius.circular(msg.isUser ? 20 : 4),
-                      bottomRight: Radius.circular(msg.isUser ? 4 : 20),
+                      topLeft: const Radius.circular(AppRadius.cardLarge),
+                      topRight: const Radius.circular(AppRadius.cardLarge),
+                      bottomLeft: Radius.circular(msg.isUser ? AppRadius.cardLarge : 4),
+                      bottomRight: Radius.circular(msg.isUser ? 4 : AppRadius.cardLarge),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -189,13 +191,16 @@ class _AiChatTabState extends State<AiChatTab> {
                     msg.text,
                     style: TextStyle(
                       fontSize: 15,
-                      color: msg.isUser ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                      height: 1.4,
+                      color: msg.isUser
+                          ? Colors.white
+                          : (isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              if (msg.isUser) _buildAvatar(Icons.person, AppTheme.sandBeige),
+              if (msg.isUser) _buildAvatar(Icons.person, AppTheme.goldAccent),
             ],
           ),
         ],
@@ -237,11 +242,15 @@ class _AiChatTabState extends State<AiChatTab> {
       padding: const EdgeInsets.only(right: 8),
       child: ActionChip(
         label: Text(label),
-        labelStyle: TextStyle(fontSize: 12, color: AppTheme.primaryOrange, fontWeight: FontWeight.bold),
+        labelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextPrimary,
+        ),
         onPressed: () => _sendMessage(label),
-        backgroundColor: isDark ? AppTheme.darkCard : Colors.white,
-        side: BorderSide(color: AppTheme.primaryOrange.withOpacity(0.3)),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
+        side: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.chip)),
       ),
     );
   }
@@ -249,32 +258,37 @@ class _AiChatTabState extends State<AiChatTab> {
   Widget _buildInputArea(ThemeData theme) {
     final isDark = theme.brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkCard : Colors.white,
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)],
+        color: isDark ? AppTheme.darkSurface : AppTheme.softBackground,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(AppRadius.button),
+          topRight: Radius.circular(AppRadius.button),
+        ),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(isDark ? 0.2 : 0.05), blurRadius: 20)],
       ),
       child: SafeArea(
+        top: false,
         child: Row(
           children: [
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: isDark ? AppTheme.darkBackground : const Color(0xFFF5F5F5),
+                  color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: TextField(
                   controller: _controller,
                   enabled: !_isLoading,
+                  style: TextStyle(color: isDark ? AppTheme.darkTextPrimary : AppTheme.lightTextPrimary),
                   decoration: InputDecoration(
-                    hintText: _isLoading ? 'AI is thinking...' : 'Plan your trip...',
-                    hintStyle: const TextStyle(fontSize: 14),
+                    hintText: _isLoading ? 'AI is thinking...' : 'Ask about your Sahara trip...',
+                    hintStyle: TextStyle(fontSize: 14, color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    prefixIcon: _isLoading 
-                      ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 2)))
-                      : const Icon(Icons.chat_bubble_outline, size: 20),
+                    prefixIcon: _isLoading
+                        ? const Padding(padding: EdgeInsets.all(12), child: SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 2)))
+                        : null,
                   ),
                   onSubmitted: _sendMessage,
                 ),
@@ -286,7 +300,7 @@ class _AiChatTabState extends State<AiChatTab> {
               child: CircleAvatar(
                 radius: 24,
                 backgroundColor: AppTheme.primaryOrange,
-                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                child: const Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 20),
               ),
             ),
           ],

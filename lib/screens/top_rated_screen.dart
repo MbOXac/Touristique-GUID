@@ -153,11 +153,13 @@ class _TopDestinationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final placeholderBg = isDark ? AppTheme.darkCard : Colors.grey.shade200;
+    final placeholderIconColor = isDark ? Colors.grey.shade600 : Colors.grey.shade400;
     final imageUrl = destination.imageURLs.isNotEmpty ? destination.imageURLs.first : '';
 
     return Card(
       margin: EdgeInsets.zero,
-      elevation: 4,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
@@ -173,8 +175,8 @@ class _TopDestinationCard extends StatelessWidget {
                 imageUrl.isEmpty
                     ? Container(
                         height: 180,
-                        color: Colors.grey.shade300,
-                        child: const Icon(Icons.landscape_outlined, size: 40, color: Colors.grey),
+                        color: placeholderBg,
+                        child: Icon(Icons.landscape_outlined, size: 40, color: placeholderIconColor),
                       )
                     : Image.network(
                         imageUrl,
@@ -183,8 +185,8 @@ class _TopDestinationCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           height: 180,
-                          color: Colors.grey.shade300,
-                          child: const Icon(Icons.landscape_outlined, size: 40, color: Colors.grey),
+                          color: placeholderBg,
+                          child: Icon(Icons.landscape_outlined, size: 40, color: placeholderIconColor),
                         ),
                       ),
                 Positioned(top: 12, left: 12, child: _RankBadge(rank: rank)),
@@ -215,12 +217,13 @@ class _TopDestinationCard extends StatelessWidget {
                           destination.name,
                           style: TextStyle(
                             fontSize: 17,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                             color: theme.textTheme.titleLarge?.color,
+                            letterSpacing: -0.2,
                           ),
                         ),
                       ),
-                      RatingBadge(rating: destination.rating),
+                      RatingBadge(rating: destination.rating, reviewCount: destination.reviewsCount),
                     ],
                   ),
                   const SizedBox(height: 6),

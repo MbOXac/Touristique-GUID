@@ -21,7 +21,7 @@ class StarRatingDisplay extends StatelessWidget {
       children: List.generate(5, (i) {
         return Icon(
           i < rating.round() ? Icons.star_rounded : Icons.star_border_rounded,
-          color: color ?? AppTheme.primaryOrange,
+          color: color ?? AppTheme.goldAccent,
           size: size,
         );
       }),
@@ -55,7 +55,7 @@ class StarRatingInput extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Icon(
               filled ? Icons.star_rounded : Icons.star_border_rounded,
-              color: AppTheme.primaryOrange,
+              color: AppTheme.goldAccent,
               size: size,
             ),
           ),

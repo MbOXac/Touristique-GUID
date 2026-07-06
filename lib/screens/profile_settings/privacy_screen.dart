@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/settings_group.dart';
 import '../login_page.dart';
 
 class PrivacyScreen extends StatefulWidget {
@@ -60,80 +61,79 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Privacy'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
-      ),
+      appBar: const LargeTitleBar(title: 'Privacy'),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
-          Card(
-            child: SwitchListTile(
-              secondary: const Icon(Icons.location_on_outlined, color: AppTheme.primaryOrange),
-              title: const Text('Location Sharing'),
-              subtitle: const Text('Allow app to access your location'),
-              value: _locationSharing,
-              activeThumbColor: AppTheme.primaryOrange,
-              onChanged: (val) => setState(() => _locationSharing = val),
+          const SettingsSectionLabel('Preferences'),
+          SettingsGroupCard(children: [
+            SettingsRow(
+              icon: Icons.location_on_outlined,
+              iconColor: AppTheme.oasisGreen,
+              label: 'Location Sharing',
+              subtitle: 'Allow app to access your location',
+              onTap: () => setState(() => _locationSharing = !_locationSharing),
+              trailing: Switch(
+                value: _locationSharing,
+                onChanged: (val) => setState(() => _locationSharing = val),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: SwitchListTile(
-              secondary: const Icon(Icons.analytics_outlined, color: AppTheme.primaryOrange),
-              title: const Text('Usage Analytics'),
-              subtitle: const Text('Help us improve the app'),
-              value: _analytics,
-              activeThumbColor: AppTheme.primaryOrange,
-              onChanged: (val) => setState(() => _analytics = val),
+            SettingsRow(
+              icon: Icons.analytics_outlined,
+              iconColor: AppTheme.deepBlue,
+              label: 'Usage Analytics',
+              subtitle: 'Help us improve the app',
+              onTap: () => setState(() => _analytics = !_analytics),
+              trailing: Switch(
+                value: _analytics,
+                onChanged: (val) => setState(() => _analytics = val),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: SwitchListTile(
-              secondary: const Icon(Icons.visibility_outlined, color: AppTheme.primaryOrange),
-              title: const Text('Profile Visibility'),
-              subtitle: const Text('Make your profile public'),
-              value: _profileVisibility,
-              activeThumbColor: AppTheme.primaryOrange,
-              onChanged: (val) => setState(() => _profileVisibility = val),
+            SettingsRow(
+              icon: Icons.visibility_outlined,
+              iconColor: AppTheme.goldAccent,
+              label: 'Profile Visibility',
+              subtitle: 'Make your profile public',
+              onTap: () => setState(() => _profileVisibility = !_profileVisibility),
+              trailing: Switch(
+                value: _profileVisibility,
+                onChanged: (val) => setState(() => _profileVisibility = val),
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.download_outlined, color: AppTheme.primaryOrange),
-              title: const Text('Download My Data'),
-              subtitle: const Text('Get a copy of your data'),
-              trailing: const Icon(Icons.chevron_right),
+          ]),
+          const SettingsSectionLabel('Data'),
+          SettingsGroupCard(children: [
+            SettingsRow(
+              icon: Icons.download_outlined,
+              iconColor: AppTheme.primaryOrange,
+              label: 'Download My Data',
+              subtitle: 'Get a copy of your data',
+              showChevron: true,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Your data will be sent to your email')),
                 );
               },
             ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.description_outlined, color: AppTheme.primaryOrange),
-              title: const Text('Privacy Policy'),
-              trailing: const Icon(Icons.chevron_right),
+            SettingsRow(
+              icon: Icons.description_outlined,
+              iconColor: AppTheme.earthBrown,
+              label: 'Privacy Policy',
+              showChevron: true,
               onTap: () {},
             ),
-          ),
-          const SizedBox(height: 24),
-          Card(
-            color: Colors.red.shade50,
-            child: ListTile(
-              leading: const Icon(Icons.delete_forever, color: Colors.red),
-              title: const Text('Delete Account',
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              subtitle: const Text('Permanently delete your account'),
+          ]),
+          const SettingsSectionLabel('Account'),
+          SettingsGroupCard(children: [
+            SettingsRow(
+              icon: Icons.delete_forever,
+              iconColor: Theme.of(context).colorScheme.error,
+              labelColor: Theme.of(context).colorScheme.error,
+              label: 'Delete Account',
+              subtitle: 'Permanently delete your account',
               onTap: _deleteAccount,
             ),
-          ),
+          ]),
         ],
       ),
     );

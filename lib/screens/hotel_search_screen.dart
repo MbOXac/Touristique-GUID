@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/booking.dart';
 import '../services/hotel_service.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_spacing.dart';
+import '../constants/app_radius.dart';
 import 'booking_form_screen.dart';
 
 class HotelSearchScreen extends StatefulWidget {
@@ -133,7 +135,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
         children: [
           // ─── Search Form ───────────────────────────────
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               color: theme.cardColor,
               boxShadow: [
@@ -150,33 +152,16 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                 // City
                 TextField(
                   controller: _cityController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText:
                         '🏙️ Enter city (e.g. Paris, Dubai...)',
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                         Icons.location_city_rounded,
                         color: AppTheme.primaryOrange),
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(14),
-                      borderSide: BorderSide(
-                          color: Colors.grey.withAlpha(80)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(14),
-                      borderSide: const BorderSide(
-                          color: AppTheme.primaryOrange,
-                          width: 2),
-                    ),
-                    filled: true,
-                    fillColor: isDark
-                        ? AppTheme.darkBackground
-                        : Colors.grey.shade50,
                   ),
                   onSubmitted: (_) => _searchHotels(),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
 
                 // Dates + Adults Row
                 Row(
@@ -199,10 +184,11 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                             crossAxisAlignment:
                                 CrossAxisAlignment.start,
                             children: [
-                              const Text('Check In',
+                              Text('Check In',
                                   style: TextStyle(
                                       fontSize: 10,
-                                      color: Colors.grey)),
+                                      color: theme.textTheme
+                                          .bodySmall?.color)),
                               const SizedBox(height: 2),
                               Text(
                                 _formatDisplayDate(_checkIn),
@@ -240,10 +226,11 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                             crossAxisAlignment:
                                 CrossAxisAlignment.start,
                             children: [
-                              const Text('Check Out',
+                              Text('Check Out',
                                   style: TextStyle(
                                       fontSize: 10,
-                                      color: Colors.grey)),
+                                      color: theme.textTheme
+                                          .bodySmall?.color)),
                               const SizedBox(height: 2),
                               Text(
                                 _formatDisplayDate(_checkOut),
@@ -315,15 +302,6 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                   child: ElevatedButton(
                     onPressed:
                         _isLoading ? null : _searchHotels,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryOrange,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(14),
-                      ),
-                    ),
                     child: _isLoading
                         ? const SizedBox(
                             width: 22,
@@ -333,14 +311,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                               strokeWidth: 2.5,
                             ),
                           )
-                        : const Text(
-                            '🔍 Search Hotels',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
-                            ),
-                          ),
+                        : const Text('🔍 Search Hotels'),
                   ),
                 ),
               ],
@@ -370,28 +341,31 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                   size: 40,
                   color: AppTheme.primaryOrange),
             ),
-            const SizedBox(height: 16),
-            const Text('Search for Hotels',
-                style: TextStyle(
+            const SizedBox(height: AppSpacing.lg),
+            Text('Search for Hotels',
+                style: theme.textTheme.titleLarge?.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text('Enter a city and pick your dates',
-                style: TextStyle(color: Colors.grey[500])),
+                style: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color)),
           ],
         ),
       );
     }
 
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
                 color: AppTheme.primaryOrange),
-            SizedBox(height: 16),
-            Text('Searching hotels...'),
+            const SizedBox(height: AppSpacing.lg),
+            Text('Searching hotels...',
+                style: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color)),
           ],
         ),
       );
@@ -406,17 +380,14 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
             children: [
               const Icon(Icons.error_outline,
                   size: 50, color: Colors.red),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Text(_errorMessage!,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               ElevatedButton(
                 onPressed: _searchHotels,
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryOrange),
-                child: const Text('Try Again',
-                    style: TextStyle(color: Colors.white)),
+                child: const Text('Try Again'),
               ),
             ],
           ),
@@ -429,23 +400,25 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search_off_rounded,
-                size: 60, color: Colors.grey),
-            const SizedBox(height: 16),
-            const Text('No hotels found',
-                style: TextStyle(
+            Icon(Icons.search_off_rounded,
+                size: 60,
+                color: theme.textTheme.bodyMedium?.color),
+            const SizedBox(height: AppSpacing.lg),
+            Text('No hotels found',
+                style: theme.textTheme.titleLarge?.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.w700)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text('Try a different city or dates',
-                style: TextStyle(color: Colors.grey[500])),
+                style: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color)),
           ],
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       itemCount: _hotels.length,
       itemBuilder: (context, index) =>
           _buildHotelCard(_hotels[index], theme, isDark),
@@ -454,18 +427,25 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
 
   Widget _buildHotelCard(
       HotelModel hotel, ThemeData theme, bool isDark) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(16)),
-            child: hotel.photoUrl.isNotEmpty
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 70 : 30),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            hotel.photoUrl.isNotEmpty
                 ? Image.network(
                     hotel.photoUrl,
                     height: 180,
@@ -488,144 +468,134 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                         size: 60,
                         color: AppTheme.primaryOrange),
                   ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  hotel.name,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                if (hotel.address.isNotEmpty)
-                  Row(
-                    children: [
-                      const Icon(Icons.location_on_rounded,
-                          size: 14, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          hotel.address,
-                          style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md + 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hotel.name,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.xs + 2),
+                  if (hotel.address.isNotEmpty)
+                    Row(
+                      children: [
+                        Icon(Icons.location_on_rounded,
+                            size: 14,
+                            color:
+                                theme.textTheme.bodyMedium?.color),
+                        const SizedBox(width: AppSpacing.xs),
+                        Expanded(
+                          child: Text(
+                            hotel.address,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: theme
+                                    .textTheme.bodyMedium?.color),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                  const SizedBox(height: AppSpacing.sm + 2),
+                  Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
+                    children: [
+                      if (hotel.reviewScore > 0)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppTheme.goldAccent
+                                .withAlpha(30),
+                            borderRadius:
+                                BorderRadius.circular(
+                                    AppRadius.badge),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.star_rounded,
+                                  size: 14,
+                                  color: AppTheme.goldAccent),
+                              const SizedBox(width: 4),
+                              Text(
+                                hotel.reviewScore
+                                    .toStringAsFixed(1),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.goldAccent,
+                                ),
+                              ),
+                              if (hotel.reviewScoreWord
+                                  .isNotEmpty)
+                                Text(
+                                  ' · ${hotel.reviewScoreWord}',
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color:
+                                          AppTheme.goldAccent),
+                                ),
+                            ],
+                          ),
+                        ),
+                      if (hotel.pricePerNight > 0)
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text:
+                                    '\$${hotel.pricePerNight.toStringAsFixed(0)}',
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.primaryOrange,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '/night',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: theme.textTheme
+                                        .bodyMedium?.color),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
-                  children: [
-                    if (hotel.reviewScore > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: AppTheme.oasisGreen
-                              .withAlpha(30),
-                          borderRadius:
-                              BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.star_rounded,
-                                size: 14,
-                                color: AppTheme.oasisGreen),
-                            const SizedBox(width: 4),
-                            Text(
-                              hotel.reviewScore
-                                  .toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.oasisGreen,
-                              ),
-                            ),
-                            if (hotel.reviewScoreWord
-                                .isNotEmpty)
-                              Text(
-                                ' · ${hotel.reviewScoreWord}',
-                                style: const TextStyle(
-                                    fontSize: 11,
-                                    color:
-                                        AppTheme.oasisGreen),
-                              ),
-                          ],
+                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BookingFormScreen(
+                            name: hotel.name,
+                            imageUrl: hotel.photoUrl,
+                            type: BookingType.hotel,
+                            pricePerPerson:
+                                hotel.pricePerNight > 0
+                                    ? hotel.pricePerNight
+                                    : 50.0,
+                          ),
                         ),
                       ),
-                    if (hotel.pricePerNight > 0)
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text:
-                                  '\$${hotel.pricePerNight.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: AppTheme.primaryOrange,
-                              ),
-                            ),
-                            const TextSpan(
-                              text: '/night',
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => BookingFormScreen(
-                          name: hotel.name,
-                          imageUrl: hotel.photoUrl,
-                          type: BookingType.hotel,
-                          pricePerPerson:
-                              hotel.pricePerNight > 0
-                                  ? hotel.pricePerNight
-                                  : 50.0,
-                        ),
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryOrange,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Book Now 🏨',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      child: const Text('Book Now 🏨'),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

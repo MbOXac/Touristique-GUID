@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../models/destination.dart';
 import '../models/activity.dart';
 import '../models/favorite_item.dart';
 import '../models/review.dart';
 import '../services/activity_service.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_radius.dart';
 import '../widgets/activity_console.dart';
 import '../widgets/favorite_button.dart';
 import '../widgets/reviews_section.dart';
+import 'add_trip_screen.dart';
+import 'hotel_search_screen.dart';
 
 class DestinationDetailScreen extends StatefulWidget {
   final Destination destination;
@@ -33,12 +38,21 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    final tags = widget.destination.tags
+        .split(',')
+        .map((t) => t.trim())
+        .where((t) => t.isNotEmpty)
+        .toList();
+    final primaryTag = tags.isNotEmpty ? tags.first : '';
+    final secondaryTags = tags.length > 1 ? tags.sublist(1) : <String>[];
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
+      bottomNavigationBar: _buildBottomActions(theme),
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 320,
+            expandedHeight: 300,
             pinned: true,
             stretch: true,
             backgroundColor: theme.appBarTheme.backgroundColor,
@@ -72,14 +86,10 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                           child: Icon(Icons.landscape_outlined,
                               color: isDark ? Colors.grey.shade600 : Colors.grey.shade400, size: 64),
                         ),
+                  // Subtle fade at the very bottom only, just enough to seat the
+                  // floating buttons — no on-image title/rating text anymore.
                   const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0x55000000), Color(0xCC000000)],
-                      ),
-                    ),
+                    decoration: BoxDecoration(gradient: AppTheme.cardOverlayGradient),
                   ),
                   Positioned(
                     top: 0,
@@ -120,73 +130,6 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                       ),
                     ),
                   ),
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            widget.destination.name,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: -0.5,
-                              shadows: [Shadow(offset: Offset(0, 2), blurRadius: 6, color: Color(0x88000000))],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.goldAccent.withAlpha(230),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.star_rounded, color: Colors.white, size: 14),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      widget.destination.rating.toStringAsFixed(1),
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withAlpha(120),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: Colors.white.withAlpha(50)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.near_me_rounded, color: Colors.white, size: 12),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      widget.destination.distance,
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -200,6 +143,89 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Text(
+                        widget.destination.name,
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: theme.textTheme.titleLarge?.color,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on_rounded, size: 16, color: theme.textTheme.bodyMedium?.color),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.destination.distance,
+                            style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          const Icon(Icons.star_rounded, color: AppTheme.goldAccent, size: 18),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.destination.rating.toStringAsFixed(1),
+                            style: const TextStyle(
+                              color: AppTheme.goldAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '(${widget.destination.reviewsCount})',
+                            style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                          ),
+                          if (primaryTag.isNotEmpty) ...[
+                            const SizedBox(width: 10),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppTheme.terracotta.withAlpha(30),
+                                borderRadius: BorderRadius.circular(AppRadius.chip),
+                              ),
+                              child: Text(
+                                primaryTag,
+                                style: const TextStyle(
+                                  color: AppTheme.terracotta,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (secondaryTags.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: secondaryTags
+                              .map((t) => Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.sandBeige.withAlpha(isDark ? 60 : 140),
+                                      borderRadius: BorderRadius.circular(AppRadius.chip),
+                                    ),
+                                    child: Text(
+                                      t,
+                                      style: const TextStyle(
+                                        color: AppTheme.earthBrown,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
+                      const SizedBox(height: 20),
                       _sectionTitle('About', theme),
                       const SizedBox(height: 12),
                       Text(
@@ -318,24 +344,37 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionTitle('About this destination', theme),
+                  _sectionTitle('Location', theme),
                   const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(isDark ? 60 : 12),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
+                  GestureDetector(
+                    onTap: () => _showMapSheet(context, theme),
+                    child: Container(
+                      height: 160,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: isDark ? AppTheme.darkCard : AppTheme.sandBeige.withAlpha(110),
+                        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+                        border: Border.all(
+                          color: isDark ? AppTheme.darkBorder : AppTheme.sandBeige,
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      'This is a beautiful and culturally rich destination in Southeast Morocco. Experience authentic Moroccan culture, stunning landscapes, and unforgettable adventures.',
-                      style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge?.color, height: 1.65),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.map_outlined,
+                              size: 40,
+                              color: isDark ? AppTheme.darkTextSecondary : AppTheme.earthBrown,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tap to view on the map',
+                              style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -366,6 +405,96 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showMapSheet(BuildContext context, ThemeData theme) {
+    final point = LatLng(widget.destination.lat, widget.destination.lng);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
+            child: FlutterMap(
+              options: MapOptions(initialCenter: point, initialZoom: 13),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                  userAgentPackageName: 'com.example.touristique_guid',
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: point,
+                      width: 46,
+                      height: 46,
+                      child: const Icon(Icons.location_on_rounded, color: AppTheme.primaryOrange, size: 42),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomActions(ThemeData theme) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(theme.brightness == Brightness.dark ? 80 : 20),
+            blurRadius: 12,
+            offset: const Offset(0, -3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AddTripScreen()),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+              ),
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text('Add to trip', overflow: TextOverflow.ellipsis),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HotelSearchScreen()),
+              ),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+              ),
+              icon: const Icon(Icons.hotel_rounded, size: 18),
+              label: const Text('Book a stay nearby', overflow: TextOverflow.ellipsis),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

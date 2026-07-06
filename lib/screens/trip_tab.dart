@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../models/saved_trip.dart';
 import '../models/favorite_item.dart';
 import '../services/trip_service.dart';
+import '../constants/app_radius.dart';
 import '../theme/app_theme.dart';
 import '../widgets/favorite_button.dart';
 import 'add_trip_screen.dart';
@@ -75,16 +76,25 @@ class _TripTabState extends State<TripTab> {
               SliverAppBar(
                 automaticallyImplyLeading: false,
                 pinned: true,
-                expandedHeight: 270,
-                backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+                expandedHeight: 88,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
                 flexibleSpace: FlexibleSpaceBar(
                   titlePadding:
-                      const EdgeInsetsDirectional.only(start: 20, bottom: 18),
-                  title: const Text(
+                      const EdgeInsetsDirectional.only(start: 20, bottom: 16),
+                  title: Text(
                     'My Trips',
-                    style: TextStyle(fontWeight: FontWeight.w900),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.headlineLarge?.color,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 28,
+                      letterSpacing: -0.5,
+                    ),
                   ),
-                  background: _TripHero(trips: trips),
+                  background: Container(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                  ),
                 ),
               ),
               // Filter Chips
@@ -300,100 +310,6 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _TripHero extends StatelessWidget {
-  final List<SavedTrip> trips;
-
-  const _TripHero({required this.trips});
-
-  @override
-  Widget build(BuildContext context) {
-    final latestTrip = trips.isEmpty ? null : trips.first;
-    final imageUrl = latestTrip?.photoUrls.isNotEmpty == true
-        ? latestTrip!.photoUrls.first
-        : null;
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (imageUrl == null)
-          Image.asset('assets/images/destination_2.jpg', fit: BoxFit.cover)
-        else
-          Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) =>
-                Image.asset('assets/images/destination_2.jpg', fit: BoxFit.cover),
-          ),
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0x22000000), Color(0xF21A3A5C)],
-            ),
-          ),
-        ),
-        Positioned(
-          left: 20,
-          right: 20,
-          bottom: 72,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(34),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withAlpha(50)),
-                ),
-                child: Text(
-                  trips.isEmpty
-                      ? 'Firestore trip planner'
-                      : '${trips.length} saved trip${trips.length == 1 ? '' : 's'}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                latestTrip == null
-                    ? 'Plan your next adventure'
-                    : latestTrip.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 27,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.6,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                latestTrip == null
-                    ? 'Create trips and upload photos from your phone.'
-                    : '${latestTrip.destination}, ${latestTrip.country} • ${_formatDateRange(latestTrip.startDate, latestTrip.endDate)}',
-                style: TextStyle(
-                  color: Colors.white.withAlpha(225),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _TripStats extends StatelessWidget {
   final List<SavedTrip> trips;
 
@@ -561,10 +477,10 @@ class _SavedTripCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withAlpha(
@@ -577,20 +493,18 @@ class _SavedTripCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Section
+          // Image Section (cover photo)
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(AppRadius.cardLarge)),
             child: SizedBox(
-              height: 165,
+              height: 188,
               width: double.infinity,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
                   _TripImage(
                       url: trip.photoUrls.isEmpty ? null : trip.photoUrls.first),
-                  const DecoratedBox(
-                      decoration:
-                          BoxDecoration(gradient: AppTheme.cardOverlayGradient)),
                   // Status Badge
                   Positioned(
                     top: 12,
@@ -631,45 +545,6 @@ class _SavedTripCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Title & Location
-                  Positioned(
-                    left: 14,
-                    right: 14,
-                    bottom: 14,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          trip.title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on_rounded,
-                                color: Colors.white, size: 15),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                '${trip.destination}, ${trip.country}',
-                                style: TextStyle(
-                                    color: Colors.white.withAlpha(225),
-                                    fontSize: 12),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -680,19 +555,65 @@ class _SavedTripCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Dates, Photos, Travelers
+                // Trip name — bold navy
+                Text(
+                  trip.title,
+                  style: TextStyle(
+                    color: theme.textTheme.titleLarge?.color,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                // Date range — gray
+                Text(
+                  _formatDateRange(trip.startDate, trip.endDate),
+                  style: TextStyle(
+                    color: theme.textTheme.bodyMedium?.color,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Location pin + place name + photo count
                 Row(
                   children: [
-                    _InfoChip(
-                      icon: Icons.calendar_month_rounded,
-                      label: _formatDateRange(trip.startDate, trip.endDate),
+                    Icon(Icons.location_on_rounded,
+                        size: 15, color: theme.textTheme.bodyMedium?.color),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        '${trip.destination}, ${trip.country}',
+                        style: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     const SizedBox(width: 8),
-                    _InfoChip(
-                      icon: Icons.photo_rounded,
-                      label: '${trip.photoUrls.length} photos',
+                    Icon(Icons.photo_rounded,
+                        size: 14, color: theme.textTheme.bodyMedium?.color),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${trip.photoUrls.length} photos',
+                      style: TextStyle(
+                        color: theme.textTheme.bodyMedium?.color,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Travelers
+                Row(
+                  children: [
                     _InfoChip(
                       icon: Icons.people_rounded,
                       label: '${trip.travelers} travelers',
@@ -765,7 +686,7 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final (color, icon, label) = switch (status) {
       'planned' => (Colors.blue, Icons.calendar_today_rounded, 'Planned'),
-      'ongoing' => (Colors.orange, Icons.play_arrow_rounded, 'Ongoing'),
+      'ongoing' => (AppTheme.goldAccent, Icons.play_arrow_rounded, 'Ongoing'),
       'completed' => (Colors.green, Icons.check_circle_rounded, 'Completed'),
       _ => (Colors.grey, Icons.info_rounded, 'Unknown'),
     };
@@ -868,7 +789,7 @@ class _ProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.orange.withAlpha(15),
+        color: AppTheme.goldAccent.withAlpha(15),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: theme.dividerColor),
       ),
@@ -889,7 +810,7 @@ class _ProgressCard extends StatelessWidget {
               Text(
                 '$daysLeft days left',
                 style: const TextStyle(
-                  color: Colors.orange,
+                  color: AppTheme.goldAccent,
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
                 ),
@@ -903,7 +824,7 @@ class _ProgressCard extends StatelessWidget {
               value: percentage,
               minHeight: 6,
               backgroundColor: theme.dividerColor,
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.orange),
+              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.goldAccent),
             ),
           ),
         ],

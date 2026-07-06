@@ -271,18 +271,6 @@ class _CircuitDetailScreenState extends State<CircuitDetailScreen>
             children: [
               RatingBadge(
                   rating: circuit.rating, reviewCount: circuit.reviewsCount),
-              const SizedBox(width: 14),
-              Icon(Icons.schedule_rounded,
-                  size: 15, color: theme.textTheme.bodyMedium?.color),
-              const SizedBox(width: 4),
-              Text(
-                circuit.durationText,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: theme.textTheme.bodyMedium?.color,
-                ),
-              ),
               const Spacer(),
               Text(
                 circuit.formattedPrice,
@@ -295,14 +283,18 @@ class _CircuitDetailScreenState extends State<CircuitDetailScreen>
             ],
           ),
           const SizedBox(height: 12),
-          Row(
+          // Pill tags: duration (gold), difficulty (color-coded, data-driven),
+          // type and group size (secondary info).
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: [
+              _infoChip(AppTheme.goldAccent, Icons.schedule_rounded,
+                  circuit.durationText),
               _infoChip(circuit.difficultyColor,
                   Icons.fitness_center_rounded, _capitalize(circuit.difficulty)),
-              const SizedBox(width: 8),
               _infoChip(AppTheme.deepBlue, circuit.typeIcon,
                   _capitalize(circuit.type)),
-              const SizedBox(width: 8),
               _infoChip(AppTheme.earthBrown, Icons.groups_rounded,
                   'Max ${circuit.maxGroupSize}'),
             ],
@@ -348,7 +340,7 @@ class _CircuitDetailScreenState extends State<CircuitDetailScreen>
           style: TextStyle(
             fontSize: 14,
             height: 1.6,
-            color: theme.textTheme.bodyLarge?.color,
+            color: theme.textTheme.bodyMedium?.color,
           ),
         ),
         const SizedBox(height: 22),
@@ -841,26 +833,21 @@ class _CircuitDetailScreenState extends State<CircuitDetailScreen>
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: ElevatedButton(
+            // Plain ElevatedButton picks up the Desert Luxe terracotta
+            // filled-pill style from ElevatedButtonThemeData — no manual
+            // color/shape overrides needed.
+            child: ElevatedButton.icon(
               onPressed: circuit.isAvailable ? _bookCircuit : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryOrange,
-                disabledBackgroundColor:
-                    AppTheme.primaryOrange.withAlpha(100),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Text(
+              icon: Icon(
                 circuit.isAvailable
-                    ? 'Book This Circuit'
+                    ? Icons.calendar_month_rounded
+                    : Icons.block_rounded,
+                size: 18,
+              ),
+              label: Text(
+                circuit.isAvailable
+                    ? 'Reserve this circuit'
                     : 'Currently Unavailable',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                ),
               ),
             ),
           ),
@@ -925,7 +912,7 @@ class _CircuitDetailScreenState extends State<CircuitDetailScreen>
               style: TextStyle(
                 fontSize: 13.5,
                 height: 1.4,
-                color: theme.textTheme.bodyLarge?.color,
+                color: theme.textTheme.bodyMedium?.color,
               ),
             ),
           ),

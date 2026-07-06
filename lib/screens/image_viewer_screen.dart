@@ -5,6 +5,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/gallery_item.dart';
 import '../services/gallery_service.dart';
+import '../theme/app_theme.dart';
 
 class ImageViewerScreen extends StatefulWidget {
   final List<GalleryItem> items;
@@ -168,14 +169,14 @@ class _ImageViewerScreenState extends State<ImageViewerScreen> {
                       icon: _isLiked ? Icons.favorite : Icons.favorite_border,
                       label: '${widget.items[_currentIndex].likes}',
                       onTap: _toggleLike,
-                      color: _isLiked ? Colors.red : Colors.white,
+                      color: _isLiked ? AppTheme.terracotta : Colors.white,
                     ),
                     const SizedBox(height: 16),
                     _buildActionButton(
                       icon: _isSaved ? Icons.bookmark : Icons.bookmark_border,
                       label: 'Save',
                       onTap: _toggleSave,
-                      color: _isSaved ? Colors.amber : Colors.white,
+                      color: _isSaved ? AppTheme.goldAccent : Colors.white,
                     ),
                   ],
                 ),

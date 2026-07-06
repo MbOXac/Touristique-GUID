@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import 'welcome_page.dart';
 
 class SplashPage extends StatefulWidget {
@@ -59,15 +60,16 @@ class _SplashPageState extends State<SplashPage>
             'assets/images/splash.jpg',
             fit: BoxFit.cover,
           ),
-          // Dark overlay for readability
+          // Navy-tinted overlay for readability, matching the app's
+          // Desert Luxe onboarding convention.
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0x88000000),
-                  Color(0xCC000000),
+                  AppTheme.deepBlue.withAlpha(140),
+                  AppTheme.deepBlue.withAlpha(220),
                 ],
               ),
             ),
@@ -84,7 +86,7 @@ class _SplashPageState extends State<SplashPage>
                     const Icon(
                       Icons.place,
                       size: 72,
-                      color: Color(0xFFD2691E),
+                      color: AppTheme.goldAccent,
                     ),
                     const SizedBox(height: 16),
                     const Text(

@@ -4,7 +4,10 @@ import 'package:latlong2/latlong.dart';
 import '../models/booking.dart';
 import '../services/photo_service.dart';
 import '../services/trueway_service.dart';
+import '../theme/app_theme.dart';
+import '../constants/app_radius.dart';
 import 'booking_form_screen.dart';
+import 'add_trip_screen.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final TruewayPlace place;
@@ -76,77 +79,81 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final place = widget.place;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
 
       // ✅ Book Now Bottom Button
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.scaffoldBackgroundColor,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(20),
+              color: Colors.black.withAlpha(isDark ? 80 : 20),
               blurRadius: 12,
               offset: const Offset(0, -3),
             ),
           ],
         ),
-        child: ElevatedButton(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BookingFormScreen(
-                name: place.name,
-                imageUrl: _photoUrl ?? '',
-                type: _bookingType,
-                pricePerPerson: 30.0,
-              ),
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.black,
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 4,
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.bookmark_add_rounded,
-                  color: Colors.white, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Book Now',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddTripScreen()),
                 ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                ),
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: const Text('Add to trip', overflow: TextOverflow.ellipsis),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BookingFormScreen(
+                      name: place.name,
+                      imageUrl: _photoUrl ?? '',
+                      type: _bookingType,
+                      pricePerPerson: 30.0,
+                    ),
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                ),
+                icon: const Icon(Icons.bookmark_add_rounded, size: 18),
+                label: const Text('Book Now', overflow: TextOverflow.ellipsis),
+              ),
+            ),
+          ],
         ),
       ),
 
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 280,
+            expandedHeight: 260,
             pinned: true,
-            backgroundColor: Colors.black,
+            backgroundColor: theme.appBarTheme.backgroundColor,
             leading: Container(
               margin: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.black.withAlpha(120),
                 shape: BoxShape.circle,
+                border: Border.all(color: Colors.white.withAlpha(60)),
               ),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded,
-                    color: Colors.black),
+                    color: Colors.white),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -154,17 +161,18 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.black.withAlpha(120),
                   shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withAlpha(60)),
                 ),
                 child: IconButton(
                   icon: const Icon(Icons.share_rounded,
-                      color: Colors.black),
+                      color: Colors.white),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Share: ${place.name}'),
-                        backgroundColor: Colors.black,
+                        backgroundColor: AppTheme.deepBlue,
                       ),
                     );
                   },
@@ -177,10 +185,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                 children: [
                   if (_isLoadingPhoto)
                     Container(
-                      color: Colors.grey[200],
+                      color: isDark ? AppTheme.darkCard : Colors.grey.shade200,
                       child: const Center(
                         child: CircularProgressIndicator(
-                            color: Colors.black),
+                            color: AppTheme.primaryOrange),
                       ),
                     )
                   else
@@ -188,79 +196,16 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       _photoUrl ?? '',
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey[300],
-                        child: Center(
-                          child: Icon(
-                            Icons.image_not_supported_rounded,
-                            size: 60,
-                            color: Colors.grey[500],
-                          ),
+                        color: isDark ? AppTheme.darkCard : Colors.grey.shade200,
+                        child: Icon(
+                          Icons.image_not_supported_rounded,
+                          size: 60,
+                          color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
                         ),
                       ),
                     ),
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.transparent,
-                          Colors.black87,
-                        ],
-                        stops: [0.0, 0.5, 1.0],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 20,
-                    left: 20,
-                    right: 20,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          place.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black54,
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: place.types.take(3).map((t) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius:
-                                    BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                t.replaceAll('_', ' '),
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(gradient: AppTheme.cardOverlayGradient),
                   ),
                 ],
               ),
@@ -273,6 +218,42 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ─── Title + type tags ────────────────
+                  Text(
+                    place.name,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: theme.textTheme.titleLarge?.color,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  if (place.types.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: place.types.take(3).map((t) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppTheme.sandBeige.withAlpha(isDark ? 60 : 140),
+                            borderRadius: BorderRadius.circular(AppRadius.chip),
+                          ),
+                          child: Text(
+                            t.replaceAll('_', ' '),
+                            style: const TextStyle(
+                              color: AppTheme.earthBrown,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
+
                   // 🎯 ACTION BUTTONS
                   Row(
                     children: [
@@ -301,7 +282,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                 SnackBar(
                                   content: Text(
                                       'Call: ${place.phoneNumber}'),
-                                  backgroundColor: Colors.black,
+                                  backgroundColor: AppTheme.deepBlue,
                                 ),
                               );
                             },
@@ -320,7 +301,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                 SnackBar(
                                   content:
                                       Text('Open: ${place.website}'),
-                                  backgroundColor: Colors.black,
+                                  backgroundColor: AppTheme.deepBlue,
                                 ),
                               );
                             },
@@ -366,7 +347,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.black,
+                            color: AppTheme.primaryOrange,
                           ),
                         ),
                       ),
@@ -377,24 +358,30 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       margin: const EdgeInsets.only(top: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.grey[50],
+                        color: theme.cardColor,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: Colors.grey[200]!),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(isDark ? 40 : 10),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.menu_book_rounded,
-                                  size: 18, color: Colors.black),
+                              Icon(Icons.menu_book_rounded,
+                                  size: 18, color: theme.textTheme.titleLarge?.color),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 'About',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: Colors.black,
+                                  color: theme.textTheme.titleLarge?.color,
                                 ),
                               ),
                               const Spacer(),
@@ -402,7 +389,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.black,
+                                  color: AppTheme.primaryOrange,
                                   borderRadius:
                                       BorderRadius.circular(6),
                                 ),
@@ -421,7 +408,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           Text(
                             _description!,
                             style: TextStyle(
-                              color: Colors.grey[700],
+                              color: theme.textTheme.bodyMedium?.color,
                               fontSize: 13,
                               height: 1.6,
                             ),
@@ -432,20 +419,34 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
 
                   const SizedBox(height: 20),
 
-                  const Text(
-                    'Location',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryOrange,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Location',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                          color: theme.textTheme.titleLarge?.color,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Container(
                     height: 180,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.grey[300]!),
+                      borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+                      border: Border.all(color: theme.dividerColor),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: FlutterMap(
@@ -471,14 +472,13 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                               height: 50,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.black,
+                                  color: AppTheme.primaryOrange,
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                       color: Colors.white, width: 3),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black
-                                          .withOpacity(0.4),
+                                      color: Colors.black.withAlpha(100),
                                       blurRadius: 8,
                                     ),
                                   ],
@@ -511,21 +511,22 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     required VoidCallback onTap,
     bool isPrimary = false,
   }) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isPrimary ? Colors.black : Colors.white,
+          color: isPrimary ? AppTheme.primaryOrange : theme.cardColor,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isPrimary ? Colors.black : Colors.grey[300]!,
+            color: isPrimary ? AppTheme.primaryOrange : theme.dividerColor,
             width: 1.5,
           ),
           boxShadow: isPrimary
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: AppTheme.primaryOrange.withAlpha(60),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -536,13 +537,13 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon,
-                color: isPrimary ? Colors.white : Colors.black,
+                color: isPrimary ? Colors.white : theme.textTheme.titleLarge?.color,
                 size: 22),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isPrimary ? Colors.white : Colors.black,
+                color: isPrimary ? Colors.white : theme.textTheme.titleLarge?.color,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
@@ -559,13 +560,21 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     required String value,
     bool isLink = false,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 40 : 10),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -573,7 +582,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.black,
+              color: AppTheme.primaryOrange,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: Colors.white, size: 18),
@@ -587,7 +596,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   title,
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey[500],
+                    color: theme.textTheme.bodyMedium?.color,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -596,7 +605,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   value,
                   style: TextStyle(
                     fontSize: 13,
-                    color: isLink ? Colors.blue[700] : Colors.black,
+                    color: isLink ? AppTheme.deepBlue : theme.textTheme.bodyLarge?.color,
                     fontWeight: FontWeight.w500,
                     decoration: isLink
                         ? TextDecoration.underline

@@ -3,6 +3,7 @@ import '../models/booking.dart';
 import '../services/tripadvisor_service.dart';
 import '../theme/app_theme.dart';
 import 'booking_form_screen.dart';
+import 'add_trip_screen.dart';
 
 class AttractionDetailScreen extends StatefulWidget {
   final AttractionModel attraction;
@@ -89,44 +90,45 @@ class _AttractionDetailScreenState
             ),
           ],
         ),
-        child: ElevatedButton(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => BookingFormScreen(
-                name: attraction.name,
-                imageUrl: attraction.photoUrl,
-                type: BookingType.activity,
-                pricePerPerson: attraction.price > 0
-                    ? attraction.price
-                    : 25.0,
-              ),
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF27AE60),
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 4,
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.bookmark_add_rounded,
-                  color: Colors.white, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Book Activity 🎯',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
+        child: Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddTripScreen()),
                 ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                ),
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: const Text('Add to trip', overflow: TextOverflow.ellipsis),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BookingFormScreen(
+                      name: attraction.name,
+                      imageUrl: attraction.photoUrl,
+                      type: BookingType.activity,
+                      pricePerPerson: attraction.price > 0
+                          ? attraction.price
+                          : 25.0,
+                    ),
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                ),
+                icon: const Icon(Icons.bookmark_add_rounded, size: 18),
+                label: const Text('Book Activity', overflow: TextOverflow.ellipsis),
+              ),
+            ),
+          ],
         ),
       ),
 
@@ -147,11 +149,11 @@ class _AttractionDetailScreenState
                   // ✅ Photos PageView
                   _photos.isEmpty
                       ? Container(
-                          color: const Color(0xFF27AE60)
+                          color: AppTheme.primaryOrange
                               .withAlpha(30),
                           child: const Center(
                             child: CircularProgressIndicator(
-                                color: Color(0xFF27AE60)),
+                                color: AppTheme.primaryOrange),
                           ),
                         )
                       : PageView.builder(
@@ -170,24 +172,24 @@ class _AttractionDetailScreenState
                                 if (loadingProgress == null)
                                   return child;
                                 return Container(
-                                  color: const Color(0xFF27AE60)
+                                  color: AppTheme.primaryOrange
                                       .withAlpha(20),
                                   child: const Center(
                                     child:
                                         CircularProgressIndicator(
-                                      color: Color(0xFF27AE60),
+                                      color: AppTheme.primaryOrange,
                                     ),
                                   ),
                                 );
                               },
                               errorBuilder: (_, __, ___) =>
                                   Container(
-                                color: const Color(0xFF27AE60)
+                                color: AppTheme.primaryOrange
                                     .withAlpha(30),
                                 child: const Icon(
                                     Icons.paragliding_rounded,
                                     size: 80,
-                                    color: Color(0xFF27AE60)),
+                                    color: AppTheme.primaryOrange),
                               ),
                             );
                           },
@@ -311,7 +313,7 @@ class _AttractionDetailScreenState
                             height: 6,
                             decoration: BoxDecoration(
                               color: _currentPhotoIndex == index
-                                  ? const Color(0xFF27AE60)
+                                  ? AppTheme.primaryOrange
                                   : Colors.white
                                       .withAlpha(150),
                               borderRadius:
@@ -322,54 +324,6 @@ class _AttractionDetailScreenState
                       ),
                     ),
 
-                  // ✅ Name + Category on image
-                  Positioned(
-                    bottom: 20,
-                    left: 16,
-                    right: 16,
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF27AE60),
-                            borderRadius:
-                                BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            attraction.category,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          attraction.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: -0.3,
-                            shadows: [
-                              Shadow(
-                                  offset: Offset(0, 2),
-                                  blurRadius: 6,
-                                  color: Color(0x88000000))
-                            ],
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -383,6 +337,59 @@ class _AttractionDetailScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
+                  // ─── Title + rating + category ────────
+                  Text(
+                    attraction.name,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w900,
+                      color: theme.textTheme.titleLarge?.color,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      if (attraction.rating > 0) ...[
+                        const Icon(Icons.star_rounded, color: AppTheme.goldAccent, size: 18),
+                        const SizedBox(width: 4),
+                        Text(
+                          attraction.rating.toStringAsFixed(1),
+                          style: const TextStyle(
+                            color: AppTheme.goldAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        if (attraction.reviewCount > 0) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            '(${attraction.reviewCount})',
+                            style: TextStyle(fontSize: 12, color: theme.textTheme.bodyMedium?.color),
+                          ),
+                        ],
+                        const SizedBox(width: 10),
+                      ],
+                      if (attraction.category.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.terracotta.withAlpha(30),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            attraction.category,
+                            style: const TextStyle(
+                              color: AppTheme.terracotta,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
                   // ─── Stats ───────────────────────────
                   Wrap(
                     spacing: 10,
@@ -394,7 +401,7 @@ class _AttractionDetailScreenState
                           label: 'Rating',
                           value: attraction.rating
                               .toStringAsFixed(1),
-                          color: const Color(0xFFFFB800),
+                          color: AppTheme.goldAccent,
                           isDark: isDark,
                         ),
                       if (attraction.reviewCount > 0)
@@ -403,7 +410,7 @@ class _AttractionDetailScreenState
                           label: 'Reviews',
                           value: attraction.reviewCount
                               .toString(),
-                          color: const Color(0xFF2980B9),
+                          color: AppTheme.deepBlue,
                           isDark: isDark,
                         ),
                       _statCard(
@@ -412,7 +419,7 @@ class _AttractionDetailScreenState
                         value: attraction.price > 0
                             ? '\$${attraction.price.toStringAsFixed(0)}'
                             : 'Free',
-                        color: const Color(0xFF27AE60),
+                        color: AppTheme.primaryOrange,
                         isDark: isDark,
                       ),
                     ],
@@ -444,14 +451,14 @@ class _AttractionDetailScreenState
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF27AE60)
+                              color: AppTheme.primaryOrange
                                   .withAlpha(30),
                               borderRadius:
                                   BorderRadius.circular(10),
                             ),
                             child: const Icon(
                                 Icons.location_on_rounded,
-                                color: Color(0xFF27AE60),
+                                color: AppTheme.primaryOrange,
                                 size: 20),
                           ),
                           const SizedBox(width: 12),
@@ -540,15 +547,15 @@ class _AttractionDetailScreenState
                                     BorderRadius.circular(12),
                                 border: Border.all(
                                   color: isSelected
-                                      ? const Color(0xFF27AE60)
+                                      ? AppTheme.primaryOrange
                                       : Colors.transparent,
                                   width: 2.5,
                                 ),
                                 boxShadow: isSelected
                                     ? [
                                         BoxShadow(
-                                          color: const Color(
-                                                  0xFF27AE60)
+                                          color: AppTheme
+                                              .primaryOrange
                                               .withAlpha(80),
                                           blurRadius: 8,
                                           offset:
@@ -565,12 +572,12 @@ class _AttractionDetailScreenState
                                   fit: BoxFit.cover,
                                   errorBuilder:
                                       (_, __, ___) => Container(
-                                    color: const Color(0xFF27AE60)
+                                    color: AppTheme.primaryOrange
                                         .withAlpha(30),
                                     child: const Icon(
                                         Icons.image_rounded,
                                         color:
-                                            Color(0xFF27AE60)),
+                                            AppTheme.primaryOrange),
                                   ),
                                 ),
                               ),
@@ -587,12 +594,12 @@ class _AttractionDetailScreenState
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF27AE60)
+                        color: AppTheme.primaryOrange
                             .withAlpha(15),
                         borderRadius:
                             BorderRadius.circular(14),
                         border: Border.all(
-                            color: const Color(0xFF27AE60)
+                            color: AppTheme.primaryOrange
                                 .withAlpha(50)),
                       ),
                       child: const Row(
@@ -603,7 +610,7 @@ class _AttractionDetailScreenState
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
-                              color: Color(0xFF27AE60),
+                              color: AppTheme.primaryOrange,
                               strokeWidth: 2,
                             ),
                           ),
@@ -611,7 +618,7 @@ class _AttractionDetailScreenState
                           Text(
                             'Loading more photos...',
                             style: TextStyle(
-                              color: Color(0xFF27AE60),
+                              color: AppTheme.primaryOrange,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -636,7 +643,7 @@ class _AttractionDetailScreenState
           width: 4,
           height: 20,
           decoration: BoxDecoration(
-            color: const Color(0xFF27AE60),
+            color: AppTheme.primaryOrange,
             borderRadius: BorderRadius.circular(2),
           ),
         ),

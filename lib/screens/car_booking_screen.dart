@@ -4,6 +4,8 @@ import '../models/car.dart';
 import '../models/booking.dart';
 import '../services/booking_service.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_spacing.dart';
+import '../constants/app_radius.dart';
 
 class CarBookingScreen extends StatefulWidget {
   final Car car;
@@ -130,65 +132,59 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
       await showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppTheme.oasisGreen.withAlpha(20),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check_circle_rounded,
-                  color: AppTheme.oasisGreen,
-                  size: 42,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Booking Confirmed!',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Your ${widget.car.name} rental has been confirmed. Have a great trip! 🚗',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.grey,
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.oasisGreen,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+        builder: (context) {
+          final dialogTheme = Theme.of(context);
+          return AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: AppTheme.oasisGreen.withAlpha(30),
+                    shape: BoxShape.circle,
                   ),
-                  child: const Text('Done'),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppTheme.oasisGreen,
+                    size: 42,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'Booking Confirmed!',
+                  style: TextStyle(
+                    color: dialogTheme.textTheme.titleLarge?.color,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Your ${widget.car.name} rental has been confirmed. Have a great trip! 🚗',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: dialogTheme.textTheme.bodyMedium?.color,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl - 4),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Done'),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       );
     } catch (e) {
       if (!mounted) return;
@@ -207,6 +203,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -215,19 +212,19 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
           children: [
             // Car Summary Card
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
                 color: theme.cardColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.card),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    color: Colors.black.withAlpha(isDark ? 70 : 30),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
                   ),
                 ],
               ),
@@ -321,8 +318,14 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: theme.cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: theme.dividerColor),
+                borderRadius: BorderRadius.circular(AppRadius.card),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(isDark ? 70 : 30),
+                    blurRadius: 14,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -428,13 +431,17 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
             // Price Summary
             if (_days > 0)
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withAlpha(15),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: theme.colorScheme.primary.withAlpha(30),
-                  ),
+                  color: theme.cardColor,
+                  borderRadius: BorderRadius.circular(AppRadius.card),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(isDark ? 70 : 30),
+                      blurRadius: 14,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
@@ -475,16 +482,6 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                     : const Icon(Icons.check_circle_rounded),
                 label: Text(
                   _isSaving ? 'Confirming...' : 'Confirm Booking 🚗',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 56),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
                 ),
               ),
             ),
@@ -513,14 +510,21 @@ class _DateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.dividerColor),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isDark ? 70 : 30),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

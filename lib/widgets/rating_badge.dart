@@ -13,13 +13,13 @@ class RatingBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.star_rounded, color: AppTheme.primaryOrange, size: 16),
+        const Icon(Icons.star_rounded, color: AppTheme.goldAccent, size: 16),
         const SizedBox(width: 3),
         Text(
           rating.toStringAsFixed(1),
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: AppTheme.primaryOrange,
+            color: AppTheme.goldAccent,
             fontSize: 13,
           ),
         ),

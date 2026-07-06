@@ -103,8 +103,11 @@ class _CircuitDayCardState extends State<CircuitDayCard> {
                                   color: isDark
                                       ? AppTheme.darkBackground
                                       : Colors.grey.shade200,
-                                  child: const Icon(Icons.landscape_outlined,
-                                      color: Colors.grey, size: 40),
+                                  child: Icon(Icons.landscape_outlined,
+                                      color: isDark
+                                          ? Colors.grey.shade600
+                                          : Colors.grey.shade400,
+                                      size: 40),
                                 ),
                               ),
                             ),

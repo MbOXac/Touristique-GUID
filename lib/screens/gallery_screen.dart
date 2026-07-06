@@ -49,18 +49,18 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                style: TextStyle(color: theme.textTheme.titleLarge?.color),
-                decoration: InputDecoration(
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
                   hintText: 'Search images...',
-                  hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
+                  hintStyle: TextStyle(color: Colors.white70),
                   border: InputBorder.none,
                 ),
                 onChanged: (value) => setState(() {}),
               )
-            : Text(
+            : const Text(
                 'Gallery',
                 style: TextStyle(
-                  color: theme.textTheme.titleLarge?.color,
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
                 ),
@@ -68,7 +68,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
         actions: [
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search,
-                color: theme.textTheme.titleLarge?.color),
+                color: Colors.white),
             onPressed: () {
               setState(() {
                 _isSearching = !_isSearching;
@@ -79,7 +79,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
             },
           ),
           IconButton(
-            icon: Icon(Icons.bookmark_border, color: theme.textTheme.titleLarge?.color),
+            icon: const Icon(Icons.bookmark_border, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,

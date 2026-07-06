@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/settings_group.dart';
 
 class LanguageScreen extends StatefulWidget {
   const LanguageScreen({super.key});
@@ -45,47 +46,60 @@ class _LanguageScreenState extends State<LanguageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Language'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
-      ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _languages.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
-        itemBuilder: (context, index) {
-          final lang = _languages[index];
-          final isSelected = _selectedLanguage == lang['name'];
-          return Card(
-            color: isSelected ? AppTheme.primaryOrange.withAlpha(20) : null,
-            child: ListTile(
-              leading: Text(lang['flag']!, style: const TextStyle(fontSize: 28)),
-              title: Text(
-                lang['name']!,
-                style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected ? AppTheme.primaryOrange : null,
-                ),
-              ),
-              trailing: isSelected
-                  ? const Icon(Icons.check_circle, color: AppTheme.primaryOrange)
-                  : const Icon(Icons.circle_outlined, color: Colors.grey),
-              onTap: () {
-                setState(() => _selectedLanguage = lang['name']!);
-                _saveLanguage(lang['name']!);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Language changed to ${lang['name']}'),
-                    backgroundColor: AppTheme.oasisGreen,
-                    behavior: SnackBarBehavior.floating,
+      appBar: const LargeTitleBar(title: 'Language'),
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: 24),
+        children: [
+          const SettingsSectionLabel('Available languages'),
+          SettingsGroupCard(
+            children: _languages.map((lang) {
+              final isSelected = _selectedLanguage == lang['name'];
+              return InkWell(
+                onTap: () {
+                  setState(() => _selectedLanguage = lang['name']!);
+                  _saveLanguage(lang['name']!);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Language changed to ${lang['name']}'),
+                      backgroundColor: AppTheme.oasisGreen,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Row(
+                    children: [
+                      Text(lang['flag']!, style: const TextStyle(fontSize: 26)),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          lang['name']!,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            color: isSelected
+                                ? AppTheme.primaryOrange
+                                : theme.textTheme.bodyLarge?.color,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        isSelected ? Icons.check_circle : Icons.circle_outlined,
+                        color: isSelected
+                            ? AppTheme.primaryOrange
+                            : theme.textTheme.bodySmall?.color,
+                      ),
+                    ],
                   ),
-                );
-              },
-            ),
-          );
-        },
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }

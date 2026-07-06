@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/car.dart';
 import '../services/car_firestore_service.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_spacing.dart';
+import '../constants/app_radius.dart';
 import '../widgets/car_image.dart';
 import 'car_detail_screen.dart';
 
@@ -84,6 +86,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       body: CustomScrollView(
@@ -145,7 +148,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
 
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.screenPadding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -162,12 +165,12 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                   Container(
                     decoration: BoxDecoration(
                       color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppRadius.card),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha(20),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: Colors.black.withAlpha(isDark ? 70 : 30),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
@@ -343,7 +346,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    height: 36,
+                    height: 40,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _transmissions.length,
@@ -353,41 +356,29 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                         final t = _transmissions[index];
                         final isSelected =
                             _selectedTransmission == t;
-                        return GestureDetector(
-                          onTap: () {
+                        return ChoiceChip(
+                          label: Text(t),
+                          selected: isSelected,
+                          onSelected: (_) {
                             setState(
                                 () => _selectedTransmission = t);
                             _applyFilters();
                           },
-                          child: AnimatedContainer(
-                            duration:
-                                const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? theme.colorScheme.primary
-                                  : theme.cardColor,
-                              borderRadius:
-                                  BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isSelected
-                                    ? theme.colorScheme.primary
-                                    : theme.dividerColor,
-                              ),
-                            ),
-                            child: Text(
-                              t,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : theme.textTheme.bodyMedium
-                                        ?.color,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12,
-                              ),
-                            ),
+                          selectedColor: AppTheme.primaryOrange,
+                          showCheckmark: false,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : theme.textTheme.bodyMedium
+                                    ?.color,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
                           ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 0),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                         );
                       },
                     ),
@@ -405,7 +396,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    height: 36,
+                    height: 40,
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _fuels.length,
@@ -414,40 +405,28 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                       itemBuilder: (context, index) {
                         final f = _fuels[index];
                         final isSelected = _selectedFuel == f;
-                        return GestureDetector(
-                          onTap: () {
+                        return ChoiceChip(
+                          label: Text(f),
+                          selected: isSelected,
+                          onSelected: (_) {
                             setState(() => _selectedFuel = f);
                             _applyFilters();
                           },
-                          child: AnimatedContainer(
-                            duration:
-                                const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppTheme.oasisGreen
-                                  : theme.cardColor,
-                              borderRadius:
-                                  BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppTheme.oasisGreen
-                                    : theme.dividerColor,
-                              ),
-                            ),
-                            child: Text(
-                              f,
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : theme.textTheme.bodyMedium
-                                        ?.color,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12,
-                              ),
-                            ),
+                          selectedColor: AppTheme.goldAccent,
+                          showCheckmark: false,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : theme.textTheme.bodyMedium
+                                    ?.color,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
                           ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 0),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                         );
                       },
                     ),
@@ -587,19 +566,20 @@ class _CarCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: AppSpacing.lg),
         decoration: BoxDecoration(
           color: theme.cardColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.cardLarge),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(20),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: Colors.black.withAlpha(isDark ? 70 : 30),
+              blurRadius: 14,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
@@ -609,7 +589,7 @@ class _CarCard extends StatelessWidget {
             // Car Image
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
+                top: Radius.circular(AppRadius.cardLarge),
               ),
               child: Stack(
                 children: [
@@ -674,7 +654,7 @@ class _CarCard extends StatelessWidget {
                         children: [
                           const Icon(
                             Icons.star_rounded,
-                            color: Colors.amber,
+                            color: AppTheme.goldAccent,
                             size: 14,
                           ),
                           const SizedBox(width: 4),
@@ -718,7 +698,7 @@ class _CarCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color:
                           theme.colorScheme.primary.withAlpha(10),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadius.badge),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -844,23 +824,12 @@ class _CarCard extends StatelessWidget {
                       ElevatedButton(
                         onPressed: onTap,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              theme.colorScheme.primary,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
+                            horizontal: 24,
                             vertical: 10,
                           ),
                         ),
-                        child: const Text(
-                          'Book',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
+                        child: const Text('Book'),
                       ),
                     ],
                   ),
@@ -893,7 +862,7 @@ class _InfoChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: theme.colorScheme.primary.withAlpha(15),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.chip),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

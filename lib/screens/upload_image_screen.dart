@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:typed_data';
 import '../services/gallery_service.dart';
+import '../theme/app_theme.dart';
 
 class UploadImageScreen extends StatefulWidget {
   const UploadImageScreen({super.key});
@@ -202,17 +203,23 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
   }
 
   Widget _buildImagePicker() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(
       onTap: _isUploading
           ? null
           : () {
               showModalBottomSheet(
                 context: context,
+                backgroundColor: theme.cardColor,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
                 builder: (_) => SafeArea(
                   child: Wrap(
                     children: [
                       ListTile(
-                        leading: const Icon(Icons.camera_alt),
+                        leading: Icon(Icons.camera_alt, color: theme.colorScheme.primary),
                         title: const Text('Take a photo'),
                         onTap: () {
                           Navigator.pop(context);
@@ -220,7 +227,7 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
                         },
                       ),
                       ListTile(
-                        leading: const Icon(Icons.image),
+                        leading: Icon(Icons.image, color: theme.colorScheme.primary),
                         title: const Text('Choose from gallery'),
                         onTap: () {
                           Navigator.pop(context);
@@ -236,18 +243,18 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
         width: double.infinity,
         height: 300,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Theme.of(context).primaryColor,
+            color: theme.colorScheme.primary,
             width: 2,
             style: BorderStyle.solid,
           ),
-          color: Colors.grey[100],
+          color: isDark ? AppTheme.darkCard : AppTheme.sandBeige.withAlpha(110),
         ),
         child: _selectedImage != null
             ? ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: _buildImagePreview(), // 🆕 Cross-platform preview
+                borderRadius: BorderRadius.circular(14),
+                child: _buildImagePreview(), // Cross-platform preview
               )
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -255,14 +262,14 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
                   Icon(
                     Icons.cloud_upload_outlined,
                     size: 64,
-                    color: Theme.of(context).primaryColor,
+                    color: theme.colorScheme.primary,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Tap to select an image',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[600],
+                      color: theme.textTheme.bodyLarge?.color,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -271,7 +278,7 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
                     'JPG, PNG (Max 10MB)',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey[500],
+                      color: theme.textTheme.bodyMedium?.color,
                     ),
                   ),
                 ],
@@ -311,26 +318,26 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
     int maxLines = 1,
     IconData? prefixIcon,
   }) {
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
+            color: theme.textTheme.titleSmall?.color,
           ),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           maxLines: maxLines,
+          style: TextStyle(color: theme.textTheme.bodyLarge?.color),
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           ),
@@ -340,27 +347,33 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
   }
 
   Widget _buildCategorySelector() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Category *',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
+            color: theme.textTheme.titleSmall?.color,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(8),
+            color: isDark ? AppTheme.darkCard : Colors.white,
+            border: Border.all(color: theme.dividerColor),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButton<String>(
             value: _selectedCategory,
             isExpanded: true,
             underline: const SizedBox(),
             padding: const EdgeInsets.symmetric(horizontal: 12),
+            dropdownColor: theme.cardColor,
+            style: TextStyle(color: theme.textTheme.bodyLarge?.color),
             items: _categories
                 .map((category) => DropdownMenuItem(
                       value: category,

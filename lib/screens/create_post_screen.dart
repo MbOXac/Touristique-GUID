@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../theme/app_theme.dart';
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key});
@@ -36,6 +37,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(title: const Text('Create Post')),
       body: Padding(
@@ -48,13 +51,19 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 height: 240,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
+                  color: isDark ? AppTheme.darkCard : AppTheme.sandBeige.withAlpha(110),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: theme.dividerColor),
                 ),
                 child: _image == null
-                    ? const Center(child: Text('Tap to pick image'))
+                    ? Center(
+                        child: Text(
+                          'Tap to pick image',
+                          style: TextStyle(color: theme.textTheme.bodyMedium?.color),
+                        ),
+                      )
                     : ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         child: Image.file(_image!, fit: BoxFit.cover),
                       ),
               ),
@@ -63,9 +72,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             TextField(
               controller: _captionCtrl,
               maxLines: 3,
+              style: TextStyle(color: theme.textTheme.bodyLarge?.color),
               decoration: const InputDecoration(
                 hintText: 'Write a caption...',
-                border: OutlineInputBorder(),
               ),
             ),
             const Spacer(),

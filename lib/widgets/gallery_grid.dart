@@ -17,7 +17,13 @@ class GalleryGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Center(child: Padding(padding: EdgeInsets.all(32), child: Text('No photos yet', style: TextStyle(color: Colors.grey))));
+      final theme = Theme.of(context);
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text('No photos yet', style: TextStyle(color: theme.textTheme.bodyMedium?.color)),
+        ),
+      );
     }
     return GridView.builder(
       shrinkWrap: shrinkWrap,

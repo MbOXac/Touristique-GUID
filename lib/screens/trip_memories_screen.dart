@@ -22,23 +22,52 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('My Memories')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Add Memory – Coming soon!'), behavior: SnackBarBehavior.floating),
         ),
-        backgroundColor: AppTheme.primaryOrange,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Add Memory', style: TextStyle(color: Colors.white)),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Add Memory'),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-        itemCount: _memories.length,
-        itemBuilder: (context, index) {
-          final memory = _memories[index];
-          return _buildMemoryCard(memory, index == _memories.length - 1);
-        },
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            pinned: true,
+            expandedHeight: 88,
+            backgroundColor: theme.scaffoldBackgroundColor,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsetsDirectional.only(start: 20, bottom: 16),
+              title: Text(
+                'My Memories',
+                style: TextStyle(
+                  color: theme.textTheme.headlineLarge?.color,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 28,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              background: Container(color: theme.scaffoldBackgroundColor),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 80),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final memory = _memories[index];
+                  return _buildMemoryCard(memory, index == _memories.length - 1);
+                },
+                childCount: _memories.length,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -73,7 +102,7 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
             child: Card(
               margin: const EdgeInsets.only(bottom: 16),
               elevation: 3,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(
@@ -116,7 +145,7 @@ class _TripMemoriesScreenState extends State<TripMemoriesScreen> {
                         itemCount: memory.photos.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 6),
                         itemBuilder: (context, index) => ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(10),
                           child: Image.asset(memory.photos[index], width: 80, height: 80, fit: BoxFit.cover),
                         ),
                       ),

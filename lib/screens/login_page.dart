@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../constants/app_radius.dart';
+import '../widgets/settings_group.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -94,13 +96,12 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isLogin ? 'Sign In' : 'Register')),
+      appBar: LargeTitleBar(title: isLogin ? 'Sign In' : 'Register'),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            elevation: 7,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardLarge)),
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Form(
@@ -130,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 24),
                     if (error != null)
-                      Text(error!, style: const TextStyle(color: Colors.red)),
+                      Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                     isLoading
                         ? const CircularProgressIndicator()
                         : ElevatedButton(
@@ -155,14 +156,13 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const Divider(height: 32),
                     // GOOGLE SIGN-IN BUTTON (visible for both login/register)
-                    ElevatedButton.icon(
-                      icon: Icon(Icons.login),
-                      label: Text('Se connecter avec Google'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        foregroundColor: Colors.white,
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.login),
+                        label: const Text('Se connecter avec Google'),
+                        onPressed: signInWithGoogle,
                       ),
-                      onPressed: signInWithGoogle,
                     ),
                   ],
                 ),

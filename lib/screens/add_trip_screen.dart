@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../services/trip_service.dart';
 import '../theme/app_theme.dart';
+import '../constants/app_radius.dart';
 import '../models/saved_trip.dart';
 
 class AddTripScreen extends StatefulWidget {
@@ -485,11 +486,11 @@ class _NumberField extends StatelessWidget {
     final theme = Theme.of(context);
     return Material(
       color: theme.cardColor,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.card),
           border: Border.all(color: theme.dividerColor),
         ),
         child: Column(
@@ -553,14 +554,14 @@ class _DateTile extends StatelessWidget {
     final theme = Theme.of(context);
     return Material(
       color: theme.cardColor,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.card),
             border: Border.all(color: theme.dividerColor),
           ),
           child: Column(
@@ -637,12 +638,9 @@ class _ChecklistSection extends StatelessWidget {
             Expanded(
               child: TextField(
                 controller: controller,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Add task...',
-                  prefixIcon: const Icon(Icons.check_circle_outline_rounded),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  prefixIcon: Icon(Icons.check_circle_outline_rounded),
                 ),
                 onSubmitted: (_) => onAdd(),
               ),
@@ -675,7 +673,7 @@ class _ChecklistSection extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: theme.cardColor,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadius.input),
                       border: Border.all(color: theme.dividerColor),
                     ),
                     child: ListTile(
@@ -773,7 +771,7 @@ class _PhotoPicker extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: theme.cardColor,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(AppRadius.cardLarge),
               border: Border.all(color: theme.dividerColor),
             ),
             child: Column(
@@ -827,7 +825,7 @@ class _PickedImageTile extends StatelessWidget {
         return Stack(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadius.card),
               child: Container(
                 width: 105,
                 height: 105,

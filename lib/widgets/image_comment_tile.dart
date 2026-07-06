@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../theme/app_theme.dart';
 
 class ImageComment {
   final String id;
@@ -42,6 +43,10 @@ class _ImageCommentTileState extends State<ImageCommentTile> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final mutedColor = theme.textTheme.bodyMedium?.color;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
@@ -64,7 +69,7 @@ class _ImageCommentTileState extends State<ImageCommentTile> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: isDark ? AppTheme.darkCard : AppTheme.softBackground,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
@@ -72,15 +77,16 @@ class _ImageCommentTileState extends State<ImageCommentTile> {
                     children: [
                       Text(
                         widget.comment.userName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
+                          color: theme.textTheme.titleLarge?.color,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         widget.comment.text,
-                        style: const TextStyle(fontSize: 13),
+                        style: TextStyle(fontSize: 13, color: theme.textTheme.bodyLarge?.color),
                       ),
                     ],
                   ),
@@ -98,7 +104,7 @@ class _ImageCommentTileState extends State<ImageCommentTile> {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: _isLiked ? Colors.red : Colors.grey[600],
+                          color: _isLiked ? AppTheme.terracotta : mutedColor,
                         ),
                       ),
                     ),
@@ -110,7 +116,7 @@ class _ImageCommentTileState extends State<ImageCommentTile> {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey[600],
+                          color: mutedColor,
                         ),
                       ),
                     ),

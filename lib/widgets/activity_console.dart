@@ -27,11 +27,7 @@ class ActivityConsole extends StatelessWidget {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppTheme.primaryOrange, Color(0xFFE8830A)],
-                  ),
+                  gradient: AppTheme.orangeGradient,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(Icons.local_activity_rounded, color: Colors.white, size: 20),

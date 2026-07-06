@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/social_post_ui.dart';
+import '../theme/app_theme.dart';
 
 class PostCard extends StatelessWidget {
   final SocialPostUi post;
@@ -19,20 +20,48 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ListTile(
-            leading: CircleAvatar(backgroundImage: NetworkImage(post.userPhotoUrl)),
-            title: Text(post.userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(isDark ? 70 : 30),
+            blurRadius: 14,
+            offset: const Offset(0, 5),
           ),
-          GestureDetector(
-            onTap: onTap,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundImage: NetworkImage(post.userPhotoUrl),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    post.userName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: theme.textTheme.titleLarge?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: onTap,
               child: Image.network(
                 post.imageUrl,
                 fit: BoxFit.cover,
@@ -40,34 +69,40 @@ class PostCard extends StatelessWidget {
                 height: 260,
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              children: [
-                IconButton(
-                  onPressed: onLike,
-                  icon: Icon(
-                    post.isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: post.isLiked ? Colors.red : null,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(6, 6, 6, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: onLike,
+                    icon: Icon(
+                      post.isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                      color: post.isLiked ? AppTheme.terracotta : theme.iconTheme.color,
+                    ),
                   ),
-                ),
-                Text('${post.likesCount}'),
-                IconButton(onPressed: onComment, icon: const Icon(Icons.mode_comment_outlined)),
-                Text('${post.commentsCount}'),
-                const Spacer(),
-                IconButton(
-                  onPressed: onSave,
-                  icon: Icon(post.isSaved ? Icons.bookmark : Icons.bookmark_border),
-                ),
-              ],
+                  Text('${post.likesCount}', style: theme.textTheme.bodyMedium),
+                  IconButton(
+                    onPressed: onComment,
+                    icon: Icon(Icons.mode_comment_outlined, color: theme.iconTheme.color),
+                  ),
+                  Text('${post.commentsCount}', style: theme.textTheme.bodyMedium),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: onSave,
+                    icon: Icon(
+                      post.isSaved ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                      color: post.isSaved ? AppTheme.goldAccent : theme.iconTheme.color,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            child: Text(post.caption),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+              child: Text(post.caption, style: theme.textTheme.bodyLarge),
+            ),
+          ],
+        ),
       ),
     );
   }

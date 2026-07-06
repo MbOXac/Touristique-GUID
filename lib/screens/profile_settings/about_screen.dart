@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/settings_group.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = isDark ? AppTheme.darkTextPrimary : AppTheme.deepBlue;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('About'),
-        backgroundColor: AppTheme.deepBlue,
-        foregroundColor: Colors.white,
-      ),
+      appBar: const LargeTitleBar(title: 'About'),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(bottom: 24),
         children: [
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           Center(
             child: Container(
               width: 100,
@@ -28,69 +29,63 @@ class AboutScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          const Center(
+          Center(
             child: Text(
               'Touristique GUID',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.deepBlue,
+                color: titleColor,
               ),
             ),
           ),
-          const Center(
-            child: Text('Version 1.0.0', style: TextStyle(color: Colors.grey)),
+          Center(
+            child: Text('Version 1.0.0', style: theme.textTheme.bodySmall),
           ),
           const SizedBox(height: 8),
-          const Center(
+          Center(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Text(
                 'Your AI-powered companion for exploring the beauty of Southeast Morocco.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black54, height: 1.5),
+                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
               ),
             ),
           ),
-          const SizedBox(height: 32),
-          Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.description_outlined, color: AppTheme.primaryOrange),
-                  title: const Text('Terms of Service'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {},
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.privacy_tip_outlined, color: AppTheme.primaryOrange),
-                  title: const Text('Privacy Policy'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {},
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.code, color: AppTheme.primaryOrange),
-                  title: const Text('Open Source Licenses'),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => showLicensePage(context: context),
-                ),
-              ],
-            ),
-          ),
           const SizedBox(height: 24),
-          const Center(
-            child: Text(
-              'Made with ❤️ in Morocco',
-              style: TextStyle(color: Colors.grey),
+          SettingsGroupCard(children: [
+            SettingsRow(
+              icon: Icons.description_outlined,
+              iconColor: AppTheme.primaryOrange,
+              label: 'Terms of Service',
+              showChevron: true,
+              onTap: () {},
             ),
+            SettingsRow(
+              icon: Icons.privacy_tip_outlined,
+              iconColor: AppTheme.deepBlue,
+              label: 'Privacy Policy',
+              showChevron: true,
+              onTap: () {},
+            ),
+            SettingsRow(
+              icon: Icons.code,
+              iconColor: AppTheme.earthBrown,
+              label: 'Open Source Licenses',
+              showChevron: true,
+              onTap: () => showLicensePage(context: context),
+            ),
+          ]),
+          const SizedBox(height: 24),
+          Center(
+            child: Text('Made with ❤️ in Morocco', style: theme.textTheme.bodySmall),
           ),
           const SizedBox(height: 8),
-          const Center(
+          Center(
             child: Text(
               '© 2025 Touristique. All rights reserved.',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: theme.textTheme.bodySmall?.copyWith(fontSize: 12),
             ),
           ),
         ],

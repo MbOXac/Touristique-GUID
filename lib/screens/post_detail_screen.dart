@@ -38,6 +38,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Post'),
@@ -53,7 +54,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             padding: const EdgeInsets.all(12),
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Text(post.caption, style: const TextStyle(fontSize: 16)),
+              child: Text(post.caption, style: theme.textTheme.bodyLarge),
             ),
           ),
           const Divider(height: 1),
@@ -61,7 +62,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             child: ListView.builder(
               itemCount: _comments.length,
               itemBuilder: (_, i) => ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.person, size: 18)),
+                leading: CircleAvatar(
+                  backgroundColor: theme.cardColor,
+                  child: Icon(Icons.person, size: 18, color: theme.iconTheme.color),
+                ),
                 title: Text(_comments[i]),
               ),
             ),
@@ -74,14 +78,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   Expanded(
                     child: TextField(
                       controller: _commentCtrl,
+                      style: TextStyle(color: theme.textTheme.bodyLarge?.color),
                       decoration: const InputDecoration(
                         hintText: 'Add a comment...',
-                        border: OutlineInputBorder(),
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  IconButton(onPressed: _addComment, icon: const Icon(Icons.send)),
+                  IconButton(
+                    onPressed: _addComment,
+                    icon: Icon(Icons.send, color: theme.colorScheme.primary),
+                  ),
                 ],
               ),
             ),

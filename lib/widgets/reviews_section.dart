@@ -4,6 +4,7 @@ import '../services/review_service.dart';
 import '../theme/app_theme.dart';
 import 'review_dialog.dart';
 import 'review_tile.dart';
+import 'star_rating.dart';
 
 /// Drop-in "Reviews" block: aggregate rating + star breakdown + write/edit
 /// CTA + live list of reviews. Used by screens that don't already have a
@@ -120,15 +121,7 @@ class _AggregateCard extends StatelessWidget {
                   color: theme.textTheme.titleLarge?.color,
                 ),
               ),
-              Row(
-                children: List.generate(5, (i) {
-                  return Icon(
-                    i < rating.round() ? Icons.star_rounded : Icons.star_border_rounded,
-                    color: AppTheme.primaryOrange,
-                    size: 16,
-                  );
-                }),
-              ),
+              StarRatingDisplay(rating: rating, size: 16),
               const SizedBox(height: 4),
               Text(
                 '${reviews.length} review${reviews.length == 1 ? '' : 's'}',
@@ -161,7 +154,7 @@ class _AggregateCard extends StatelessWidget {
                             minHeight: 6,
                             backgroundColor: theme.dividerColor,
                             valueColor:
-                                const AlwaysStoppedAnimation(AppTheme.primaryOrange),
+                                const AlwaysStoppedAnimation(AppTheme.goldAccent),
                           ),
                         ),
                       ),

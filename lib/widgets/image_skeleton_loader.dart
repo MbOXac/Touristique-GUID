@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import '../theme/app_theme.dart';
 
 class ImageSkeletonLoader extends StatelessWidget {
   final int itemCount;
@@ -13,6 +14,10 @@ class ImageSkeletonLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? AppTheme.darkSurface : AppTheme.sandBeige.withAlpha(130);
+    final highlightColor = isDark ? AppTheme.darkCard : AppTheme.softBackground;
+
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
@@ -22,11 +27,11 @@ class ImageSkeletonLoader extends StatelessWidget {
       itemCount: itemCount,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: baseColor,
+          highlightColor: highlightColor,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey[300],
+              color: baseColor,
               borderRadius: BorderRadius.circular(12),
             ),
           ),
