@@ -7,6 +7,7 @@ import 'upload_image_screen.dart';
 import 'user_gallery_screen.dart';
 import '../widgets/image_card.dart';
 import '../widgets/category_chips.dart';
+import '../theme/app_theme.dart';
 
 class GalleryScreen extends StatefulWidget {
   const GalleryScreen({super.key});
@@ -37,32 +38,37 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.cardColor,
         title: _isSearching
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                decoration: const InputDecoration(
+                style: TextStyle(color: theme.textTheme.titleLarge?.color),
+                decoration: InputDecoration(
                   hintText: 'Search images...',
+                  hintStyle: TextStyle(color: theme.textTheme.bodyMedium?.color),
                   border: InputBorder.none,
                 ),
                 onChanged: (value) => setState(() {}),
               )
-            : const Text(
+            : Text(
                 'Gallery',
                 style: TextStyle(
-                  color: Colors.black87,
+                  color: theme.textTheme.titleLarge?.color,
                   fontWeight: FontWeight.bold,
                   fontSize: 24,
                 ),
               ),
         actions: [
           IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            icon: Icon(_isSearching ? Icons.close : Icons.search,
+                color: theme.textTheme.titleLarge?.color),
             onPressed: () {
               setState(() {
                 _isSearching = !_isSearching;
@@ -73,7 +79,7 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
             },
           ),
           IconButton(
-            icon: const Icon(Icons.bookmark_border),
+            icon: Icon(Icons.bookmark_border, color: theme.textTheme.titleLarge?.color),
             onPressed: () {
               Navigator.push(
                 context,
@@ -85,26 +91,32 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(100),
+          preferredSize: const Size.fromHeight(96),
           child: Column(
             children: [
               TabBar(
                 controller: _tabController,
-                labelColor: Theme.of(context).primaryColor,
-                unselectedLabelColor: Colors.grey,
-                indicatorColor: Theme.of(context).primaryColor,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white.withAlpha(140),
+                indicatorSize: TabBarIndicatorSize.label,
+                indicatorWeight: 3,
+                indicatorColor: theme.colorScheme.primary,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                 tabs: const [
                   Tab(text: 'Explore'),
                   Tab(text: 'Trending'),
                   Tab(text: 'Recent'),
                 ],
               ),
+              const SizedBox(height: 10),
               CategoryChips(
                 selectedCategory: _selectedCategory,
                 onCategorySelected: (category) {
                   setState(() => _selectedCategory = category);
                 },
               ),
+              const SizedBox(height: 4),
             ],
           ),
         ),
@@ -117,15 +129,31 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
           _buildRecentTab(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const UploadImageScreen()),
-          );
-        },
-        icon: const Icon(Icons.add_photo_alternate),
-        label: const Text('Upload'),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          gradient: AppTheme.orangeGradient,
+          boxShadow: [
+            BoxShadow(
+              color: AppTheme.primaryOrange.withAlpha(110),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const UploadImageScreen()),
+            );
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          icon: const Icon(Icons.add_photo_alternate_rounded, color: Colors.white),
+          label: const Text('Upload',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        ),
       ),
     );
   }
@@ -151,12 +179,21 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
         final items = snapshot.data ?? [];
 
         if (items.isEmpty) {
-          return _buildEmptyState();
+          return _buildEmptyState(message: _emptyMessageFor(_selectedCategory));
         }
 
         return _buildMasonryGrid(items);
       },
     );
+  }
+
+  String _emptyMessageFor(String category) {
+    if (category == 'all') return 'No images yet';
+    final match = CategoryChips.categories.firstWhere(
+      (c) => c['id'] == category,
+      orElse: () => const {'label': 'this category'},
+    );
+    return 'No ${match['label']} images yet';
   }
 
   Widget _buildTrendingTab() {
@@ -165,6 +202,10 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoadingGrid();
+        }
+
+        if (snapshot.hasError) {
+          return _buildError(snapshot.error.toString());
         }
 
         final items = snapshot.data ?? [];
@@ -186,6 +227,10 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
           return _buildLoadingGrid();
         }
 
+        if (snapshot.hasError) {
+          return _buildError(snapshot.error.toString());
+        }
+
         final items = snapshot.data ?? [];
 
         if (items.isEmpty) {
@@ -203,6 +248,10 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoadingGrid();
+        }
+
+        if (snapshot.hasError) {
+          return _buildError(snapshot.error.toString());
         }
 
         final items = snapshot.data ?? [];
@@ -223,78 +272,144 @@ class _GalleryScreenState extends State<GalleryScreen> with SingleTickerProvider
       },
       child: MasonryGridView.count(
         crossAxisCount: 2,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        padding: const EdgeInsets.all(8),
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        padding: const EdgeInsets.fromLTRB(12, 14, 12, 90),
         itemCount: items.length,
         itemBuilder: (context, index) {
+          final item = items[index];
+          final isOwner = item.uploadedBy == _galleryService.currentUserId;
           return ImageCard(
-            item: items[index],
+            item: item,
             onTap: () => _openImageViewer(items, index),
-            onLike: () => _galleryService.toggleLike(items[index].id),
-            onSave: () => _galleryService.toggleSave(items[index].id),
-            onUserTap: () => _openUserGallery(items[index].uploadedBy),
+            onLike: () => _galleryService.toggleLike(item.id),
+            onSave: () => _galleryService.toggleSave(item.id),
+            onUserTap: () => _openUserGallery(item.uploadedBy),
+            onDelete: isOwner ? () => _deleteImage(item) : null,
           );
         },
       ),
     );
   }
 
+  Future<void> _deleteImage(GalleryItem item) async {
+    final success = await _galleryService.deleteImage(item.id);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Image deleted' : "Couldn't delete image"),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   Widget _buildLoadingGrid() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final base = isDark ? AppTheme.darkCard : const Color(0xFFEDE6D9);
+    final highlight = isDark ? const Color(0xFF2E2E2E) : const Color(0xFFF7F2E9);
     return MasonryGridView.count(
       crossAxisCount: 2,
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
-      padding: const EdgeInsets.all(8),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      padding: const EdgeInsets.fromLTRB(12, 14, 12, 90),
       itemCount: 10,
       itemBuilder: (context, index) {
-        return Container(
-          height: (index % 2 == 0) ? 200 : 300,
-          decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(12),
-          ),
+        return _ShimmerBlock(
+          height: (index % 3 == 0) ? 260 : (index % 3 == 1 ? 190 : 230),
+          base: base,
+          highlight: highlight,
         );
       },
     );
   }
 
   Widget _buildEmptyState({String message = 'No images yet'}) {
+    final theme = Theme.of(context);
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.photo_library_outlined, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const UploadImageScreen()),
-              );
-            },
-            icon: const Icon(Icons.add_photo_alternate),
-            label: const Text('Upload First Image'),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: theme.colorScheme.primary.withAlpha(22),
+              ),
+              child: Icon(Icons.photo_library_outlined,
+                  size: 56, color: theme.colorScheme.primary),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: theme.textTheme.titleMedium?.color,
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const UploadImageScreen()),
+                );
+              },
+              icon: const Icon(Icons.add_photo_alternate_rounded),
+              label: const Text('Upload First Image'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildError(String error) {
+    final theme = Theme.of(context);
+    final isIndexError = error.contains('failed-precondition') || error.contains('requires an index');
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 80, color: Colors.red),
-          const SizedBox(height: 16),
-          Text('Error: $error'),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.redAccent.withAlpha(24),
+              ),
+              child: const Icon(Icons.cloud_off_rounded, size: 48, color: Colors.redAccent),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              isIndexError ? "Couldn't load this category" : "Something went wrong",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: theme.textTheme.titleMedium?.color,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isIndexError
+                  ? 'The database needs a moment to catch up. Please try again shortly.'
+                  : 'Please check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: theme.textTheme.bodyMedium?.color),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
+              onPressed: () => setState(() {}),
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -330,10 +445,12 @@ class SavedImagesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final galleryService = GalleryService();
+    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Saved Images'),
+        title: const Text('Saved Images', style: TextStyle(fontWeight: FontWeight.w700)),
       ),
       body: StreamBuilder<List<GalleryItem>>(
         stream: galleryService.getSavedImages(),
@@ -345,16 +462,38 @@ class SavedImagesScreen extends StatelessWidget {
           final items = snapshot.data ?? [];
 
           if (items.isEmpty) {
-            return const Center(
-              child: Text('No saved images'),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: theme.colorScheme.primary.withAlpha(22),
+                    ),
+                    child: Icon(Icons.bookmark_border_rounded,
+                        size: 56, color: theme.colorScheme.primary),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'No saved images yet',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: theme.textTheme.titleMedium?.color,
+                    ),
+                  ),
+                ],
+              ),
             );
           }
 
           return MasonryGridView.count(
             crossAxisCount: 2,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            padding: const EdgeInsets.all(8),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            padding: const EdgeInsets.fromLTRB(12, 14, 12, 24),
             itemCount: items.length,
             itemBuilder: (context, index) {
               return ImageCard(
@@ -377,6 +516,59 @@ class SavedImagesScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+// =====================
+// SHIMMER LOADING BLOCK
+// =====================
+class _ShimmerBlock extends StatefulWidget {
+  final double height;
+  final Color base;
+  final Color highlight;
+
+  const _ShimmerBlock({
+    required this.height,
+    required this.base,
+    required this.highlight,
+  });
+
+  @override
+  State<_ShimmerBlock> createState() => _ShimmerBlockState();
+}
+
+class _ShimmerBlockState extends State<_ShimmerBlock>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1400),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        return Container(
+          height: widget.height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: LinearGradient(
+              begin: Alignment(-1 + _controller.value * 3, -0.3),
+              end: Alignment(0 + _controller.value * 3, 0.3),
+              colors: [widget.base, widget.highlight, widget.base],
+              stops: const [0.35, 0.5, 0.65],
+            ),
+          ),
+        );
+      },
     );
   }
 }

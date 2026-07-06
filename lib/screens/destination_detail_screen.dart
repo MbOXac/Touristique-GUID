@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
 import '../models/activity.dart';
+import '../models/favorite_item.dart';
+import '../models/review.dart';
 import '../services/activity_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/activity_console.dart';
+import '../widgets/favorite_button.dart';
+import '../widgets/reviews_section.dart';
 
 class DestinationDetailScreen extends StatefulWidget {
   final Destination destination;
@@ -84,18 +88,34 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                     child: SafeArea(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        child: GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(120),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withAlpha(60)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withAlpha(120),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white.withAlpha(60)),
+                                ),
+                                child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
+                              ),
                             ),
-                            child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 20),
-                          ),
+                            FavoriteButton(
+                              type: FavoriteType.destination,
+                              itemId: widget.destination.id,
+                              title: widget.destination.name,
+                              subtitle: widget.destination.tags,
+                              imageUrl: widget.destination.imageURLs.isNotEmpty
+                                  ? widget.destination.imageURLs.first
+                                  : '',
+                              rating: widget.destination.rating,
+                              background: Colors.black.withAlpha(120),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -274,6 +294,23 @@ class _DestinationDetailScreenState extends State<DestinationDetailScreen> {
                 child: ActivityConsole(activities: activities, onActivityTap: () {}),
               );
             },
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionTitle('Reviews', theme),
+                  const SizedBox(height: 14),
+                  ReviewsSection(
+                    entityType: ReviewEntityType.destination,
+                    entityId: widget.destination.id,
+                    fallbackRating: widget.destination.rating,
+                  ),
+                ],
+              ),
+            ),
           ),
           SliverToBoxAdapter(
             child: Padding(

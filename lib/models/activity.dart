@@ -7,6 +7,8 @@ class Activity {
   final String location;
   final String price; // Changed to String to match Firestore "100 DH"
   final String region;
+  final double rating;
+  final int reviewsCount;
 
   const Activity({
     required this.id,
@@ -17,6 +19,8 @@ class Activity {
     required this.location,
     required this.price,
     required this.region,
+    this.rating = 0.0,
+    this.reviewsCount = 0,
   });
 
   // Convert Firestore document to Activity object
@@ -30,6 +34,8 @@ class Activity {
       location: data['location'] ?? '',
       price: data['price'] ?? '0 DH',
       region: data['region'] ?? '',
+      rating: (data['rating'] ?? 0).toDouble(),
+      reviewsCount: (data['reviewsCount'] ?? 0).toInt(),
     );
   }
 
@@ -43,6 +49,8 @@ class Activity {
       'location': location,
       'price': price,
       'region': region,
+      'rating': rating,
+      'reviewsCount': reviewsCount,
     };
   }
 }

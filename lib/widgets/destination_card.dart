@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/destination.dart';
+import '../models/favorite_item.dart';
 import '../screens/destination_detail_screen.dart';
 import '../theme/app_theme.dart';
+import 'favorite_button.dart';
 
 class DestinationCard extends StatelessWidget {
   final Destination destination;
@@ -96,7 +98,21 @@ class DestinationCard extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: 14,
+                top: 8,
+                right: 8,
+                child: FavoriteButton(
+                  type: FavoriteType.destination,
+                  itemId: destination.id,
+                  title: destination.name,
+                  subtitle: destination.tags,
+                  imageUrl: destination.imageURLs.isNotEmpty ? destination.imageURLs.first : '',
+                  rating: destination.rating,
+                  size: 20,
+                  background: Colors.black.withAlpha(120),
+                ),
+              ),
+              Positioned(
+                top: 58,
                 right: 14,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

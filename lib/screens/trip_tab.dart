@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../models/saved_trip.dart';
+import '../models/favorite_item.dart';
 import '../services/trip_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/favorite_button.dart';
 import 'add_trip_screen.dart';
 import 'package:flutter/rendering.dart';
 
@@ -609,6 +611,16 @@ class _SavedTripCard extends StatelessWidget {
                           ),
                           child: Text(trip.mood,
                               style: const TextStyle(fontSize: 20)),
+                        ),
+                        const SizedBox(width: 8),
+                        FavoriteButton(
+                          type: FavoriteType.trip,
+                          itemId: trip.id,
+                          title: trip.title,
+                          subtitle: '${trip.destination}, ${trip.country}',
+                          imageUrl: trip.photoUrls.isEmpty ? '' : trip.photoUrls.first,
+                          size: 20,
+                          background: Colors.black.withAlpha(100),
                         ),
                         const SizedBox(width: 8),
                         IconButton.filledTonal(

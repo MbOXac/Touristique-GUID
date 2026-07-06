@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/activity.dart';
 import '../models/booking.dart';
+import '../models/review.dart';
 import '../theme/app_theme.dart';
 import '../screens/booking_form_screen.dart';
+import 'reviews_section.dart';
 
 class ActivityDetailModal extends StatelessWidget {
   final Activity activity;
@@ -217,6 +219,23 @@ class ActivityDetailModal extends StatelessWidget {
                         iconColor: AppTheme.primaryOrange,
                         theme: theme,
                         isDark: isDark,
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ─── Reviews ───────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionLabel('Reviews', theme),
+                      const SizedBox(height: 12),
+                      ReviewsSection(
+                        entityType: ReviewEntityType.activity,
+                        entityId: activity.id,
+                        fallbackRating: activity.rating,
                       ),
                     ],
                   ),

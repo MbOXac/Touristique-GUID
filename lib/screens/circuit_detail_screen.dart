@@ -4,11 +4,15 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/booking.dart';
 import '../models/circuit.dart';
+import '../models/review.dart';
 import '../services/circuit_service.dart';
+import '../services/review_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/circuit_day_card.dart';
 import '../widgets/circuit_route_map.dart';
 import '../widgets/rating_badge.dart';
+import '../widgets/review_dialog.dart';
+import '../widgets/review_tile.dart';
 import 'booking_form_screen.dart';
 
 class CircuitDetailScreen extends StatefulWidget {
@@ -23,6 +27,7 @@ class CircuitDetailScreen extends StatefulWidget {
 class _CircuitDetailScreenState extends State<CircuitDetailScreen>
     with SingleTickerProviderStateMixin {
   final CircuitService _circuitService = CircuitService();
+  final ReviewService _reviewService = ReviewService();
   late final TabController _tabController;
   final MapController _mapController = MapController();
 
@@ -631,145 +636,168 @@ class _CircuitDetailScreenState extends State<CircuitDetailScreen>
 
   // ─── TAB 4: Reviews ─────────────────────────────────────────
   Widget _buildReviewsTab(ThemeData theme, Circuit circuit) {
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-      children: [
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: theme.cardColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(
-                    theme.brightness == Brightness.dark ? 60 : 20),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Column(
-                children: [
-                  Text(
-                    circuit.rating.toStringAsFixed(1),
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w900,
-                      color: theme.textTheme.titleLarge?.color,
-                    ),
+    return StreamBuilder<List<Review>>(
+      stream: _reviewService.streamReviews(ReviewEntityType.circuit, circuit.id),
+      builder: (context, snapshot) {
+        final reviews = snapshot.data ?? const <Review>[];
+        final avgRating = reviews.isEmpty
+            ? circuit.rating
+            : reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length;
+        final breakdown = ReviewService.ratingBreakdown(reviews);
+
+        return StreamBuilder<Review?>(
+          stream: _reviewService.streamMyReview(ReviewEntityType.circuit, circuit.id),
+          builder: (context, myReviewSnapshot) {
+            final myReview = myReviewSnapshot.data;
+
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: theme.cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(
+                            theme.brightness == Brightness.dark ? 60 : 20),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
                   ),
-                  Row(
-                    children: List.generate(5, (i) {
-                      return Icon(
-                        i < circuit.rating.round()
-                            ? Icons.star_rounded
-                            : Icons.star_border_rounded,
-                        color: AppTheme.primaryOrange,
-                        size: 16,
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${circuit.reviewsCount} reviews',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: theme.textTheme.bodyMedium?.color,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  children: List.generate(5, (i) {
-                    final star = 5 - i;
-                    final fraction = _starFraction(circuit.rating, star);
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
+                  child: Row(
+                    children: [
+                      Column(
                         children: [
-                          Text('$star',
-                              style: TextStyle(
-                                  fontSize: 11,
-                                  color: theme.textTheme.bodyMedium?.color)),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(4),
-                              child: LinearProgressIndicator(
-                                value: fraction,
-                                minHeight: 6,
-                                backgroundColor: theme.dividerColor,
-                                valueColor: const AlwaysStoppedAnimation(
-                                    AppTheme.primaryOrange),
-                              ),
+                          Text(
+                            avgRating.toStringAsFixed(1),
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.w900,
+                              color: theme.textTheme.titleLarge?.color,
+                            ),
+                          ),
+                          Row(
+                            children: List.generate(5, (i) {
+                              return Icon(
+                                i < avgRating.round()
+                                    ? Icons.star_rounded
+                                    : Icons.star_border_rounded,
+                                color: AppTheme.primaryOrange,
+                                size: 16,
+                              );
+                            }),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${reviews.length} review${reviews.length == 1 ? '' : 's'}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: theme.textTheme.bodyMedium?.color,
                             ),
                           ),
                         ],
                       ),
-                    );
-                  }),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          children: List.generate(5, (i) {
+                            final star = 5 - i;
+                            final fraction = breakdown[star] ?? 0.0;
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                children: [
+                                  Text('$star',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: theme.textTheme.bodyMedium?.color)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: LinearProgressIndicator(
+                                        value: fraction,
+                                        minHeight: 6,
+                                        backgroundColor: theme.dividerColor,
+                                        valueColor: const AlwaysStoppedAnimation(
+                                            AppTheme.primaryOrange),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
-        Center(
-          child: Column(
-            children: [
-              Icon(Icons.rate_review_outlined,
-                  size: 48,
-                  color: theme.textTheme.bodyMedium?.color?.withAlpha(120)),
-              const SizedBox(height: 12),
-              Text(
-                'No reviews yet',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: theme.textTheme.titleLarge?.color,
+                const SizedBox(height: 24),
+                if (reviews.isEmpty)
+                  Center(
+                    child: Column(
+                      children: [
+                        Icon(Icons.rate_review_outlined,
+                            size: 48,
+                            color: theme.textTheme.bodyMedium?.color?.withAlpha(120)),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No reviews yet',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: theme.textTheme.titleLarge?.color,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Be the first to share your experience',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: theme.textTheme.bodyMedium?.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ...reviews.map((r) => ReviewTile(
+                        review: r,
+                        isOwnReview: r.userId == _reviewService.currentUserId,
+                      )),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => ReviewDialog.show(
+                      context,
+                      entityType: ReviewEntityType.circuit,
+                      entityId: circuit.id,
+                      existingReview: myReview,
+                    ),
+                    icon: Icon(myReview != null ? Icons.edit_rounded : Icons.rate_review_outlined,
+                        size: 18),
+                    label: Text(myReview != null ? 'Edit your Review' : 'Write a Review'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primaryOrange,
+                      side: const BorderSide(color: AppTheme.primaryOrange),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Be the first to share your experience',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: theme.textTheme.bodyMedium?.color,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: null,
-            icon: const Icon(Icons.edit_rounded, size: 18),
-            label: const Text('Write a Review'),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
-      ],
+              ],
+            );
+          },
+        );
+      },
     );
-  }
-
-  double _starFraction(double rating, int star) {
-    // Simple synthetic breakdown around the average rating.
-    final diff = (rating - star).abs();
-    if (diff >= 2) return 0.05;
-    if (diff >= 1) return 0.25;
-    if (diff >= 0.5) return 0.55;
-    return 0.85;
   }
 
   // ─── Bottom book bar ────────────────────────────────────────

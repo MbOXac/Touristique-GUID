@@ -19,6 +19,31 @@ class PreviewCard extends StatelessWidget {
     this.badge,
   });
 
+  Widget _buildImage() {
+    if (imagePath.startsWith('http')) {
+      return Image.network(
+        imagePath,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (_, __, ___) => Container(
+          color: Colors.grey.shade300,
+          child: const Icon(Icons.image_outlined, color: Colors.grey),
+        ),
+      );
+    }
+    return Image.asset(
+      imagePath,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (_, __, ___) => Container(
+        color: Colors.grey.shade300,
+        child: const Icon(Icons.image_outlined, color: Colors.grey),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -39,7 +64,7 @@ class PreviewCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(imagePath, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
+              _buildImage(),
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

@@ -4,7 +4,6 @@ import '../models/destination.dart';
 import '../models/circuit.dart';
 import '../services/destination_service.dart';
 import '../services/circuit_service.dart';
-import '../services/mock_data_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/destination_card.dart';
 import '../widgets/circuit_mini_card.dart';
@@ -12,6 +11,7 @@ import '../widgets/section_header.dart';
 import '../widgets/preview_card.dart';
 import '../widgets/horizontal_carousel.dart';
 import 'circuits_list_screen.dart';
+import 'destination_detail_screen.dart';
 import 'gallery_screen.dart';
 import 'favorites_screen.dart';
 import 'bookings_screen.dart';
@@ -53,7 +53,6 @@ bool _bottomBarHidden = false;
 
   @override
   Widget build(BuildContext context) {
-    final topRated = MockDataService.getTopRatedPlaces().take(4).toList();
     final theme = Theme.of(context);
   final user = FirebaseAuth.instance.currentUser;
 
@@ -108,23 +107,45 @@ bool _bottomBarHidden = false;
                     ),
                   ),
                 ),
-                HorizontalCarousel(
-                  height: 180,
-                  itemWidth: 160,
-                  items: topRated
-                      .map((p) => PreviewCard(
-                            imagePath: p.imagePath,
-                            title: p.name,
-                            subtitle: p.category,
-                            rating: p.rating,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const TopRatedScreen(),
-                              ),
-                            ),
-                          ))
-                      .toList(),
+                StreamBuilder<List<Destination>>(
+                  stream: _destinationService.streamAllDestinations(),
+                  builder: (context, snapshot) {
+                    final topRated = [...(snapshot.data ?? [])]
+                      ..sort((a, b) => b.rating.compareTo(a.rating));
+                    final top4 = topRated.take(4).toList();
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                        height: 180,
+                        child: Center(
+                          child: CircularProgressIndicator(color: AppTheme.primaryOrange),
+                        ),
+                      );
+                    }
+
+                    if (top4.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return HorizontalCarousel(
+                      height: 180,
+                      itemWidth: 160,
+                      items: top4
+                          .map((d) => PreviewCard(
+                                imagePath: d.imageURLs.isNotEmpty ? d.imageURLs.first : '',
+                                title: d.name,
+                                subtitle: d.tags,
+                                rating: d.rating,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => DestinationDetailScreen(destination: d),
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                    );
+                  },
                 ),
                 const SizedBox(height: 16),
 

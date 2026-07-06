@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
+import '../models/gallery_item.dart';
+import '../services/favorite_service.dart';
+import '../services/gallery_service.dart';
 import 'login_page.dart';
+import 'favorites_screen.dart';
 import 'profile_settings/account_settings_screen.dart';
 import 'profile_settings/notifications_screen.dart';
 import 'profile_settings/privacy_screen.dart';
@@ -30,6 +34,8 @@ class _ProfileTabState extends State<ProfileTab> {
   String? email;
   String? language = 'English';
   bool _bottomBarHidden = false;
+  final FavoriteService _favoriteService = FavoriteService();
+  final GalleryService _galleryService = GalleryService();
 
   @override
   void initState() {
@@ -125,7 +131,25 @@ class _ProfileTabState extends State<ProfileTab> {
                     children: [
                       _statBadge('12', 'Trips'),
                       const SizedBox(width: 24),
-                      _statBadge('34', 'Favorites'),
+                      GestureDetector(
+                        onTap: () => _navigateTo(const FavoritesScreen()),
+                        child: StreamBuilder<int>(
+                          stream: _favoriteService.streamFavoritesCount(),
+                          builder: (context, favSnapshot) {
+                            return StreamBuilder<List<GalleryItem>>(
+                              stream: _galleryService.getSavedImages(),
+                              builder: (context, gallerySnapshot) {
+                                final favCount = favSnapshot.data;
+                                final galleryCount = gallerySnapshot.data?.length;
+                                if (favCount == null || galleryCount == null) {
+                                  return _statBadge('—', 'Favorites');
+                                }
+                                return _statBadge('${favCount + galleryCount}', 'Favorites');
+                              },
+                            );
+                          },
+                        ),
+                      ),
                       const SizedBox(width: 24),
                       _statBadge('8', 'Memories'),
                     ],

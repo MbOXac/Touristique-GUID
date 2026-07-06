@@ -103,14 +103,26 @@ Future<GalleryItem?> uploadImage({
   // 📖 GET ALL IMAGES
   // =====================
   Stream<List<GalleryItem>> getAllImages({String? category}) {
-    Query query = _galleryCollection.orderBy('createdAt', descending: true);
-    
-    if (category != null && category != 'all') {
+    final filtering = category != null && category != 'all';
+
+    // Combining `.where('category', ...)` with `.orderBy('createdAt', ...)`
+    // needs a Firestore composite index. Rather than requiring every user
+    // of this app to manually create one in the Firebase console, we only
+    // sort server-side when there's no category filter, and sort client-side
+    // (cheap — these are small paginated lists) when there is one.
+    Query query = _galleryCollection;
+    if (filtering) {
       query = query.where('category', isEqualTo: category);
+    } else {
+      query = query.orderBy('createdAt', descending: true);
     }
 
     return query.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => GalleryItem.fromFirestore(doc)).toList();
+      final items = snapshot.docs.map((doc) => GalleryItem.fromFirestore(doc)).toList();
+      if (filtering) {
+        items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      }
+      return items;
     });
   }
 
@@ -221,12 +233,17 @@ Future<GalleryItem?> uploadImage({
   Stream<List<GalleryItem>> getSavedImages() {
     if (currentUserId == null) return Stream.value([]);
 
+    // arrayContains + orderBy needs a composite index Firestore doesn't
+    // have here, and that failure was being silently swallowed by the
+    // UI (no error handling), showing "No saved posts" even when some
+    // existed. Drop the server-side orderBy and sort client-side instead.
     return _galleryCollection
         .where('savedBy', arrayContains: currentUserId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => GalleryItem.fromFirestore(doc)).toList();
+      final items = snapshot.docs.map((doc) => GalleryItem.fromFirestore(doc)).toList();
+      items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return items;
     });
   }
 
