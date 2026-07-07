@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../constants/app_radius.dart';
 import '../widgets/settings_group.dart';
 
@@ -22,9 +23,15 @@ class _LoginPageState extends State<LoginPage> {
   bool isLoading = false;
 
   // --- GOOGLE SIGN-IN FUNCTION ---
+  static const _webClientId =
+      '202821805924-7038jg7f4183lei3ad7rtg2pf8an71bi.apps.googleusercontent.com';
+
   Future<void> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      final googleSignIn = kIsWeb
+          ? GoogleSignIn(clientId: _webClientId)
+          : GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return; // L'utilisateur a annulé
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;

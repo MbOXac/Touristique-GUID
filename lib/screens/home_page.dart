@@ -510,7 +510,7 @@ bool _bottomBarHidden = false;
                 'Hello, ${_userName(user)} 👋',
                 style: TextStyle(
                   color: theme.textTheme.bodyMedium?.color,
-                  fontSize: 14,
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
               ),

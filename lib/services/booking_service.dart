@@ -33,7 +33,16 @@ class BookingService {
         details: booking.details,
         createdAt: DateTime.now(),
       );
+
+      // Write to the user's own sub-collection (user-facing, unchanged).
       await docRef.set(newBooking.toMap());
+
+      // Mirror to flat top-level collection so the admin can query
+      // all bookings across all users without expensive collection-group scans.
+      await _firestore
+          .collection('allBookings')
+          .doc(newBooking.id)
+          .set(newBooking.toMap());
     } catch (e) {
       throw Exception('Failed to create booking: $e');
     }

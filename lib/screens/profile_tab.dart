@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
 import '../constants/app_radius.dart';
@@ -7,7 +9,6 @@ import '../models/gallery_item.dart';
 import '../services/favorite_service.dart';
 import '../services/gallery_service.dart';
 import '../widgets/settings_group.dart';
-import 'login_page.dart';
 import 'favorites_screen.dart';
 import 'profile_settings/account_settings_screen.dart';
 import 'profile_settings/notifications_screen.dart';
@@ -192,12 +193,22 @@ class _ProfileTabState extends State<ProfileTab> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () async {
-                    final ctx = context;
+                    // 1. Pop all screens back to AuthGate (the first/home route)
+                    //    AuthGate's StreamBuilder will render LoginPage once signed out.
+                    if (context.mounted) {
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    }
+                    // 2. Clear Google session (no-op if user signed in with email)
+                    try {
+                      const webClientId =
+                          '202821805924-7038jg7f4183lei3ad7rtg2pf8an71bi.apps.googleusercontent.com';
+                      final googleSignIn = kIsWeb
+                          ? GoogleSignIn(clientId: webClientId)
+                          : GoogleSignIn();
+                      await googleSignIn.signOut();
+                    } catch (_) {}
+                    // 3. Sign out of Firebase — AuthGate reacts and shows LoginPage
                     await FirebaseAuth.instance.signOut();
-                    Navigator.of(ctx).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const LoginPage()),
-                      (route) => false,
-                    );
                   },
                   icon: const Icon(Icons.logout_rounded, color: Colors.red),
                   label: const Text('Sign Out',

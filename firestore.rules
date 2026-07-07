@@ -1,0 +1,174 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ─────────────────────────────────────────────────────
+
+    // True when the caller is signed in
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // True when the caller owns the document (by userId path segment)
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId;
+    }
+
+    // True when the caller has role == "admin" stored in their users/{uid} doc.
+    // Uses .get() fallback so it never throws when the field is missing.
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid))
+          .data.get('role', '') == 'admin';
+    }
+
+    // True when the write only touches the two rating aggregate fields
+    function isRatingAggregateOnly() {
+      return isAuth() &&
+        request.resource.data.diff(resource.data)
+          .affectedKeys().hasOnly(['rating', 'reviewsCount']);
+    }
+
+
+    // ── ACTIVITIES ────────────────────────────────────────────────────────────
+    // Public read. The review system may update rating/reviewsCount only.
+    // Admin may do full CRUD.
+    match /activities/{activityId} {
+      allow read: if true;
+      allow update: if isRatingAggregateOnly() || isAdmin();
+      allow create, delete: if isAdmin();
+    }
+
+
+    // ── DESTINATIONS ──────────────────────────────────────────────────────────
+    // Public read. Rating aggregate update open to any signed-in user (review
+    // system). Admin may do full CRUD.
+    match /destinations/{destinationId} {
+      allow read: if true;
+      allow update: if isRatingAggregateOnly() || isAdmin();
+      allow create, delete: if isAdmin();
+    }
+
+
+    // ── CIRCUITS ──────────────────────────────────────────────────────────────
+    // Public read + create (kept for your seeding script).
+    // Rating aggregate update open to signed-in users.
+    // Admin may do full CRUD.
+    match /circuits/{circuitId} {
+      allow read, create: if true;
+      allow update: if isRatingAggregateOnly() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+
+    // ── REVIEWS ───────────────────────────────────────────────────────────────
+    // Doc id must be '{entityType}_{entityId}_{uid}' — enforced on create so
+    // a user can never write a review that isn't theirs.
+    match /reviews/{reviewId} {
+      allow read: if true;
+
+      allow create: if isAuth() &&
+                    request.resource.data.userId == request.auth.uid &&
+                    reviewId == request.resource.data.entityType + '_' +
+                                request.resource.data.entityId + '_' +
+                                request.auth.uid;
+
+      allow update: if isAuth() &&
+                    resource.data.userId == request.auth.uid &&
+                    request.resource.data.userId == resource.data.userId &&
+                    request.resource.data.entityType == resource.data.entityType &&
+                    request.resource.data.entityId == resource.data.entityId;
+
+      allow delete: if isAuth() &&
+                    (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+
+    // ── CAR RENTALS ───────────────────────────────────────────────────────────
+    // Kept as public read/write for testing.
+    // Admin also has explicit access for future tightening.
+    match /rental_companies/{document=**} {
+      allow read, write: if true;
+    }
+
+    match /cars/{document=**} {
+      allow read, write: if true;
+    }
+
+
+    // ── BOOKINGS (per-user sub-collection) ────────────────────────────────────
+    // Each user reads/writes only their own bookings.
+    // Admin can read and update status across all users.
+    match /bookings/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+
+      match /userBookings/{bookingId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+
+    // ── ALL BOOKINGS (admin mirror) ───────────────────────────────────────────
+    // Written by any signed-in user when they create a booking.
+    // Admin can read, update status, and delete.
+    match /allBookings/{bookingId} {
+      allow create: if isAuth();
+      allow read, update, delete: if isAdmin();
+    }
+
+
+    // ── TRIPS ─────────────────────────────────────────────────────────────────
+    match /trips/{tripId} {
+      allow read: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if isAuth() && request.auth.uid == resource.data.userId;
+    }
+
+
+    // ── USERS ─────────────────────────────────────────────────────────────────
+    // Each user reads/writes their own document.
+    // Admin can read ALL user documents and delete any document.
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      allow read, delete: if isAdmin();
+
+      match /favorite_circuits/{circuitId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /favorites/{favoriteId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+
+    // ── GALLERY ───────────────────────────────────────────────────────────────
+    match /gallery/{imageId} {
+      allow read: if true;
+      allow create: if isAuth();
+      allow update: if isAuth() && request.auth.uid == resource.data.uploadedBy;
+      allow delete: if isAuth() &&
+                    (request.auth.uid == resource.data.uploadedBy || isAdmin());
+    }
+
+
+    // ── COLLECTIONS ───────────────────────────────────────────────────────────
+    match /collections/{collectionId} {
+      allow read, write: if isAuth() && request.auth.uid == resource.data.userId;
+      allow create: if isAuth() && request.auth.uid == request.resource.data.userId;
+    }
+
+
+    // ── USER PROFILES ─────────────────────────────────────────────────────────
+    match /userProfiles/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+
+
+    // ── DEFAULT DENY ──────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
