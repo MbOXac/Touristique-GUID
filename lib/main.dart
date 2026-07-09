@@ -8,7 +8,6 @@ import 'services/cloudinary_service.dart';
 import 'services/theme_service.dart';
 import 'auth_gate.dart';
 import 'theme/app_theme.dart';
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

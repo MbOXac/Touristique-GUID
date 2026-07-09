@@ -40,6 +40,17 @@ service cloud.firestore {
     }
 
 
+    // ── HOTELS ────────────────────────────────────────────────────────────────
+    // Public read (tout le monde peut chercher des hôtels).
+    // Rating aggregate update par utilisateurs connectés.
+    // Admin pour full CRUD / seed script.
+    match /hotels/{hotelId} {
+      allow read: if true;
+      allow update: if isRatingAggregateOnly() || isAdmin();
+      allow create, delete: if isAdmin();
+    }
+
+
     // ── DESTINATIONS ──────────────────────────────────────────────────────────
     // Public read. Rating aggregate update open to any signed-in user (review
     // system). Admin may do full CRUD.
